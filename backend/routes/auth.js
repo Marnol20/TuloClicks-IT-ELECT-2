@@ -70,6 +70,7 @@ router.post('/login', async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase()
+    const enteredPassword = password || ''
 
     const [users] = await db.query(
       `
@@ -95,7 +96,16 @@ router.post('/login', async (req, res) => {
       return res.status(403).json({ error: 'This account has been rejected.' })
     }
 
-    const isMatch = await bcrypt.compare(password, user.password)
+    let isMatch = false
+    if (typeof enteredPassword === 'string' && enteredPassword.length > 0) {
+      isMatch = await bcrypt.compare(enteredPassword, user.password)
+
+      if (!isMatch && enteredPassword === user.password) {
+        isMatch = true
+        const hashedPassword = await bcrypt.hash(enteredPassword, 10)
+        await db.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, user.id])
+      }
+    }
 
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid email or password.' })

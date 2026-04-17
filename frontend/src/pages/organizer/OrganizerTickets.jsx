@@ -47,7 +47,7 @@ function OrganizerTickets() {
 
   async function handleCreate() {
     if (!selectedEvent || !name || !price || !quantity) {
-      alert('Please fill in all required fields')
+      setError('Please fill in all required fields')
       return
     }
 
@@ -60,7 +60,7 @@ function OrganizerTickets() {
         quantity_available: Number(quantity)
       })
 
-      alert('Ticket created successfully')
+      setError('')
       setShowForm(false)
       setName('')
       setDescription('')
@@ -68,7 +68,7 @@ function OrganizerTickets() {
       setQuantity('')
       fetchTickets(selectedEvent)
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to create ticket')
+      setError(error.response?.data?.error || 'Failed to create ticket')
     }
   }
 

@@ -7,6 +7,11 @@ function OrganizerBookings() {
   const [selectedEvent, setSelectedEvent] = useState('')
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const totalEvents = events.length
+  const totalBookings = bookings.length
+  const checkedInCount = bookings.filter((booking) => booking.booking_status === 'checked_in').length
 
   useEffect(() => {
     fetchEvents()
@@ -46,20 +51,33 @@ function OrganizerBookings() {
   async function handleCheckIn(id) {
     try {
       await api.patch(`/bookings/${id}/check-in`)
-      alert('Attendee checked in successfully')
+      setError('')
       fetchBookings(selectedEvent)
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to check in attendee')
+      setError(error.response?.data?.error || 'Failed to check in attendee')
     }
   }
 
   return (
     <main className="attendees-page">
-      <div className="attendees-top">
-        <div className="attendees-title">
-          <div>
-            <h2>Bookings</h2>
-            <p>View bookings and check in attendees for your events</p>
+      <div className="organizer-hero-card">
+        <div>
+          <h2>Organizer Dashboard</h2>
+          <p>Review event bookings, manage attendance, and keep your guests moving smoothly.</p>
+        </div>
+
+        <div className="organizer-hero-actions">
+          <div className="organizer-hero-value">
+            <span>Total events</span>
+            <strong>{totalEvents}</strong>
+          </div>
+          <div className="organizer-hero-value">
+            <span>Bookings selected</span>
+            <strong>{totalBookings}</strong>
+          </div>
+          <div className="organizer-hero-value">
+            <span>Checked in</span>
+            <strong>{checkedInCount}</strong>
           </div>
         </div>
       </div>

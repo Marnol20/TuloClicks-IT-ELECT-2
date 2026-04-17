@@ -49,8 +49,11 @@ function handleLogout() {
     <aside className="sidebar">
       <div className="sidebar-top">
         <div className="sidebar-logo">
-          <h2>TuloClicks</h2>
-          <p>{role === 'admin' ? 'Admin Panel' : 'Organizer Panel'}</p>
+          <div className="sidebar-brand-mark logo-mark-hover">T</div>
+          <div>
+            <h2>TuloClicks</h2>
+            <p>{role === 'admin' ? 'Admin Panel' : 'Organizer Panel'}</p>
+          </div>
         </div>
 
         <nav className="sidebar-nav">

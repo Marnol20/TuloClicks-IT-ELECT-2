@@ -4,7 +4,10 @@ const TOKEN_KEY = 'token'
 const USER_KEY = 'user'
 
 export async function loginUser(email, password) {
-  const res = await api.post('/auth/login', { email, password })
+  const res = await api.post('/auth/login', {
+    email: email.trim().toLowerCase(),
+    password
+  })
 
   const { token, user } = res.data
 

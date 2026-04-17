@@ -71,7 +71,7 @@ function OrganizerSpeakers() {
       setBio('')
       fetchSpeakers(selectedEvent)
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to create speaker')
+      setError(error.response?.data?.error || 'Failed to create speaker')
     }
   }
 

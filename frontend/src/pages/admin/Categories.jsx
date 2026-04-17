@@ -7,6 +7,7 @@ function Categories() {
   const [showForm, setShowForm] = useState(false)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [error, setError] = useState('')
 
   useEffect(() => {
     fetchCategories()
@@ -24,7 +25,7 @@ function Categories() {
 
   async function handleCreate() {
     if (!name.trim()) {
-      alert('Category name is required')
+      setError('Category name is required')
       return
     }
 
@@ -34,13 +35,13 @@ function Categories() {
         description: description.trim()
       })
 
-      alert('Category created successfully')
+      setError('')
       setShowForm(false)
       setName('')
       setDescription('')
       fetchCategories()
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to create category')
+      setError(error.response?.data?.error || 'Failed to create category')
     }
   }
 
@@ -48,6 +49,7 @@ function Categories() {
     setShowForm(false)
     setName('')
     setDescription('')
+    setError('')
   }
 
   return (
@@ -90,6 +92,12 @@ function Categories() {
               />
             </div>
           </div>
+
+          {error && (
+            <p style={{ color: '#ef4444', marginBottom: '16px', fontSize: '14px' }}>
+              {error}
+            </p>
+          )}
 
           <div className="form-buttons">
             <button className="create-btn" onClick={handleCreate}>

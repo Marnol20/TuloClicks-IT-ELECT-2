@@ -69,3 +69,37 @@
   font-weight: 600;
   cursor: pointer;
 }
+
+/* Password Strength Indicator */
+.password-strength-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.password-strength-bars {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+}
+
+.strength-bar {
+  height: 6px;
+  flex: 1;
+  border-radius: 3px;
+  background-color: #e5e7eb;
+  transition: background-color 0.3s ease;
+}
+
+.strength-bar.active {
+  background-color: #22c55e;
+}
+
+.password-strength-text {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

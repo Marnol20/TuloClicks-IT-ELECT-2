@@ -1,9 +1,64 @@
 .dashboard {
-  padding: 24px;
+  padding: 28px;
+  min-height: 100vh;
+  background: var(--bg);
 }
 
 .dashboard.clean {
-  padding: 24px;
+  padding: 28px;
+}
+
+.dashboard-hero {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(8, 12, 24, 0.92));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  padding: 36px;
+  margin-bottom: 28px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+}
+
+.dashboard-hero-label {
+  margin: 0 0 12px;
+  color: #22c55e;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+.dashboard-hero h1 {
+  margin: 0;
+  font-size: 40px;
+  line-height: 1.05;
+  color: #ffffff;
+  max-width: 720px;
+}
+
+.dashboard-hero p {
+  margin: 16px 0 0;
+  color: rgba(255, 255, 255, 0.72);
+  max-width: 700px;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.dashboard-btn.primary {
+  border: none;
+  background: linear-gradient(135deg, #8b5cf6, #22c55e);
+  color: white;
+  padding: 14px 20px;
+  border-radius: 14px;
+  font-weight: 700;
+  box-shadow: 0 16px 30px rgba(56, 189, 248, 0.18);
+}
+
+.dashboard-btn.primary:hover {
+  background: #7c3aed;
 }
 
 .dashboard-header {

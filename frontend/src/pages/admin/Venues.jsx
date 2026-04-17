@@ -5,6 +5,7 @@ import api from '../../services/api'
 function Venues() {
   const [venues, setVenues] = useState([])
   const [showForm, setShowForm] = useState(false)
+  const [error, setError] = useState('')
 
   const [name, setName] = useState('')
   const [address, setAddress] = useState('')
@@ -33,7 +34,7 @@ function Venues() {
 
   async function handleCreate() {
     if (!name || !address || !city || !capacity) {
-      alert('Please fill in required fields')
+      setError('Please fill in required fields')
       return
     }
 
@@ -51,11 +52,11 @@ function Venues() {
         contact_email: contactEmail
       })
 
-      alert('Venue created successfully')
+      setError('')
       resetForm()
       fetchVenues()
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to create venue')
+      setError(error.response?.data?.error || 'Failed to create venue')
     }
   }
 
@@ -194,6 +195,12 @@ function Venues() {
               />
             </div>
           </div>
+
+          {error && (
+            <p className="form-error" style={{ color: '#ef4444', marginBottom: '16px', fontSize: '14px' }}>
+              {error}
+            </p>
+          )}
 
           <div className="form-buttons">
             <button className="create-btn" onClick={handleCreate}>

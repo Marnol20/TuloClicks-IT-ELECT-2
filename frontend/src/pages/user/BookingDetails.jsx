@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
-  ChevronLeft,
   CalendarDays,
   Receipt,
   User,
@@ -98,13 +97,6 @@ function BookingDetails() {
 
   return (
     <div className="event-details-page">
-      <div className="event-details-header">
-        <button className="back-btn" onClick={() => navigate('/home/tickets')}>
-          <ChevronLeft size={20} />
-          Back to My Tickets
-        </button>
-      </div>
-
       <div className="event-hero">
         <div className="event-hero-content">
           <div className="event-meta-header">

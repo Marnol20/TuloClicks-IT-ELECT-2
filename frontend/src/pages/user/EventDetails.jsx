@@ -3,8 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import {
   MapPin,
   Clock,
-  Calendar,
-  ChevronLeft
+  Calendar
 } from 'lucide-react'
 import '../../styles/EventDetails.css'
 import api from '../../services/api'
@@ -19,6 +18,7 @@ function EventDetails() {
   const [loading, setLoading] = useState(true)
   const [selectedTicketId, setSelectedTicketId] = useState('')
   const [quantity, setQuantity] = useState(1)
+  const [error, setError] = useState('')
   const [attendeeName, setAttendeeName] = useState('')
   const [attendeeEmail, setAttendeeEmail] = useState('')
   const [attendeePhone, setAttendeePhone] = useState('')
@@ -68,13 +68,13 @@ function EventDetails() {
     const token = localStorage.getItem('token')
 
     if (!token) {
-      alert('Please log in first to book tickets')
+      setError('Please log in first to book tickets')
       navigate('/login')
       return
     }
 
     if (!selectedTicketId || !attendeeName || !attendeeEmail || !quantity) {
-      alert('Please fill in all booking fields')
+      setError('Please fill in all booking fields')
       return
     }
 
@@ -104,10 +104,10 @@ function EventDetails() {
         amount: totalAmount
       })
 
-      alert('Booking created successfully. Payment record created and waiting for admin confirmation.')
+      setError('')
       navigate('/home/tickets')
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to create booking')
+      setError(error.response?.data?.error || 'Failed to create booking')
     } finally {
       setSubmitting(false)
     }
@@ -136,13 +136,6 @@ function EventDetails() {
 
   return (
     <div className="event-details-page">
-      <div className="event-details-header">
-        <button className="back-btn" onClick={() => navigate('/home/events')}>
-          <ChevronLeft size={20} />
-          Back to Events
-        </button>
-      </div>
-
       <div className="event-hero">
         <div className="event-hero-content">
           <div className="event-meta-header">

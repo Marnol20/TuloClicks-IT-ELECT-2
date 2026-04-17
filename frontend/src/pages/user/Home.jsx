@@ -55,22 +55,6 @@ function Home() {
             Track your bookings, explore upcoming events, and stay updated with your tickets in one place.
           </p>
         </div>
-
-        <div className="user-dashboard-hero-actions">
-          <button
-            className="hero-btn-primary"
-            onClick={() => navigate('/home/events')}
-          >
-            Browse Events
-          </button>
-
-          <button
-            className="hero-btn-secondary"
-            onClick={() => navigate('/home/tickets')}
-          >
-            View My Tickets
-          </button>
-        </div>
       </section>
 
       <section className="user-dashboard-stats">

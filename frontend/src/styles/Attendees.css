@@ -1,5 +1,66 @@
 .attendees-page {
   padding: 24px;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.organizer-hero-card {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(8, 12, 24, 0.92));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 30px;
+  margin-bottom: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.organizer-hero-card h2 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.organizer-hero-card p {
+  margin: 8px 0 0;
+  color: rgba(255, 255, 255, 0.72);
+  max-width: 640px;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.organizer-hero-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.organizer-hero-value {
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.organizer-hero-value span {
+  display: block;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 6px;
+}
+
+.organizer-hero-value strong {
+  display: block;
+  font-size: 28px;
+  color: #ffffff;
+  font-weight: 800;
 }
 
 .attendees-top {
@@ -174,6 +235,10 @@
   .attendees-top {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .organizer-hero-actions {
+    grid-template-columns: 1fr;
   }
 
   .table-header,

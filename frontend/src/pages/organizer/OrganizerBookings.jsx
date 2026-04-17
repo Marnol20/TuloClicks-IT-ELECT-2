@@ -42,10 +42,10 @@ function OrganizerBookings() {
   async function handleCheckIn(id) {
     try {
       await api.patch(`/bookings/${id}/check-in`)
-      alert('Attendee checked in successfully')
-      fetchBookings(selectedEvent)
+      setError('')
+      fetchBookings()
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to check in attendee')
+      setError(error.response?.data?.error || 'Failed to check in attendee')
     }
   }
 

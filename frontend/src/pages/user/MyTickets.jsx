@@ -8,6 +8,7 @@ function MyTickets() {
   const navigate = useNavigate()
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [cancelLoadingId, setCancelLoadingId] = useState(null)
@@ -43,10 +44,10 @@ function MyTickets() {
       await api.patch(`/bookings/${id}/cancel`, {
         cancellation_reason: 'Cancelled by user'
       })
-      alert('Booking cancelled successfully')
+      setError('')
       fetchMyTickets()
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to cancel booking')
+      setError(error.response?.data?.error || 'Failed to cancel booking')
     } finally {
       setCancelLoadingId(null)
     }

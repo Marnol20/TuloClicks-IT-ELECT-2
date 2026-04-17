@@ -34,10 +34,10 @@ function ApplyOrganizer() {
         instagram_link: instagramLink
       })
 
-      alert('Organizer application submitted successfully')
+      setError('')
       navigate('/home')
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to submit application')
+      setError(error.response?.data?.error || 'Failed to submit application')
     } finally {
       setLoading(false)
     }

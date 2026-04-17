@@ -16,6 +16,24 @@
   gap: 24px;
 }
 
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sidebar-brand-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #2563eb, #22c55e);
+  color: white;
+  font-size: 18px;
+  font-weight: 800;
+}
+
 .sidebar-logo h2 {
   margin: 0;
   font-size: 22px;

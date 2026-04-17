@@ -50,7 +50,7 @@ function UserViewHeader() {
   return (
     <header className="user-view-header">
       <div className="user-view-brand" onClick={handleLogoClick}>
-        <div className="user-view-brand-mark">T</div>
+        <div className="user-view-brand-mark logo-mark-hover">T</div>
         <div className="user-view-brand-text">
           <h2>TuloClicks</h2>
           <p>Event Platform</p>

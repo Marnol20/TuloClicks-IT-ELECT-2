@@ -7,6 +7,7 @@ function OrganizerEvents() {
   const [categories, setCategories] = useState([])
   const [venues, setVenues] = useState([])
   const [showForm, setShowForm] = useState(false)
+  const [error, setError] = useState('')
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -55,7 +56,7 @@ function OrganizerEvents() {
 
   async function handleCreate() {
     if (!title || !description || !categoryId || !startDate || !startTime) {
-      alert('Please fill in all required fields')
+      setError('Please fill in all required fields')
       return
     }
 
@@ -71,7 +72,7 @@ function OrganizerEvents() {
         custom_location: customLocation || null
       })
 
-      alert('Event created successfully')
+      setError('')
       setShowForm(false)
       setTitle('')
       setDescription('')
@@ -83,17 +84,17 @@ function OrganizerEvents() {
       setCustomLocation('')
       fetchEvents()
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to create event')
+      setError(error.response?.data?.error || 'Failed to create event')
     }
   }
 
   async function handleSubmitForApproval(id) {
     try {
       await api.patch(`/events/${id}/submit`)
-      alert('Event submitted for approval')
+      setError('')
       fetchEvents()
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to submit event')
+      setError(error.response?.data?.error || 'Failed to submit event')
     }
   }
 

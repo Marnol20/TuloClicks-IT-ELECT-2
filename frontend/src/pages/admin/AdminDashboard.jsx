@@ -52,13 +52,14 @@ function AdminDashboard() {
   ]
 
   return (
-    <main className="dashboard clean">
-
-      {/* HEADER */}
-      <div className="dashboard-header clean">
+    <main className="dashboard">
+      <div className="dashboard-hero">
         <div>
-          <h2>Admin Dashboard</h2>
-          <p>System overview and platform control</p>
+          <p className="dashboard-hero-label">Admin overview</p>
+          <h1>Run the platform with confidence</h1>
+          <p>
+            Track approvals, payments, and support activity from a clean executive dashboard designed for fast decisions.
+          </p>
         </div>
 
         <button
@@ -69,14 +70,19 @@ function AdminDashboard() {
         </button>
       </div>
 
-      {/* STATS */}
+      <div className="dashboard-header clean">
+        <div>
+          <h2>Key Metrics</h2>
+          <p>Live platform summary</p>
+        </div>
+      </div>
+
       <div className="stats-grid clean">
         {cards.map((c) => (
           <StatCard key={c.label} label={c.label} value={c.value} icon={c.icon} />
         ))}
       </div>
 
-      {/* QUICK ACTIONS */}
       <div className="dashboard-section">
         <h3>Quick Actions</h3>
 
@@ -98,7 +104,6 @@ function AdminDashboard() {
           </button>
         </div>
       </div>
-
     </main>
   )
 }
