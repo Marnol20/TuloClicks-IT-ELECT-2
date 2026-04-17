@@ -8,6 +8,8 @@ function OrganizerEvents() {
   const [venues, setVenues] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [error, setError] = useState('')
+  const [editingId, setEditingId] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -60,8 +62,9 @@ function OrganizerEvents() {
       return
     }
 
+    setLoading(true)
     try {
-      await api.post('/events', {
+      const payload = {
         title,
         description,
         category_id: Number(categoryId),
@@ -70,21 +73,40 @@ function OrganizerEvents() {
         start_time: startTime,
         location_type: locationType,
         custom_location: customLocation || null
-      })
+      }
+
+      if (editingId) {
+        // UPDATE
+        await api.put(`/events/${editingId}`, payload)
+      } else {
+        // CREATE
+        await api.post('/events', payload)
+      }
 
       setError('')
-      setShowForm(false)
-      setTitle('')
-      setDescription('')
-      setCategoryId('')
-      setVenueId('')
-      setStartDate('')
-      setStartTime('')
-      setLocationType('physical')
-      setCustomLocation('')
+      resetForm()
       fetchEvents()
     } catch (error) {
-      setError(error.response?.data?.error || 'Failed to create event')
+      setError(error.response?.data?.error || 'Failed to save event')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleDelete(id) {
+    if (!window.confirm('Are you sure you want to delete this event?')) {
+      return
+    }
+
+     setLoading(true)
+    try {
+      await api.delete(`/events/${id}`)
+      setError('')
+      fetchEvents()
+    } catch (error) {
+      setError(error.response?.data?.error || 'Failed to delete event')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -96,6 +118,33 @@ function OrganizerEvents() {
     } catch (error) {
       setError(error.response?.data?.error || 'Failed to submit event')
     }
+  }
+
+  function handleEdit(event) {
+    setEditingId(event.id)
+    setTitle(event.title)
+    setDescription(event.description)
+    setCategoryId(event.category_id)
+    setVenueId(event.venue_id || '')
+    setStartDate(event.start_date)
+    setStartTime(event.start_time)
+    setLocationType(event.location_type || 'physical')
+    setCustomLocation(event.custom_location || '')
+    setShowForm(true)
+    window.scrollTo(0, 0)
+  }
+
+  function resetForm() {
+    setShowForm(false)
+    setEditingId(null)
+    setTitle('')
+    setDescription('')
+    setCategoryId('')
+    setVenueId('')
+    setStartDate('')
+    setStartTime('')
+    setLocationType('physical')
+    setCustomLocation('')
   }
 
   function formatDate(date) {
@@ -120,7 +169,7 @@ function OrganizerEvents() {
 
       {showForm && (
         <div className="create-form">
-          <h3>Create New Event</h3>
+          <h3>{editingId ? 'Edit Event' : 'Create New Event'}</h3>
 
           <div className="form-grid">
             <div className="form-group">
@@ -130,6 +179,7 @@ function OrganizerEvents() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Enter event title"
+                disabled={loading}
               />
             </div>
 
@@ -139,6 +189,7 @@ function OrganizerEvents() {
                 className="form-input"
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
+                disabled={loading}
               >
                 <option value="">Select Category</option>
                 {categories.map((category) => (
@@ -156,6 +207,7 @@ function OrganizerEvents() {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
+                disabled={loading}
               />
             </div>
 
@@ -166,6 +218,7 @@ function OrganizerEvents() {
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
+                disabled={loading}
               />
             </div>
 
@@ -175,6 +228,7 @@ function OrganizerEvents() {
                 className="form-input"
                 value={venueId}
                 onChange={(e) => setVenueId(e.target.value)}
+                disabled={loading}
               >
                 <option value="">Select Venue</option>
                 {venues.map((venue) => (
@@ -191,6 +245,7 @@ function OrganizerEvents() {
                 className="form-input"
                 value={locationType}
                 onChange={(e) => setLocationType(e.target.value)}
+                disabled={loading}
               >
                 <option value="physical">Physical</option>
                 <option value="online">Online</option>
@@ -205,6 +260,7 @@ function OrganizerEvents() {
                 value={customLocation}
                 onChange={(e) => setCustomLocation(e.target.value)}
                 placeholder="Optional custom location"
+                disabled={loading}
               />
             </div>
 
@@ -215,15 +271,30 @@ function OrganizerEvents() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Write a short event description"
+                disabled={loading}
               />
             </div>
           </div>
 
+          {error && (
+            <p className="form-error" style={{ color: '#ef4444', marginBottom: '16px', fontSize: '14px' }}>
+              {error}
+            </p>
+          )}
+
           <div className="form-buttons">
-            <button className="create-btn" onClick={handleCreate}>
-              Create Event
+            <button 
+              className="create-btn" 
+              onClick={handleCreate}
+              disabled={loading}
+            >
+              {loading ? 'Saving...' : editingId ? 'Update Event' : 'Create Event'}
             </button>
-            <button className="cancel-btn" onClick={() => setShowForm(false)}>
+            <button 
+              className="cancel-btn" 
+              onClick={resetForm}
+              disabled={loading}
+            >
               Cancel
             </button>
           </div>
@@ -281,10 +352,26 @@ function OrganizerEvents() {
               </div>
             </div>
 
-            <div style={{ marginTop: '16px' }}>
+            <div style={{ marginTop: '16px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                className="create-btn"
+                onClick={() => handleEdit(event)}
+                disabled={loading}
+              >
+                Edit
+              </button>
+              <button
+                className="cancel-btn"
+                onClick={() => handleDelete(event.id)}
+                disabled={loading}
+                style={{ backgroundColor: '#ef4444', borderColor: '#ef4444' }}
+              >
+                Delete
+              </button>
               <button
                 className="create-btn"
                 onClick={() => handleSubmitForApproval(event.id)}
+                disabled={loading}
               >
                 Submit for Approval
               </button>

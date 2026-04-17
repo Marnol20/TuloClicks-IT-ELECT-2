@@ -639,11 +639,27 @@ router.patch('/:id/feature', authMiddleware, roleMiddleware('admin'), async (req
 });
 
 /**
- * ADMIN: delete event
+ * ORGANIZER/ADMIN: delete event
  */
-router.delete('/:id', authMiddleware, roleMiddleware('admin'), async (req, res) => {
+router.delete('/:id', authMiddleware, roleMiddleware('organizer', 'admin'), async (req, res) => {
   try {
     const eventId = Number(req.params.id);
+
+    const [events] = await db.query(
+      `SELECT * FROM events WHERE id = ? LIMIT 1`,
+      [eventId]
+    );
+
+    if (events.length === 0) {
+      return res.status(404).json({ error: 'Event not found.' });
+    }
+
+    const event = events[0];
+
+    // Authorization: Only organizer (who created it) or admin can delete
+    if (req.user.role !== 'admin' && event.organizer_id !== req.user.id) {
+      return res.status(403).json({ error: 'You can only delete your own events.' });
+    }
 
     const [result] = await db.query(
       `DELETE FROM events WHERE id = ?`,

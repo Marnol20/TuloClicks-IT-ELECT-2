@@ -6,6 +6,8 @@ function Venues() {
   const [venues, setVenues] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [error, setError] = useState('')
+  const [editingId, setEditingId] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   const [name, setName] = useState('')
   const [address, setAddress] = useState('')
@@ -38,30 +40,75 @@ function Venues() {
       return
     }
 
+    setLoading(true)
     try {
-      await api.post('/venues', {
+      const payload = {
         name,
         address,
         city,
         province,
         country,
         postal_code: postalCode,
-        capacity,
+        capacity: Number(capacity),
         contact_person: contactPerson,
         contact_phone: contactPhone,
         contact_email: contactEmail
-      })
+      }
+
+      if (editingId) {
+        // UPDATE
+        await api.patch(`/venues/${editingId}`, payload)
+      } else {
+        // CREATE
+        await api.post('/venues', payload)
+      }
 
       setError('')
       resetForm()
       fetchVenues()
     } catch (error) {
-      setError(error.response?.data?.error || 'Failed to create venue')
+      setError(error.response?.data?.error || 'Failed to save venue')
+    } finally {
+      setLoading(false)
     }
+  }
+
+  async function handleDelete(id) {
+    if (!window.confirm('Are you sure you want to delete this venue?')) {
+      return
+    }
+
+    setLoading(true)
+    try {
+      await api.delete(`/venues/${id}`)
+      setError('')
+      fetchVenues()
+    } catch (error) {
+      setError(error.response?.data?.error || 'Failed to delete venue')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function handleEdit(venue) {
+    setEditingId(venue.id)
+    setName(venue.name)
+    setAddress(venue.address)
+    setCity(venue.city)
+    setProvince(venue.province || '')
+    setCountry(venue.country)
+    setPostalCode(venue.postal_code || '')
+    setCapacity(venue.capacity)
+    setContactPerson(venue.contact_person || '')
+    setContactPhone(venue.contact_phone || '')
+    setContactEmail(venue.contact_email || '')
+    setShowForm(true)
+    window.scrollTo(0, 0)
   }
 
   function resetForm() {
     setShowForm(false)
+    setEditingId(null)
     setName('')
     setAddress('')
     setCity('')
@@ -91,7 +138,7 @@ function Venues() {
 
       {showForm && (
         <div className="create-form">
-          <h3>Add New Venue</h3>
+          <h3>{editingId ? 'Edit Venue' : 'Add New Venue'}</h3>
 
           <div className="form-grid">
             <div className="form-group">
@@ -101,6 +148,7 @@ function Venues() {
                 placeholder="Enter venue name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                disabled={loading}
               />
             </div>
 
@@ -111,6 +159,7 @@ function Venues() {
                 placeholder="Enter full address"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
+                disabled={loading}
               />
             </div>
 
@@ -121,6 +170,7 @@ function Venues() {
                 placeholder="Enter city"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
+                disabled={loading}
               />
             </div>
 
@@ -131,6 +181,7 @@ function Venues() {
                 placeholder="Enter province"
                 value={province}
                 onChange={(e) => setProvince(e.target.value)}
+                disabled={loading}
               />
             </div>
 
@@ -141,6 +192,7 @@ function Venues() {
                 placeholder="Enter country"
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
+                disabled={loading}
               />
             </div>
 
@@ -151,6 +203,7 @@ function Venues() {
                 placeholder="Enter postal code"
                 value={postalCode}
                 onChange={(e) => setPostalCode(e.target.value)}
+                disabled={loading}
               />
             </div>
 
@@ -162,6 +215,7 @@ function Venues() {
                 placeholder="Enter capacity"
                 value={capacity}
                 onChange={(e) => setCapacity(e.target.value)}
+                disabled={loading}
               />
             </div>
 
@@ -172,6 +226,7 @@ function Venues() {
                 placeholder="Enter contact person"
                 value={contactPerson}
                 onChange={(e) => setContactPerson(e.target.value)}
+                disabled={loading}
               />
             </div>
 
@@ -182,6 +237,7 @@ function Venues() {
                 placeholder="Enter contact phone"
                 value={contactPhone}
                 onChange={(e) => setContactPhone(e.target.value)}
+                disabled={loading}
               />
             </div>
 
@@ -192,6 +248,7 @@ function Venues() {
                 placeholder="Enter contact email"
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
+                disabled={loading}
               />
             </div>
           </div>
@@ -203,10 +260,18 @@ function Venues() {
           )}
 
           <div className="form-buttons">
-            <button className="create-btn" onClick={handleCreate}>
-              Create Venue
+            <button 
+              className="create-btn" 
+              onClick={handleCreate}
+              disabled={loading}
+            >
+              {loading ? 'Saving...' : editingId ? 'Update Venue' : 'Create Venue'}
             </button>
-            <button className="cancel-btn" onClick={resetForm}>
+            <button 
+              className="cancel-btn" 
+              onClick={resetForm}
+              disabled={loading}
+            >
               Cancel
             </button>
           </div>
@@ -255,6 +320,24 @@ function Venues() {
                   <span className="info-label">Email</span>
                   <span className="info-value">{venue.contact_email || 'N/A'}</span>
                 </div>
+              </div>
+
+              <div style={{ marginTop: '16px', display: 'flex', gap: '10px' }}>
+                <button
+                  className="create-btn"
+                  onClick={() => handleEdit(venue)}
+                  disabled={loading}
+                >
+                  Edit
+                </button>
+                <button
+                  className="cancel-btn"
+                  onClick={() => handleDelete(venue.id)}
+                  disabled={loading}
+                  style={{ backgroundColor: '#ef4444', borderColor: '#ef4444' }}
+                >
+                  Delete
+                </button>
               </div>
             </div>
           ))
