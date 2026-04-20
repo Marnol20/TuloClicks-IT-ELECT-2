@@ -22,6 +22,30 @@
   box-shadow: var(--shadow-soft);
 }
 
+.signup-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 24px;
+  transition: color 0.2s ease;
+}
+
+.signup-back-btn:hover {
+  color: #ffffff;
+}
+
+.signup-back-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
 .signup-container h2 {
   margin: 0 0 8px;
   font-size: 28px;

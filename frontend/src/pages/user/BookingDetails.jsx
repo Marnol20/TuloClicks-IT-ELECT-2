@@ -8,12 +8,14 @@ import {
 } from 'lucide-react'
 import { QRCodeCanvas } from 'qrcode.react'
 import html2canvas from 'html2canvas'
+import { useToast } from '../../components/common/ToastContext'
 import '../../styles/EventDetails.css'
 import api from '../../services/api'
 
 function BookingDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { addToast } = useToast()
   const ticketRef = useRef(null)
 
   const [booking, setBooking] = useState(null)
@@ -66,9 +68,11 @@ function BookingDetails() {
       link.download = `${booking.booking_reference}.png`
       link.href = canvas.toDataURL('image/png')
       link.click()
+
+      addToast('Ticket downloaded successfully!', 'success')
     } catch (error) {
       console.error('Download ticket error:', error)
-      alert('Failed to download ticket.')
+      addToast('Failed to download ticket.', 'error')
     } finally {
       setDownloading(false)
     }

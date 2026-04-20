@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import { useToast } from '../../components/common/ToastContext'
 import '../../styles/Attendees.css'
 import api from '../../services/api'
 
 function OrganizerApprovals() {
+  const { addToast } = useToast()
   const [organizers, setOrganizers] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -26,10 +28,10 @@ function OrganizerApprovals() {
   async function handleApprove(id) {
     try {
       await api.patch(`/organizers/${id}/approve`)
-      alert('Organizer approved successfully')
+      addToast('Organizer approved successfully', 'success')
       fetchOrganizers()
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to approve organizer')
+      addToast(error.response?.data?.error || 'Failed to approve organizer', 'error')
     }
   }
 
@@ -41,10 +43,10 @@ function OrganizerApprovals() {
       await api.patch(`/organizers/${id}/reject`, {
         rejection_reason: reason
       })
-      alert('Organizer rejected successfully')
+      addToast('Organizer rejected successfully', 'success')
       fetchOrganizers()
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to reject organizer')
+      addToast(error.response?.data?.error || 'Failed to reject organizer', 'error')
     }
   }
 

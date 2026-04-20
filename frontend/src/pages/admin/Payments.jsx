@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import { useToast } from '../../components/common/ToastContext'
 import '../../styles/Attendees.css'
 import api from '../../services/api'
 
 function Payments() {
+  const { addToast } = useToast()
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -26,10 +28,10 @@ function Payments() {
   async function handleMarkSuccess(id) {
     try {
       await api.patch(`/payments/${id}/success`)
-      alert('Payment marked as successful')
+      addToast('Payment marked as successful', 'success')
       fetchPayments()
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to update payment')
+      addToast(error.response?.data?.error || 'Failed to update payment', 'error')
     }
   }
 
@@ -38,10 +40,10 @@ function Payments() {
       await api.patch(`/payments/${id}/refund`, {
         refund_reason: 'Refund processed by admin'
       })
-      alert('Payment refunded successfully')
+      addToast('Payment refunded successfully', 'success')
       fetchPayments()
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to refund payment')
+      addToast(error.response?.data?.error || 'Failed to refund payment', 'error')
     }
   }
 

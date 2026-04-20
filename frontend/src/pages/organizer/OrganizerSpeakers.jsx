@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import { useToast } from '../../components/common/ToastContext'
 import '../../styles/Events.css'
 import api from '../../services/api'
 
 function OrganizerSpeakers() {
+  const { addToast } = useToast()
   const [events, setEvents] = useState([])
   const [selectedEvent, setSelectedEvent] = useState('')
   const [speakers, setSpeakers] = useState([])
@@ -48,7 +50,7 @@ function OrganizerSpeakers() {
 
   async function handleCreate() {
     if (!selectedEvent || !name) {
-      alert('Please select an event and enter a speaker name')
+      addToast('Please select an event and enter a speaker name', 'warning')
       return
     }
 
@@ -62,7 +64,7 @@ function OrganizerSpeakers() {
         bio
       })
 
-      alert('Speaker created successfully')
+      addToast('Speaker created successfully', 'success')
       setShowForm(false)
       setName('')
       setTitle('')

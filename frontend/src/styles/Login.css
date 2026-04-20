@@ -83,6 +83,30 @@
   padding: 56px 38px 34px;
 }
 
+.login-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 24px;
+  transition: color 0.2s ease;
+}
+
+.login-back-btn:hover {
+  color: #ffffff;
+}
+
+.login-back-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
 .brand-description {
   margin: 0 auto 26px;
   max-width: 360px;

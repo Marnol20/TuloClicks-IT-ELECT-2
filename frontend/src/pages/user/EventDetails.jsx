@@ -1,28 +1,21 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import api from '../../services/api'
 import {
   MapPin,
   Clock,
   Calendar
 } from 'lucide-react'
+import BookingWizard from '../../components/user/BookingWizard'
 import '../../styles/EventDetails.css'
-import api from '../../services/api'
 
 function EventDetails() {
   const { id } = useParams()
-  const navigate = useNavigate()
 
   const [event, setEvent] = useState(null)
   const [speakers, setSpeakers] = useState([])
-  const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
-  const [selectedTicketId, setSelectedTicketId] = useState('')
-  const [quantity, setQuantity] = useState(1)
-  const [error, setError] = useState('')
-  const [attendeeName, setAttendeeName] = useState('')
-  const [attendeeEmail, setAttendeeEmail] = useState('')
-  const [attendeePhone, setAttendeePhone] = useState('')
-  const [submitting, setSubmitting] = useState(false)
+  const [showBooking, setShowBooking] = useState(false)
 
   useEffect(() => {
     fetchEventDetails()
@@ -32,20 +25,17 @@ function EventDetails() {
     try {
       setLoading(true)
 
-      const [eventRes, speakersRes, ticketsRes] = await Promise.all([
+      const [eventRes, speakersRes] = await Promise.all([
         api.get(`/events/${id}`),
-        api.get(`/speakers/event/${id}`),
-        api.get(`/tickets/event/${id}`)
+        api.get(`/speakers/event/${id}`)
       ])
 
       setEvent(eventRes.data)
       setSpeakers(speakersRes.data || [])
-      setTickets(ticketsRes.data || [])
     } catch (error) {
       console.error('Fetch event details error:', error)
       setEvent(null)
       setSpeakers([])
-      setTickets([])
     } finally {
       setLoading(false)
     }
@@ -62,55 +52,6 @@ function EventDetails() {
     if (event.custom_location) return event.custom_location
     if (event.venue_name) return event.venue_name
     return 'Location not available'
-  }
-
-  async function handleBook() {
-    const token = localStorage.getItem('token')
-
-    if (!token) {
-      setError('Please log in first to book tickets')
-      navigate('/login')
-      return
-    }
-
-    if (!selectedTicketId || !attendeeName || !attendeeEmail || !quantity) {
-      setError('Please fill in all booking fields')
-      return
-    }
-
-    try {
-      setSubmitting(true)
-
-      const bookingRes = await api.post('/bookings', {
-        event_id: Number(id),
-        attendee_name: attendeeName,
-        attendee_email: attendeeEmail,
-        attendee_phone: attendeePhone,
-        items: [
-          {
-            ticket_type_id: Number(selectedTicketId),
-            quantity: Number(quantity)
-          }
-        ]
-      })
-
-      const totalAmount = bookingRes.data.total_amount
-      const bookingId = bookingRes.data.booking_id
-
-      await api.post('/payments', {
-        booking_id: bookingId,
-        provider: 'manual',
-        payment_method: 'manual',
-        amount: totalAmount
-      })
-
-      setError('')
-      navigate('/home/tickets')
-    } catch (error) {
-      setError(error.response?.data?.error || 'Failed to create booking')
-    } finally {
-      setSubmitting(false)
-    }
   }
 
   if (loading) {
@@ -198,70 +139,31 @@ function EventDetails() {
           </div>
 
           <div className="sidebar-content">
-            <div className="registration-section">
-              <h3>Book Ticket</h3>
-              <div className="registration-card">
-                <div className="registration-info">
-                  <h4>{event.title}</h4>
-                  <p className="registration-date">{formatDate(event.start_date)}</p>
-                  <p className="registration-time">{event.start_time || 'Time not available'}</p>
-                  <p className="registration-location">{getLocation()}</p>
-                </div>
-
-                <div style={{ marginTop: '16px', display: 'grid', gap: '10px' }}>
-                  <select
-                    className="form-input"
-                    value={selectedTicketId}
-                    onChange={(e) => setSelectedTicketId(e.target.value)}
+            {!showBooking ? (
+              <div className="booking-popup">
+                <div className="booking-popup-content">
+                  <div className="booking-popup-icon">🎫</div>
+                  <h3>Ready to Attend?</h3>
+                  <p>Secure your spot for this event. Limited tickets available!</p>
+                  <button 
+                    className="btn-book-ticket"
+                    onClick={() => setShowBooking(true)}
                   >
-                    <option value="">Select Ticket</option>
-                    {tickets.map((ticket) => (
-                      <option key={ticket.id} value={ticket.id}>
-                        {ticket.name} - ₱{Number(ticket.price).toLocaleString()}
-                      </option>
-                    ))}
-                  </select>
-
-                  <input
-                    className="form-input"
-                    type="number"
-                    min="1"
-                    placeholder="Quantity"
-                    value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
-                  />
-
-                  <input
-                    className="form-input"
-                    placeholder="Full Name"
-                    value={attendeeName}
-                    onChange={(e) => setAttendeeName(e.target.value)}
-                  />
-
-                  <input
-                    className="form-input"
-                    placeholder="Email"
-                    value={attendeeEmail}
-                    onChange={(e) => setAttendeeEmail(e.target.value)}
-                  />
-
-                  <input
-                    className="form-input"
-                    placeholder="Phone"
-                    value={attendeePhone}
-                    onChange={(e) => setAttendeePhone(e.target.value)}
-                  />
-
-                  <button
-                    className="register-btn"
-                    onClick={handleBook}
-                    disabled={submitting}
-                  >
-                    {submitting ? 'Booking...' : 'Book Now'}
+                    Book a Ticket
                   </button>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="booking-wizard-container">
+                <button 
+                  className="btn-back-to-event"
+                  onClick={() => setShowBooking(false)}
+                >
+                  ← Back to Event
+                </button>
+                <BookingWizard />
+              </div>
+            )}
           </div>
         </div>
       </div>

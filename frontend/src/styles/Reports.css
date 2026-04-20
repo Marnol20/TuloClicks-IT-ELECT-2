@@ -1,9 +1,9 @@
 /* ===== PAGE ===== */
 .reports-page {
   padding: 24px;
-  background: #0f172a;
+  background: var(--bg);
   min-height: 100vh;
-  color: #e2e8f0;
+  color: var(--text);
 }
 
 /* ===== HEADER ===== */

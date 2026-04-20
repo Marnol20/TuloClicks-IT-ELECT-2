@@ -2,16 +2,21 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import '../../styles/UserView.css'
 import api from '../../services/api'
+import { useToast } from '../../components/common/ToastContext'
+import ConfirmModal from '../../components/common/ConfirmModal'
 
 
 function MyTickets() {
   const navigate = useNavigate()
+  const { addToast } = useToast()
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [cancelLoadingId, setCancelLoadingId] = useState(null)
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [selectedBookingId, setSelectedBookingId] = useState(null)
 
   useEffect(() => {
     fetchMyTickets()
@@ -35,21 +40,31 @@ function MyTickets() {
     return new Date(date).toLocaleDateString()
   }
 
-  async function handleCancelBooking(id) {
-    const ok = window.confirm('Are you sure you want to cancel this booking?')
-    if (!ok) return
+  function openCancelModal(id) {
+    setSelectedBookingId(id)
+    setShowCancelModal(true)
+  }
 
+  function closeCancelModal() {
+    setShowCancelModal(false)
+    setSelectedBookingId(null)
+  }
+
+  async function handleCancelBooking(id) {
     try {
       setCancelLoadingId(id)
       await api.patch(`/bookings/${id}/cancel`, {
         cancellation_reason: 'Cancelled by user'
       })
       setError('')
+      addToast('Booking cancelled successfully', 'success')
       fetchMyTickets()
     } catch (error) {
       setError(error.response?.data?.error || 'Failed to cancel booking')
+      addToast(error.response?.data?.error || 'Failed to cancel booking', 'error')
     } finally {
       setCancelLoadingId(null)
+      closeCancelModal()
     }
   }
 
@@ -133,7 +148,7 @@ function MyTickets() {
                 {ticket.booking_status !== 'cancelled' && ticket.booking_status !== 'checked_in' && (
                   <button
                     className="ticket-action-btn danger"
-                    onClick={() => handleCancelBooking(ticket.id)}
+                    onClick={() => openCancelModal(ticket.id)}
                     disabled={cancelLoadingId === ticket.id}
                   >
                     {cancelLoadingId === ticket.id ? 'Cancelling...' : 'Cancel Booking'}
@@ -157,6 +172,17 @@ function MyTickets() {
           <p>Try changing your search or status filter.</p>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={showCancelModal}
+        title="Cancel Booking"
+        message="Are you sure you want to cancel this booking? This action cannot be undone."
+        onConfirm={() => selectedBookingId && handleCancelBooking(selectedBookingId)}
+        onCancel={closeCancelModal}
+        confirmText="Yes, Cancel"
+        cancelText="No, Keep It"
+        isLoading={cancelLoadingId === selectedBookingId}
+      />
     </section>
   )
 }

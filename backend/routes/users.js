@@ -6,6 +6,70 @@ const roleMiddleware = require('../middleware/roleMiddleware');
 const router = express.Router();
 
 /**
+ * USER: update own settings (stubbed - requires schema update)
+ */
+// router.put('/settings', authMiddleware, async (req, res) => {
+//   try {
+//     // This endpoint requires additional columns in users table:
+//     // email_notifications, sms_notifications, event_reminders,
+//     // marketing_emails, theme, language, two_factor_auth
+//     return res.status(501).json({ error: 'Settings update not implemented yet.' })
+//   } catch (error) {
+//     console.error('Update settings error:', error)
+//     return res.status(500).json({ error: 'Server error updating settings.' })
+//   }
+// })
+
+/**
+ * USER: update own profile
+ */
+router.put('/profile', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id
+    const { name, phone } = req.body
+
+    const updates = []
+    const values = []
+
+    if (name !== undefined) {
+      updates.push('name = ?')
+      values.push(String(name).trim())
+    }
+
+    if (phone !== undefined) {
+      updates.push('phone = ?')
+      values.push(phone ? String(phone).trim() : null)
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ error: 'No valid fields provided for update.' })
+    }
+
+    values.push(userId)
+
+    const [result] = await db.query(
+      `UPDATE users SET ${updates.join(', ')} WHERE id = ?`,
+      values
+    )
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'User not found.' })
+    }
+
+    // Return updated user data
+    const [users] = await db.query(
+      `SELECT id, name, email, role, phone, created_at FROM users WHERE id = ?`,
+      [userId]
+    )
+
+    return res.json(users[0])
+  } catch (error) {
+    console.error('Update profile error:', error)
+    return res.status(500).json({ error: 'Server error updating profile.' })
+  }
+})
+
+/**
  * ADMIN: GET all users
  */
 router.get('/', authMiddleware, roleMiddleware('admin'), async (req, res) => {

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import '../../styles/Login.css'
 import { loginUser } from '../../services/auth'
 
@@ -72,6 +73,14 @@ function Login() {
 
         <div className="login-card">
           <div className="login-card-body">
+            <button
+              className="login-back-btn"
+              onClick={() => navigate('/')}
+            >
+              <ArrowLeft size={18} />
+              Back to Home
+            </button>
+
             <p className="brand-description">
               Launch, manage, and grow your events with TuloClicks. From ticketing and attendee tracking to organizer workflows, our platform turns every event into an experience.
             </p>

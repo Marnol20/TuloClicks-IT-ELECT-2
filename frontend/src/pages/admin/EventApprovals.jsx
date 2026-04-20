@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import { useToast } from '../../components/common/ToastContext'
 import '../../styles/Attendees.css'
 import api from '../../services/api'
 
 function EventApprovals() {
+  const { addToast } = useToast()
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -28,10 +30,10 @@ function EventApprovals() {
       await api.patch(`/events/${id}/approve`, {
         approval_notes: 'Approved by admin'
       })
-      alert('Event approved successfully')
+      addToast('Event approved successfully', 'success')
       fetchEvents()
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to approve event')
+      addToast(error.response?.data?.error || 'Failed to approve event', 'error')
     }
   }
 
@@ -43,10 +45,10 @@ function EventApprovals() {
       await api.patch(`/events/${id}/reject`, {
         approval_notes: notes
       })
-      alert('Event rejected successfully')
+      addToast('Event rejected successfully', 'success')
       fetchEvents()
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to reject event')
+      addToast(error.response?.data?.error || 'Failed to reject event', 'error')
     }
   }
 
@@ -55,10 +57,10 @@ function EventApprovals() {
       await api.patch(`/events/${id}/feature`, {
         featured: true
       })
-      alert('Event featured successfully')
+      addToast('Event featured successfully', 'success')
       fetchEvents()
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to feature event')
+      addToast(error.response?.data?.error || 'Failed to feature event', 'error')
     }
   }
 

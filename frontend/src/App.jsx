@@ -6,6 +6,8 @@ import './styles/Index.css'
 
 // Components
 import ProtectedRoute from './components/common/ProtectedRoute'
+import { ToastProvider } from './components/common/ToastContext'
+import { ThemeProvider } from './components/common/ThemeContext'
 
 // Layouts
 import AdminLayout from './components/layouts/AdminLayout'
@@ -15,6 +17,9 @@ import UserLayout from './components/layouts/UserLayout'
 // Auth
 import Login from './pages/auth/Login'
 import SignUp from './pages/auth/SignUp'
+
+// Landing
+import LandingPage from './pages/LandingPage'
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard'
@@ -42,14 +47,18 @@ import EventDetails from './pages/user/EventDetails'
 import MyTickets from './pages/user/MyTickets'
 import ApplyOrganizer from './pages/user/ApplyOrganizer'
 import BookingDetails from './pages/user/BookingDetails'
+import Profile from './pages/user/Profile'
+import Settings from './pages/user/Settings'
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <ThemeProvider>
+      <ToastProvider>
+        <BrowserRouter>
+        <Routes>
 
-        {/* Redirect root */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        {/* Landing Page (Public) */}
+        <Route path="/" element={<LandingPage />} />
 
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />
@@ -84,6 +93,24 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['user']}>
                 <ApplyOrganizer />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="profile"
+            element={
+              <ProtectedRoute allowedRoles={['user', 'organizer', 'admin']}>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="settings"
+            element={
+              <ProtectedRoute allowedRoles={['user', 'organizer', 'admin']}>
+                <Settings />
               </ProtectedRoute>
             }
           />
@@ -131,7 +158,9 @@ function App() {
 
       </Routes>
     </BrowserRouter>
-  )
+    </ToastProvider>
+  </ThemeProvider>
+)
 }
 
 export default App

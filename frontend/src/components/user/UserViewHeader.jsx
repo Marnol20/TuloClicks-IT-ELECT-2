@@ -1,11 +1,23 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { getCurrentUser, logoutUser } from '../../services/auth'
 import NotificationBell from '../common/NotificationBell'
+import ProfileDropdown from '../common/ProfileDropdown'
+import '../../styles/ProfileDropdown.css'
+import React, { useReducer, useEffect } from 'react'
 
 function UserViewHeader() {
   const location = useLocation()
   const navigate = useNavigate()
   const user = getCurrentUser()
+
+  // Force re-render when profile is updated (via custom event)
+  const [, forceUpdate] = useReducer(x => x + 1, 0)
+
+  useEffect(() => {
+    const handler = () => forceUpdate()
+    window.addEventListener('profileUpdated', handler)
+    return () => window.removeEventListener('profileUpdated', handler)
+  }, [])
 
   const navItems = [
     { label: 'Home', path: '/home' },
@@ -18,14 +30,6 @@ function UserViewHeader() {
       return location.pathname === '/home'
     }
     return location.pathname.startsWith(path)
-  }
-
-  function handleLogout() {
-    const ok = window.confirm('Are you sure you want to logout?')
-    if (!ok) return
-
-    logoutUser()
-    navigate('/login')
   }
 
   function handleLogoClick() {
@@ -81,15 +85,7 @@ function UserViewHeader() {
           </button>
         )}
 
-        {user && (
-          <div className="user-view-user-chip">
-            <span className="user-view-user-name">{user.name}</span>
-          </div>
-        )}
-
-        <button className="user-view-signin" onClick={handleLogout}>
-          Logout
-        </button>
+        {user && <ProfileDropdown />}
       </div>
     </header>
   )

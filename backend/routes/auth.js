@@ -130,17 +130,18 @@ router.post('/login', async (req, res) => {
       req
     })
 
-    return res.json({
-      message: 'Login successful.',
-      token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        status: user.status
-      }
-    })
+     return res.json({
+       message: 'Login successful.',
+       token,
+       user: {
+         id: user.id,
+         name: user.name,
+         email: user.email,
+         phone: user.phone || null,
+         role: user.role,
+         status: user.status
+       }
+     })
   } catch (error) {
     console.error('Login error:', error)
     return res.status(500).json({ error: 'Server error during login.' })

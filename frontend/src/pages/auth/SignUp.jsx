@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
+import { useToast } from '../../components/common/ToastContext'
 import '../../styles/SignUp.css'
 import api from '../../services/api'
 
 function SignUp() {
   const navigate = useNavigate()
+  const { addToast } = useToast()
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -90,10 +93,32 @@ function SignUp() {
         password
       })
 
-      alert('Account created successfully')
-      navigate('/login')
+      addToast('Account created successfully!', 'success')
+      
+      // Auto-login after signup by fetching user data
+      const res = await api.post('/auth/login', {
+        email: email.trim().toLowerCase(),
+        password
+      })
+      
+      const { token, user } = res.data
+      localStorage.setItem('token', token)
+      localStorage.setItem('user', JSON.stringify(user))
+      
+      addToast('Welcome to TuloClicks!', 'success')
+      
+      // Redirect based on role
+      if (user.role === 'admin') {
+        navigate('/admin')
+      } else if (user.role === 'organizer') {
+        navigate('/organizer')
+      } else {
+        navigate('/home')
+      }
     } catch (err) {
-      setError(err.response?.data?.error || 'Signup failed')
+      const errorMsg = err.response?.data?.error || 'Signup failed'
+      setError(errorMsg)
+      addToast(errorMsg, 'error')
     } finally {
       setLoading(false)
     }
@@ -102,6 +127,14 @@ function SignUp() {
   return (
     <div className="signup-page">
       <div className="signup-container">
+        <button
+          className="signup-back-btn"
+          onClick={() => navigate('/')}
+        >
+          <ArrowLeft size={18} />
+          Back to Home
+        </button>
+
         <h2>Create Account</h2>
         <p>Sign up to start using TuloClicks</p>
 
@@ -196,7 +229,7 @@ function SignUp() {
             {loading ? 'Creating Account...' : 'Sign Up'}
           </button>
         </form>
-
+          
         <p className="login-link">
           Already have an account?{' '}
           <span

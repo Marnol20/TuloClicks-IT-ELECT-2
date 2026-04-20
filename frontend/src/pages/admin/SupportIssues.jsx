@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import { useToast } from '../../components/common/ToastContext'
 import '../../styles/Attendees.css'
 import api from '../../services/api'
 
 function SupportIssues() {
+  const { addToast } = useToast()
   const [issues, setIssues] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -29,10 +31,10 @@ function SupportIssues() {
         status: 'resolved',
         resolution_notes: 'Resolved by admin'
       })
-      alert('Issue resolved successfully')
+      addToast('Issue resolved successfully', 'success')
       fetchIssues()
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to resolve issue')
+      addToast(error.response?.data?.error || 'Failed to resolve issue', 'error')
     }
   }
 

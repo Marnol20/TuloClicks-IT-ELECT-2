@@ -288,8 +288,8 @@
 /* ===== QR TICKET DESIGN ===== */
 
 .ticket-qr-wrapper {
-  background: #0b1220;
-  border: 1px dashed #334155;
+  background: var(--bg-elevated);
+  border: 1px dashed var(--border);
   border-radius: 16px;
   padding: 20px;
   display: flex;
@@ -310,7 +310,7 @@
 }
 
 .ticket-qr-wrapper span {
-  color: #22c55e;
+  color: var(--success);
   font-weight: 700;
   letter-spacing: 0.5px;
 }
@@ -339,8 +339,149 @@
   transform: translateY(-1px);
 }
 
-.ticket-download-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
+ .ticket-download-btn:disabled {
+   opacity: 0.6;
+   cursor: not-allowed;
+   transform: none;
+ }
+
+ /* Book Now Button */
+ .book-now-btn {
+   width: 100%;
+   padding: 16px 24px;
+   border: none;
+   border-radius: 12px;
+   background: linear-gradient(135deg, #8b5cf6, #22c55e);
+   color: #ffffff;
+   font-size: 16px;
+   font-weight: 700;
+   cursor: pointer;
+   transition: all 0.25s ease;
+   box-shadow: 0 10px 28px rgba(139, 92, 246, 0.25);
+ }
+
+ .book-now-btn:hover:not(:disabled) {
+   transform: translateY(-2px);
+   box-shadow: 0 16px 40px rgba(139, 92, 246, 0.35);
+ }
+
+ .book-now-btn:active:not(:disabled) {
+   transform: translateY(0);
+ }
+
+ .book-now-btn:disabled {
+   opacity: 0.6;
+   cursor: not-allowed;
+   transform: none;
+   box-shadow: none;
+ }
+
+ /* Booking Form Inputs */
+ .form-input {
+   width: 100%;
+   padding: 14px 16px;
+   background: rgba(255, 255, 255, 0.05);
+   border: 1px solid rgba(255, 255, 255, 0.12);
+   border-radius: 12px;
+   color: #ffffff;
+   font-size: 15px;
+   outline: none;
+   transition: all 0.2s ease;
+   font-family: 'Inter', sans-serif;
+ }
+
+ .form-input:focus {
+   border-color: #8b5cf6;
+   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+   background: rgba(255, 255, 255, 0.06);
+ }
+
+.form-input::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+  }
+
+.booking-popup {
+  background: linear-gradient(145deg, rgba(30, 30, 35, 0.95), rgba(20, 20, 25, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2.5rem;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.booking-popup-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.booking-popup-icon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.booking-popup-content h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.booking-popup-content p {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.95rem;
+  margin: 0 0 0.5rem;
+  line-height: 1.5;
+}
+
+.btn-book-ticket {
+  width: 100%;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 28px rgba(139, 92, 246, 0.3);
+  margin-top: 0.5rem;
+}
+
+.btn-book-ticket:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px rgba(139, 92, 246, 0.4);
+}
+
+.btn-book-ticket:active {
+  transform: translateY(0);
+}
+
+.booking-wizard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.btn-back-to-event {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-back-to-event:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
 }
