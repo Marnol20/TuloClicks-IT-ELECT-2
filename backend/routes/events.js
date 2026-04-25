@@ -1,4 +1,7 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const db = require('../db');
 const authMiddleware = require('../middleware/authMiddleware');
 const roleMiddleware = require('../middleware/roleMiddleware');
@@ -6,6 +9,43 @@ const logActivity = require('../utils/logger');
 const createNotification = require('../utils/notify');
 
 const router = express.Router();
+
+// Multer storage setup for event images
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = 'uploads/events/';
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `event-${Date.now()}${path.extname(file.originalname)}`);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
+
+/**
+ * Helper: Fetch event by ID
+ */
+async function getEventById(id) {
+  const [events] = await db.query(
+    `SELECT * FROM events WHERE id = ? LIMIT 1`,
+    [id]
+  );
+  return events.length > 0 ? events[0] : null;
+}
+
+/**
+ * Helper: Check if user owns event (for non-admin)
+ */
+function checkOwnership(event, user) {
+  return user.role === 'admin' || event.organizer_id === user.id;
+}
 
 function makeSlug(text) {
   return String(text)
@@ -170,14 +210,13 @@ router.get('/:id', async (req, res) => {
 /**
  * ORGANIZER: create event
  */
-router.post('/', authMiddleware, roleMiddleware('organizer', 'admin'), async (req, res) => {
+router.post('/', authMiddleware, roleMiddleware('organizer', 'admin'), upload.single('event_image'), async (req, res) => {
   try {
     const {
       category_id,
       venue_id,
       title,
       description,
-      event_image,
       start_date,
       end_date,
       start_time,
@@ -186,6 +225,8 @@ router.post('/', authMiddleware, roleMiddleware('organizer', 'admin'), async (re
       custom_location,
       online_link
     } = req.body;
+
+    const event_image = req.file ? req.file.filename : null;
 
     if (!category_id || !title || !description || !start_date || !start_time) {
       return res.status(400).json({
@@ -277,22 +318,16 @@ router.post('/', authMiddleware, roleMiddleware('organizer', 'admin'), async (re
 /**
  * ORGANIZER: update own event
  */
-router.put('/:id', authMiddleware, roleMiddleware('organizer', 'admin'), async (req, res) => {
+router.put('/:id', authMiddleware, roleMiddleware('organizer', 'admin'), upload.single('event_image'), async (req, res) => {
   try {
     const eventId = Number(req.params.id);
+    const event = await getEventById(eventId);
 
-    const [existingEvents] = await db.query(
-      `SELECT * FROM events WHERE id = ? LIMIT 1`,
-      [eventId]
-    );
-
-    if (existingEvents.length === 0) {
+    if (!event) {
       return res.status(404).json({ error: 'Event not found.' });
     }
 
-    const event = existingEvents[0];
-
-    if (req.user.role !== 'admin' && event.organizer_id !== req.user.id) {
+    if (!checkOwnership(event, req.user)) {
       return res.status(403).json({ error: 'You can only update your own events.' });
     }
 
@@ -301,7 +336,6 @@ router.put('/:id', authMiddleware, roleMiddleware('organizer', 'admin'), async (
       venue_id,
       title,
       description,
-      event_image,
       start_date,
       end_date,
       start_time,
@@ -338,9 +372,9 @@ router.put('/:id', authMiddleware, roleMiddleware('organizer', 'admin'), async (
       values.push(String(description).trim());
     }
 
-    if (event_image !== undefined) {
+    if (req.file) {
       updates.push('event_image = ?');
-      values.push(event_image || null);
+      values.push(req.file.filename);
     }
 
     if (start_date !== undefined) {
@@ -420,19 +454,13 @@ router.put('/:id', authMiddleware, roleMiddleware('organizer', 'admin'), async (
 router.patch('/:id/submit', authMiddleware, roleMiddleware('organizer', 'admin'), async (req, res) => {
   try {
     const eventId = Number(req.params.id);
+    const event = await getEventById(eventId);
 
-    const [events] = await db.query(
-      `SELECT * FROM events WHERE id = ? LIMIT 1`,
-      [eventId]
-    );
-
-    if (events.length === 0) {
+    if (!event) {
       return res.status(404).json({ error: 'Event not found.' });
     }
 
-    const event = events[0];
-
-    if (req.user.role !== 'admin' && event.organizer_id !== req.user.id) {
+    if (!checkOwnership(event, req.user)) {
       return res.status(403).json({ error: 'You can only submit your own event.' });
     }
 
@@ -484,16 +512,11 @@ router.patch('/:id/approve', authMiddleware, roleMiddleware('admin'), async (req
     const eventId = Number(req.params.id);
     const { approval_notes } = req.body;
 
-    const [events] = await db.query(
-      `SELECT * FROM events WHERE id = ? LIMIT 1`,
-      [eventId]
-    );
+    const event = await getEventById(eventId);
 
-    if (events.length === 0) {
+    if (!event) {
       return res.status(404).json({ error: 'Event not found.' });
     }
-
-    const event = events[0];
 
     const [result] = await db.query(
       `
@@ -547,16 +570,11 @@ router.patch('/:id/reject', authMiddleware, roleMiddleware('admin'), async (req,
     const eventId = Number(req.params.id);
     const { approval_notes } = req.body;
 
-    const [events] = await db.query(
-      `SELECT * FROM events WHERE id = ? LIMIT 1`,
-      [eventId]
-    );
+    const event = await getEventById(eventId);
 
-    if (events.length === 0) {
+    if (!event) {
       return res.status(404).json({ error: 'Event not found.' });
     }
-
-    const event = events[0];
 
     const [result] = await db.query(
       `
@@ -644,20 +662,13 @@ router.patch('/:id/feature', authMiddleware, roleMiddleware('admin'), async (req
 router.delete('/:id', authMiddleware, roleMiddleware('organizer', 'admin'), async (req, res) => {
   try {
     const eventId = Number(req.params.id);
+    const event = await getEventById(eventId);
 
-    const [events] = await db.query(
-      `SELECT * FROM events WHERE id = ? LIMIT 1`,
-      [eventId]
-    );
-
-    if (events.length === 0) {
+    if (!event) {
       return res.status(404).json({ error: 'Event not found.' });
     }
 
-    const event = events[0];
-
-    // Authorization: Only organizer (who created it) or admin can delete
-    if (req.user.role !== 'admin' && event.organizer_id !== req.user.id) {
+    if (!checkOwnership(event, req.user)) {
       return res.status(403).json({ error: 'You can only delete your own events.' });
     }
 

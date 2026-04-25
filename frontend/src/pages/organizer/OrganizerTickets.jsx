@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
+import { useToast } from '../../components/common/ToastContext'
 import '../../styles/Events.css'
 import api from '../../services/api'
 
 function OrganizerTickets() {
+  const { addToast } = useToast()
   const [events, setEvents] = useState([])
   const [selectedEvent, setSelectedEvent] = useState('')
   const [tickets, setTickets] = useState([])
   const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState(null) // Para sa Edit mode
 
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -45,31 +48,67 @@ function OrganizerTickets() {
     }
   }
 
-  async function handleCreate() {
+  async function handleSave() {
     if (!selectedEvent || !name || !price || !quantity) {
-      setError('Please fill in all required fields')
+      addToast('Please fill in all required fields', 'warning')
       return
     }
 
     try {
-      await api.post('/tickets', {
+      const payload = {
         event_id: Number(selectedEvent),
         name,
         description,
         price: Number(price),
         quantity_available: Number(quantity)
-      })
+      }
 
-      setError('')
-      setShowForm(false)
-      setName('')
-      setDescription('')
-      setPrice('')
-      setQuantity('')
+      if (editingId) {
+        // UPDATE
+        await api.put(`/tickets/${editingId}`, payload)
+        addToast('Ticket type updated successfully', 'success')
+      } else {
+        // CREATE
+        await api.post('/tickets', payload)
+        addToast('Ticket type created successfully', 'success')
+      }
+
+      resetForm()
       fetchTickets(selectedEvent)
     } catch (error) {
-      setError(error.response?.data?.error || 'Failed to create ticket')
+      addToast(error.response?.data?.error || 'Failed to save ticket', 'error')
     }
+  }
+
+  async function handleDelete(id) {
+    if (!window.confirm('Are you sure you want to delete this ticket type? This cannot be undone.')) return
+
+    try {
+      await api.delete(`/tickets/${id}`)
+      addToast('Ticket deleted successfully', 'success')
+      fetchTickets(selectedEvent)
+    } catch (error) {
+      addToast(error.response?.data?.error || 'Failed to delete ticket', 'error')
+    }
+  }
+
+  function handleEdit(ticket) {
+    setEditingId(ticket.id)
+    setName(ticket.name)
+    setDescription(ticket.description || '')
+    setPrice(ticket.price)
+    setQuantity(ticket.quantity_available)
+    setShowForm(true)
+    window.scrollTo(0, 0)
+  }
+
+  function resetForm() {
+    setShowForm(false)
+    setEditingId(null)
+    setName('')
+    setDescription('')
+    setPrice('')
+    setQuantity('')
   }
 
   return (
@@ -110,7 +149,7 @@ function OrganizerTickets() {
 
       {showForm && (
         <div className="create-form">
-          <h3>Create Ticket Type</h3>
+          <h3>{editingId ? 'Edit Ticket Type' : 'Create Ticket Type'}</h3>
 
           <div className="form-grid">
             <div className="form-group">
@@ -157,10 +196,10 @@ function OrganizerTickets() {
           </div>
 
           <div className="form-buttons">
-            <button className="create-btn" onClick={handleCreate}>
-              Create Ticket
+            <button className="create-btn" onClick={handleSave}>
+              {editingId ? 'Update Ticket' : 'Create Ticket'}
             </button>
-            <button className="cancel-btn" onClick={() => setShowForm(false)}>
+            <button className="cancel-btn" onClick={resetForm}>
               Cancel
             </button>
           </div>
@@ -168,6 +207,10 @@ function OrganizerTickets() {
       )}
 
       <div className="events-list">
+        {tickets.length === 0 && selectedEvent && (
+          <p style={{ textAlign: 'center', color: '#94a3b8', marginTop: '20px' }}>No tickets found for this event.</p>
+        )}
+        
         {tickets.map((ticket) => (
           <div key={ticket.id} className="event-card">
             <div className="event-card-top">
@@ -176,9 +219,11 @@ function OrganizerTickets() {
                 <p className="event-description">{ticket.description || 'No description'}</p>
               </div>
 
-              <span className={`badge ${ticket.is_active ? 'confirmed' : 'cancelled'}`}>
-                {ticket.is_active ? 'Active' : 'Inactive'}
-              </span>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <span className={`badge ${ticket.is_active ? 'confirmed' : 'cancelled'}`}>
+                  {ticket.is_active ? 'Active' : 'Inactive'}
+                </span>
+              </div>
             </div>
 
             <div className="event-card-info">
@@ -196,16 +241,23 @@ function OrganizerTickets() {
                 <span className="info-label">Sold</span>
                 <span className="info-value">{ticket.quantity_sold}</span>
               </div>
+            </div>
 
-              <div className="info-block">
-                <span className="info-label">Sale Start</span>
-                <span className="info-value">{ticket.sale_start || 'N/A'}</span>
-              </div>
-
-              <div className="info-block">
-                <span className="info-label">Sale End</span>
-                <span className="info-value">{ticket.sale_end || 'N/A'}</span>
-              </div>
+            <div className="event-card-footer" style={{ marginTop: '16px', display: 'flex', gap: '10px' }}>
+              <button 
+                className="create-btn" 
+                onClick={() => handleEdit(ticket)}
+                style={{ padding: '6px 15px', fontSize: '12px' }}
+              >
+                Edit
+              </button>
+              <button 
+                className="cancel-btn" 
+                onClick={() => handleDelete(ticket.id)}
+                style={{ padding: '6px 15px', fontSize: '12px', backgroundColor: '#ef4444' }}
+              >
+                Delete
+              </button>
             </div>
           </div>
         ))}

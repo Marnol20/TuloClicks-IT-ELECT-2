@@ -195,6 +195,30 @@ router.post('/', authMiddleware, roleMiddleware('organizer', 'admin'), async (re
 });
 
 /**
+ * ORGANIZER/ADMIN: delete speaker profile entirely
+ */
+router.delete('/:speakerId', authMiddleware, roleMiddleware('organizer', 'admin'), async (req, res) => {
+  try {
+    const speakerId = Number(req.params.speakerId);
+
+   
+    const [result] = await db.query(
+      `DELETE FROM speakers WHERE id = ?`,
+      [speakerId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Speaker not found.' });
+    }
+
+    return res.json({ message: 'Speaker deleted successfully from the system.' });
+  } catch (error) {
+    console.error('Delete speaker error:', error);
+    return res.status(500).json({ error: 'Server error deleting speaker profile.' });
+  }
+});
+
+/**
  * ORGANIZER/ADMIN: assign existing speaker to event
  */
 router.post('/assign', authMiddleware, roleMiddleware('organizer', 'admin'), async (req, res) => {

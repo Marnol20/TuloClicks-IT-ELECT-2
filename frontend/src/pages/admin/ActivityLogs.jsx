@@ -25,7 +25,7 @@ function ActivityLogs() {
 
   function formatDate(date) {
     if (!date) return 'N/A'
-    return new Date(date).toLocaleString()
+    return new Date(date).toLocaleString('en-PH') // Philippine time format
   }
 
   return (
@@ -33,43 +33,39 @@ function ActivityLogs() {
       <div className="attendees-top">
         <div className="attendees-title">
           <div>
-            <h2>Activity Logs</h2>
-            <p>Monitor important actions performed in the system</p>
+            <h2>System Activity Logs</h2>
+            <p>Monitor real-time actions and security audits across the platform</p>
           </div>
         </div>
+        <button className="reports-refresh-btn" onClick={fetchLogs} style={{ padding: '8px 16px', borderRadius: '8px', cursor: 'pointer' }}>
+          Refresh Logs
+        </button>
       </div>
 
       <div className="attendees-table">
-        <div
-          className="table-header"
-          style={{ gridTemplateColumns: '1fr 1fr 1fr 2fr 1fr 1.4fr' }}
-        >
+        <div className="table-header" style={{ gridTemplateColumns: '1fr 1.2fr 1fr 2fr 1fr 1.4fr' }}>
           <span>User</span>
           <span>Action</span>
           <span>Entity</span>
           <span>Description</span>
-          <span>IP</span>
-          <span>Date</span>
+          <span>IP Address</span>
+          <span>Timestamp</span>
         </div>
 
         {loading ? (
-          <div className="table-empty">Loading activity logs...</div>
+          <div className="table-empty">Loading logs...</div>
         ) : logs.length === 0 ? (
-          <div className="table-empty">No activity logs found.</div>
+          <div className="table-empty">No activity recorded yet.</div>
         ) : (
           logs.map((log) => (
-            <div
-              key={log.id}
-              className="table-row"
-              style={{ gridTemplateColumns: '1fr 1fr 1fr 2fr 1fr 1.4fr' }}
-            >
+            <div key={log.id} className="table-row" style={{ gridTemplateColumns: '1fr 1.2fr 1fr 2fr 1fr 1.4fr' }}>
               <span className="row-name">{log.user_name || 'System'}</span>
-              <span className="row-muted">{log.action || 'N/A'}</span>
+              <span className="table-badge info" style={{ fontSize: '11px' }}>{log.action}</span>
               <span className="row-muted">
-                {log.entity_type ? `${log.entity_type}${log.entity_id ? ` #${log.entity_id}` : ''}` : 'N/A'}
+                {log.entity_type ? `${log.entity_type} #${log.entity_id || ''}` : 'N/A'}
               </span>
-              <span className="row-muted">{log.description || 'No description'}</span>
-              <span className="row-muted">{log.ip_address || 'N/A'}</span>
+              <span className="row-muted" style={{ fontSize: '13px' }}>{log.description}</span>
+              <span className="row-muted">{log.ip_address || '0.0.0.0'}</span>
               <span className="row-muted">{formatDate(log.created_at)}</span>
             </div>
           ))

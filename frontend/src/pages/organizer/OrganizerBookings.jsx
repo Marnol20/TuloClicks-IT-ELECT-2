@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
+import { useToast } from '../../components/common/ToastContext'
 import '../../styles/Attendees.css'
 import api from '../../services/api'
 
 function OrganizerBookings() {
+  const { addToast } = useToast()
   const [events, setEvents] = useState([])
   const [selectedEvent, setSelectedEvent] = useState('')
   const [bookings, setBookings] = useState([])
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     fetchEvents()
@@ -31,21 +34,24 @@ function OrganizerBookings() {
 
   async function fetchBookings(eventId) {
     try {
+      setLoading(true)
       const res = await api.get(`/bookings/event/${eventId}/manage`)
       setBookings(res.data || [])
     } catch (error) {
       console.error('Fetch bookings error:', error)
       setBookings([])
+    } finally {
+      setLoading(false)
     }
   }
 
   async function handleCheckIn(id) {
     try {
       await api.patch(`/bookings/${id}/check-in`)
-      setError('')
-      fetchBookings()
+      addToast('Attendee checked in successfully!', 'success')
+      fetchBookings(selectedEvent)
     } catch (error) {
-      setError(error.response?.data?.error || 'Failed to check in attendee')
+      addToast(error.response?.data?.error || 'Failed to check in attendee', 'error')
     }
   }
 
@@ -84,32 +90,75 @@ function OrganizerBookings() {
           <span>Action</span>
         </div>
 
-        {bookings.map((booking) => (
-          <div
-            key={booking.id}
-            className="table-row"
-            style={{ gridTemplateColumns: '1.2fr 1.4fr 1fr 1fr 1fr 0.8fr' }}
-          >
-            <span className="row-name">{booking.attendee_name}</span>
-            <span className="row-muted">{booking.attendee_email}</span>
-            <span className="row-muted">{booking.booking_reference}</span>
-            <span className="row-muted">₱{Number(booking.total_amount).toLocaleString()}</span>
-            <span
-              className={`table-badge ${
-                booking.booking_status === 'checked_in'
-                  ? 'success'
-                  : booking.booking_status === 'cancelled'
-                  ? 'danger'
-                  : 'warning'
-              }`}
+        {loading ? (
+          <div className="table-empty">Loading bookings...</div>
+        ) : !selectedEvent ? (
+          <div className="table-empty">Please select an event to view bookings.</div>
+        ) : bookings.length === 0 ? (
+          <div className="table-empty">No bookings found for this event.</div>
+        ) : (
+          bookings.map((booking) => (
+            <div
+              key={booking.id}
+              className="table-row"
+              style={{ gridTemplateColumns: '1.2fr 1.4fr 1fr 1fr 1fr 0.8fr' }}
             >
-              {booking.booking_status}
-            </span>
-            <button className="new-event-btn" style={{ padding: '6px 10px' }} onClick={() => handleCheckIn(booking.id)}>
-              Check-in
-            </button>
-          </div>
-        ))}
+              <span className="row-name">{booking.attendee_name}</span>
+              <span className="row-muted">{booking.attendee_email}</span>
+              <span className="row-muted">{booking.booking_reference}</span>
+              <span className="row-muted">₱{Number(booking.total_amount).toLocaleString()}</span>
+              <span
+                className={`table-badge ${
+                  booking.booking_status === 'checked_in'
+                    ? 'success'
+                    : booking.booking_status === 'cancelled'
+                    ? 'danger'
+                    : 'warning'
+                }`}
+              >
+                {booking.booking_status}
+              </span>
+              
+              <div className="row-actions">
+                {/* 1. Logic para sa Checked-in */}
+                {booking.booking_status === 'checked_in' ? (
+                  <span style={{ 
+                    color: '#10b981', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '5px',
+                    fontWeight: 'bold',
+                    fontSize: '14px'
+                  }}>
+                    <span style={{ fontSize: '18px' }}>✓</span> Admitted
+                  </span>
+                ) : /* 2. Logic para sa Cancelled */
+                booking.booking_status === 'cancelled' ? (
+                  <span style={{ 
+                    color: '#ef4444', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '5px',
+                    fontWeight: 'bold',
+                    fontSize: '14px',
+                    opacity: 0.8
+                  }}>
+                    <span style={{ fontSize: '18px' }}>✕</span> Cancelled
+                  </span>
+                ) : (
+                  /* 3. Logic para sa Pending (Standard Check-in) */
+                  <button 
+                    className="table-action-btn primary" 
+                    style={{ padding: '6px 10px' }} 
+                    onClick={() => handleCheckIn(booking.id)}
+                  >
+                    Check-in
+                  </button>
+                )}
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </main>
   )

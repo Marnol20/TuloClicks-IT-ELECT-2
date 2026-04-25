@@ -7,6 +7,7 @@ function OrganizerApprovals() {
   const { addToast } = useToast()
   const [organizers, setOrganizers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState(false)
 
   useEffect(() => {
     fetchOrganizers()
@@ -25,28 +26,29 @@ function OrganizerApprovals() {
     }
   }
 
-  async function handleApprove(id) {
-    try {
-      await api.patch(`/organizers/${id}/approve`)
-      addToast('Organizer approved successfully', 'success')
-      fetchOrganizers()
-    } catch (error) {
-      addToast(error.response?.data?.error || 'Failed to approve organizer', 'error')
+  async function handleStatusChange(id, status) {
+    let reason = '';
+    if (status === 'rejected') {
+      reason = window.prompt('Enter rejection reason:', 'Application does not meet requirements.');
+      if (reason === null) return; // Cancelled prompt
     }
-  }
 
-  async function handleReject(id) {
-    const reason = window.prompt('Enter rejection reason:', 'Application rejected.')
-    if (reason === null) return
+    const confirmAction = window.confirm(`Are you sure you want to ${status} this organizer?`)
+    if (!confirmAction) return
 
+    setActionLoading(true)
     try {
-      await api.patch(`/organizers/${id}/reject`, {
+      const endpoint = status === 'approved' ? 'approve' : 'reject'
+      await api.patch(`/organizers/${id}/${endpoint}`, {
         rejection_reason: reason
       })
-      addToast('Organizer rejected successfully', 'success')
+      
+      addToast(`Organizer ${status} successfully`, 'success')
       fetchOrganizers()
     } catch (error) {
-      addToast(error.response?.data?.error || 'Failed to reject organizer', 'error')
+      addToast(error.response?.data?.error || `Failed to ${status} organizer`, 'error')
+    } finally {
+      setActionLoading(false)
     }
   }
 
@@ -56,7 +58,7 @@ function OrganizerApprovals() {
         <div className="attendees-title">
           <div>
             <h2>Organizer Approvals</h2>
-            <p>Review and manage organizer applications</p>
+            <p>Admin Control: Review and verify organizer applications</p>
           </div>
         </div>
       </div>
@@ -75,7 +77,7 @@ function OrganizerApprovals() {
         </div>
 
         {loading ? (
-          <div className="table-empty">Loading organizer applications...</div>
+          <div className="table-empty">Loading applications...</div>
         ) : organizers.length === 0 ? (
           <div className="table-empty">No organizer applications found.</div>
         ) : (
@@ -83,7 +85,10 @@ function OrganizerApprovals() {
             <div
               key={item.id}
               className="table-row"
-              style={{ gridTemplateColumns: '1.2fr 1fr 1fr 1fr 1fr 1.2fr' }}
+              style={{ 
+                gridTemplateColumns: '1.2fr 1fr 1fr 1fr 1fr 1.2fr',
+                opacity: actionLoading ? 0.6 : 1 
+              }}
             >
               <span className="row-name">{item.organization_name}</span>
               <span className="row-muted">{item.user_name}</span>
@@ -103,18 +108,54 @@ function OrganizerApprovals() {
               </span>
 
               <div className="row-actions">
-                <button
-                  className="table-action-btn success"
-                  onClick={() => handleApprove(item.id)}
-                >
-                  Approve
-                </button>
-                <button
-                  className="table-action-btn danger"
-                  onClick={() => handleReject(item.id)}
-                >
-                  Reject
-                </button>
+                {/* 1. Logic para sa PENDING: Ipakita ang Buttons */}
+                {item.approval_status === 'pending' && (
+                  <>
+                    <button
+                      className="table-action-btn success"
+                      onClick={() => handleStatusChange(item.id, 'approved')}
+                      disabled={actionLoading}
+                    >
+                      Approve
+                    </button>
+                    <button
+                      className="table-action-btn danger"
+                      onClick={() => handleStatusChange(item.id, 'rejected')}
+                      disabled={actionLoading}
+                    >
+                      Reject
+                    </button>
+                  </>
+                )}
+
+                {/* 2. Logic para sa APPROVED: Ipakita ang Verified Label */}
+                {item.approval_status === 'approved' && (
+                  <span style={{ 
+                    color: '#10b981', 
+                    fontWeight: 'bold', 
+                    fontSize: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    ✓ Verified
+                  </span>
+                )}
+
+                {/* 3. Logic para sa REJECTED: Ipakita ang Rejected Label */}
+                {item.approval_status === 'rejected' && (
+                  <span style={{ 
+                    color: '#ef4444', 
+                    fontWeight: 'bold', 
+                    fontSize: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    opacity: 0.8
+                  }}>
+                    ✕ Rejected
+                  </span>
+                )}
               </div>
             </div>
           ))

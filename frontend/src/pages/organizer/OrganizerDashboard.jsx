@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
+import { useToast } from '../../components/common/ToastContext'
 import '../../styles/Attendees.css'
 import api from '../../services/api'
 
-function OrganizerBookings() {
+function OrganizerDashboard() {
+  const { addToast } = useToast()
   const [events, setEvents] = useState([])
   const [selectedEvent, setSelectedEvent] = useState('')
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
 
   const totalEvents = events.length
   const totalBookings = bookings.length
@@ -51,10 +52,10 @@ function OrganizerBookings() {
   async function handleCheckIn(id) {
     try {
       await api.patch(`/bookings/${id}/check-in`)
-      setError('')
+      addToast('Attendee checked in successfully!', 'success')
       fetchBookings(selectedEvent)
     } catch (error) {
-      setError(error.response?.data?.error || 'Failed to check in attendee')
+      addToast(error.response?.data?.error || 'Failed to check in attendee', 'error')
     }
   }
 
@@ -112,7 +113,7 @@ function OrganizerBookings() {
         </div>
 
         {!selectedEvent ? (
-          <div className="table-empty">Select an event first.</div>
+          <div className="table-empty">Select an event first to see the data.</div>
         ) : loading ? (
           <div className="table-empty">Loading bookings...</div>
         ) : bookings.length === 0 ? (
@@ -144,12 +145,41 @@ function OrganizerBookings() {
               </span>
 
               <div className="row-actions">
-                <button
-                  className="table-action-btn primary"
-                  onClick={() => handleCheckIn(booking.id)}
-                >
-                  Check-in
-                </button>
+                {/* Check kon admitted na ba */}
+                {booking.booking_status === 'checked_in' ? (
+                  <span style={{ 
+                    color: '#10b981', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '5px',
+                    fontWeight: 'bold',
+                    fontSize: '14px'
+                  }}>
+                    <span style={{ fontSize: '18px' }}>✓</span> Admitted
+                  </span>
+                ) : 
+                /* Check kon cancelled ba ang ticket */
+                booking.booking_status === 'cancelled' ? (
+                  <span style={{ 
+                    color: '#ef4444', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '5px',
+                    fontWeight: 'bold',
+                    fontSize: '14px',
+                    opacity: 0.8
+                  }}>
+                    <span style={{ fontSize: '18px' }}>✕</span> Cancelled
+                  </span>
+                ) : (
+                  /* Standard Check-in Button para sa Pending */
+                  <button
+                    className="table-action-btn primary"
+                    onClick={() => handleCheckIn(booking.id)}
+                  >
+                    Check-in
+                  </button>
+                )}
               </div>
             </div>
           ))
@@ -159,4 +189,4 @@ function OrganizerBookings() {
   )
 }
 
-export default OrganizerBookings
+export default OrganizerDashboard

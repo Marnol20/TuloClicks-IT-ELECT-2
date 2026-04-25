@@ -172,6 +172,19 @@ function BrowseEvents() {
           <div className="events-grid">
             {filteredEvents.map((event) => (
               <div className="event-card" key={event.id}>
+                {/* Event Image */}
+                {event.event_image ? (
+                  <img
+                    src={`http://localhost:5000/uploads/events/${event.event_image}`}
+                    alt={event.title}
+                    style={{ width: '100%', height: '200px', objectFit: 'cover', display: 'block' }}
+                  />
+                ) : (
+                  <div style={{ width: '100%', height: '200px', backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280' }}>
+                    No Image
+                  </div>
+                )}
+
                 <div className="event-card-content">
                   <p className="event-card-date">{formatDate(event.start_date)}</p>
                   <h3 className="event-card-title">{event.title}</h3>

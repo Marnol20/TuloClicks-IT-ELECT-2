@@ -1,20 +1,26 @@
 const express = require('express')
 const cors = require('cors')
+const path = require('path') 
 require('dotenv').config()
 
 const db = require('./db')
 
 const app = express()
 
+// 1. CORS CONFIGURATION
 app.use(cors({
   origin: [
     'http://localhost:5173',
     'https://tuloclicks.vercel.app'
   ],
   credentials: true
-}
-))
-app.use(express.json())
+}))
+
+// 2. MIDDLEWARE - Important: must be before routes
+app.use(express.json({ limit: '50mb' }))
+app.use(express.urlencoded({ limit: '50mb', extended: true }))
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
 app.get('/', (req, res) => {
   res.send('TuloClicks Backend is running')
@@ -35,6 +41,7 @@ app.get('/test-db', async (req, res) => {
   }
 })
 
+// 3. ROUTES
 const authRoutes = require('./routes/auth')
 const usersRoutes = require('./routes/users')
 const organizerRoutes = require('./routes/organizers')
@@ -50,6 +57,8 @@ const supportRoutes = require('./routes/support')
 const reportsRoutes = require('./routes/reports')
 const activityLogsRoutes = require('./routes/activityLogs')
 
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes)
 app.use('/api/users', usersRoutes)
 app.use('/api/organizers', organizerRoutes)
@@ -65,6 +74,7 @@ app.use('/api/support', supportRoutes)
 app.use('/api/reports', reportsRoutes)
 app.use('/api/activity-logs', activityLogsRoutes)
 
+// 4. ERROR HANDLING
 app.use((err, req, res, next) => {
   console.error('Unhandled server error:', err)
   res.status(500).json({

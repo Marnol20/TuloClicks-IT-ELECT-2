@@ -9,6 +9,7 @@ function OrganizerSpeakers() {
   const [selectedEvent, setSelectedEvent] = useState('')
   const [speakers, setSpeakers] = useState([])
   const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState(null) // State para sa Edit mode
 
   const [name, setName] = useState('')
   const [title, setTitle] = useState('')
@@ -48,33 +49,71 @@ function OrganizerSpeakers() {
     }
   }
 
-  async function handleCreate() {
+  // Handle Create and Update
+  async function handleSave() {
     if (!selectedEvent || !name) {
       addToast('Please select an event and enter a speaker name', 'warning')
       return
     }
 
     try {
-      await api.post('/speakers', {
+      const payload = {
         event_id: Number(selectedEvent),
         name,
         title,
         company,
         email,
         bio
-      })
+      }
 
-      addToast('Speaker created successfully', 'success')
-      setShowForm(false)
-      setName('')
-      setTitle('')
-      setCompany('')
-      setEmail('')
-      setBio('')
+      if (editingId) {
+        // UPDATE Logic
+        await api.put(`/speakers/${editingId}`, payload)
+        addToast('Speaker updated successfully', 'success')
+      } else {
+        // CREATE Logic
+        await api.post('/speakers', payload)
+        addToast('Speaker created successfully', 'success')
+      }
+
+      resetForm()
       fetchSpeakers(selectedEvent)
     } catch (error) {
-      setError(error.response?.data?.error || 'Failed to create speaker')
+      addToast(error.response?.data?.error || 'Failed to save speaker', 'error')
     }
+  }
+
+  async function handleDelete(id) {
+    if (!window.confirm('Are you sure you want to delete this speaker?')) return
+
+    try {
+      await api.delete(`/speakers/${id}`)
+      addToast('Speaker deleted successfully', 'success')
+      fetchSpeakers(selectedEvent)
+    } catch (error) {
+      addToast('Failed to delete speaker', 'error')
+    }
+  }
+
+  function handleEdit(speaker) {
+    setEditingId(speaker.speaker_id || speaker.id)
+    setName(speaker.name)
+    setTitle(speaker.title || '')
+    setCompany(speaker.company || '')
+    setEmail(speaker.email || '')
+    setBio(speaker.bio || '')
+    setShowForm(true)
+    window.scrollTo(0, 0)
+  }
+
+  function resetForm() {
+    setShowForm(false)
+    setEditingId(null)
+    setName('')
+    setTitle('')
+    setCompany('')
+    setEmail('')
+    setBio('')
   }
 
   return (
@@ -115,7 +154,7 @@ function OrganizerSpeakers() {
 
       {showForm && (
         <div className="create-form">
-          <h3>Add New Speaker</h3>
+          <h3>{editingId ? 'Edit Speaker' : 'Add New Speaker'}</h3>
 
           <div className="form-grid">
             <div className="form-group">
@@ -127,7 +166,7 @@ function OrganizerSpeakers() {
                 placeholder="Enter speaker name"
               />
             </div>
-
+            {/* ... (uban nga input fields title, company, email) */}
             <div className="form-group">
               <label>Title</label>
               <input
@@ -170,10 +209,10 @@ function OrganizerSpeakers() {
           </div>
 
           <div className="form-buttons">
-            <button className="create-btn" onClick={handleCreate}>
-              Create Speaker
+            <button className="create-btn" onClick={handleSave}>
+              {editingId ? 'Update Speaker' : 'Create Speaker'}
             </button>
-            <button className="cancel-btn" onClick={() => setShowForm(false)}>
+            <button className="cancel-btn" onClick={resetForm}>
               Cancel
             </button>
           </div>
@@ -182,18 +221,35 @@ function OrganizerSpeakers() {
 
       <div className="speakers-grid">
         {speakers.map((speaker) => (
-          <div key={speaker.event_speaker_id || speaker.speaker_id} className="speaker-card">
+          <div key={speaker.speaker_id || speaker.id} className="speaker-card">
             <div className="speaker-card-header">
               <div>
                 <h3 className="speaker-name">{speaker.name}</h3>
-                <p className="speaker-role">{speaker.title || 'Speaker'}</p>
-                <p className="speaker-event-label">{speaker.company || 'Guest Speaker'}</p>
+                <p className="speaker-role" style={{ color: '#10b981' }}>{speaker.title || 'Speaker'}</p>
+                <p className="speaker-company">{speaker.company || 'Guest Speaker'}</p>
               </div>
             </div>
 
-            <div className="speaker-footer">
-              <p className="speaker-email">{speaker.email || 'No email'}</p>
-              <p className="speaker-email">{speaker.bio || 'No bio available'}</p>
+            <div className="speaker-body">
+              <p className="speaker-email" style={{ fontSize: '13px', opacity: 0.8 }}>{speaker.email}</p>
+              <p className="speaker-bio" style={{ marginTop: '10px', fontSize: '14px' }}>{speaker.bio}</p>
+            </div>
+
+            <div className="speaker-footer" style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
+              <button 
+                className="create-btn" 
+                onClick={() => handleEdit(speaker)}
+                style={{ padding: '5px 15px', fontSize: '12px' }}
+              >
+                Edit
+              </button>
+              <button 
+                className="cancel-btn" 
+                onClick={() => handleDelete(speaker.speaker_id || speaker.id)}
+                style={{ padding: '5px 15px', fontSize: '12px', backgroundColor: '#ef4444' }}
+              >
+                Delete
+              </button>
             </div>
           </div>
         ))}

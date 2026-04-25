@@ -18,44 +18,25 @@ function SignUp() {
   const [error, setError] = useState('')
   const [passwordStrength, setPasswordStrength] = useState(0)
 
-  // Calculate password strength
   function calculatePasswordStrength(pass) {
     let strength = 0
-
-    // Length check
     if (pass.length >= 8) strength++
     if (pass.length >= 12) strength++
-
-    // Has uppercase letters
     if (/[A-Z]/.test(pass)) strength++
-
-    // Has lowercase letters
     if (/[a-z]/.test(pass)) strength++
-
-    // Has numbers
     if (/[0-9]/.test(pass)) strength++
-
-    // Has special characters
     if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pass)) strength++
-
-    // Normalize to 1-4 scale
     return Math.min(4, Math.ceil(strength / 1.5))
   }
 
   function getPasswordStrengthLabel(strength) {
     switch (strength) {
-      case 0:
-        return { text: 'No Password', color: '#9ca3af' }
-      case 1:
-        return { text: 'Weak Password', color: '#ef4444' }
-      case 2:
-        return { text: 'Fair Password', color: '#f59e0b' }
-      case 3:
-        return { text: 'Good Password', color: '#eab308' }
-      case 4:
-        return { text: 'Strong Password', color: '#22c55e' }
-      default:
-        return { text: 'No Password', color: '#9ca3af' }
+      case 0: return { text: 'No Password', color: '#9ca3af' }
+      case 1: return { text: 'Weak Password', color: '#ef4444' }
+      case 2: return { text: 'Fair Password', color: '#f59e0b' }
+      case 3: return { text: 'Good Password', color: '#eab308' }
+      case 4: return { text: 'Strong Password', color: '#22c55e' }
+      default: return { text: 'No Password', color: '#9ca3af' }
     }
   }
 
@@ -68,8 +49,16 @@ function SignUp() {
   async function handleSubmit(e) {
     e.preventDefault()
 
-    if (!name || !email || !password || !confirmPassword) {
+    // Validation para sa 11 digits nga nagsugod sa 09
+    const phoneRegex = /^09\d{9}$/
+
+    if (!name || !email || !password || !confirmPassword || !phone) {
       setError('Please fill in all required fields')
+      return
+    }
+
+    if (!phoneRegex.test(phone)) {
+      setError('Phone number must be 11 digits starting with 09 (e.g. 09123456789)')
       return
     }
 
@@ -79,12 +68,13 @@ function SignUp() {
     }
 
     if (passwordStrength < 4) {
-      setError('Password must be Strong. Include uppercase, lowercase, numbers, and special characters')
+      setError('Password must be Strong (uppercase, lowercase, numbers, and special characters)')
       return
     }
 
     try {
       setLoading(true)
+      setError('')
 
       await api.post('/auth/signup', {
         name,
@@ -95,7 +85,6 @@ function SignUp() {
 
       addToast('Account created successfully!', 'success')
       
-      // Auto-login after signup by fetching user data
       const res = await api.post('/auth/login', {
         email: email.trim().toLowerCase(),
         password
@@ -105,16 +94,12 @@ function SignUp() {
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(user))
       
-      addToast('Welcome to TuloClicks!', 'success')
+      addToast(`Welcome to TuloClicks, ${user.name}!`, 'success')
       
-      // Redirect based on role
-      if (user.role === 'admin') {
-        navigate('/admin')
-      } else if (user.role === 'organizer') {
-        navigate('/organizer')
-      } else {
-        navigate('/home')
-      }
+      if (user.role === 'admin') navigate('/admin')
+      else if (user.role === 'organizer') navigate('/organizer')
+      else navigate('/home')
+
     } catch (err) {
       const errorMsg = err.response?.data?.error || 'Signup failed'
       setError(errorMsg)
@@ -127,12 +112,8 @@ function SignUp() {
   return (
     <div className="signup-page">
       <div className="signup-container">
-        <button
-          className="signup-back-btn"
-          onClick={() => navigate('/')}
-        >
-          <ArrowLeft size={18} />
-          Back to Home
+        <button className="signup-back-btn" onClick={() => navigate('/')}>
+          <ArrowLeft size={18} /> Back to Home
         </button>
 
         <h2>Create Account</h2>
@@ -141,65 +122,38 @@ function SignUp() {
         <form className="signup-form" onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Full Name</label>
-            <input
-              type="text"
-              placeholder="Enter your full name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <input type="text" placeholder="Enter your full name" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
 
           <div className="form-group">
             <label>Email</label>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <input type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
 
           <div className="form-group">
             <label>Phone Number</label>
-            <input
-              type="text"
-              placeholder="Enter your phone number"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+            <input 
+              type="text" 
+              placeholder="09XXXXXXXXX" 
+              value={phone} 
+              maxLength={11}
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))} 
             />
           </div>
 
           <div className="form-group">
             <label>Password</label>
-            <input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={handlePasswordChange}
-            />
-
+            <input type="password" placeholder="Enter your password" value={password} onChange={handlePasswordChange} />
             {password && (
               <div className="password-strength-container">
                 <div className="password-strength-bars">
                   {[1, 2, 3, 4].map((bar) => (
-                    <div
-                      key={bar}
-                      className={`strength-bar ${
-                        bar <= passwordStrength ? 'active' : ''
-                      }`}
-                      style={{
-                        backgroundColor:
-                          bar <= passwordStrength
-                            ? getPasswordStrengthLabel(passwordStrength).color
-                            : '#e5e7eb'
-                      }}
+                    <div key={bar} className={`strength-bar ${bar <= passwordStrength ? 'active' : ''}`}
+                      style={{ backgroundColor: bar <= passwordStrength ? getPasswordStrengthLabel(passwordStrength).color : '#e5e7eb' }}
                     />
                   ))}
                 </div>
-                <span
-                  className="password-strength-text"
-                  style={{ color: getPasswordStrengthLabel(passwordStrength).color }}
-                >
+                <span className="password-strength-text" style={{ color: getPasswordStrengthLabel(passwordStrength).color }}>
                   {getPasswordStrengthLabel(passwordStrength).text}
                 </span>
               </div>
@@ -208,22 +162,10 @@ function SignUp() {
 
           <div className="form-group">
             <label>Confirm Password</label>
-            <input
-              type="password"
-              placeholder="Confirm your password"
-              value={confirmPassword}
-              onChange={(e) => {
-                setConfirmPassword(e.target.value)
-                setError('')
-              }}
-            />
+            <input type="password" placeholder="Confirm your password" value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value); setError(''); }} />
           </div>
 
-          {error && (
-            <p className="signup-error" style={{ color: '#ef4444', marginBottom: '16px' }}>
-              {error}
-            </p>
-          )}
+          {error && <p className="signup-error" style={{ color: '#ef4444', marginBottom: '16px' }}>{error}</p>}
 
           <button type="submit" className="signup-submit-btn" disabled={loading}>
             {loading ? 'Creating Account...' : 'Sign Up'}
@@ -231,13 +173,7 @@ function SignUp() {
         </form>
           
         <p className="login-link">
-          Already have an account?{' '}
-          <span
-            style={{ color: '#22c55e', cursor: 'pointer' }}
-            onClick={() => navigate('/login')}
-          >
-            Sign In
-          </span>
+          Already have an account? <span style={{ color: '#22c55e', cursor: 'pointer' }} onClick={() => navigate('/login')}>Sign In</span>
         </p>
       </div>
     </div>

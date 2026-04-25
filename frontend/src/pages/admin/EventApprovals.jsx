@@ -7,6 +7,7 @@ function EventApprovals() {
   const { addToast } = useToast()
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState(false)
 
   useEffect(() => {
     fetchEvents()
@@ -25,42 +26,29 @@ function EventApprovals() {
     }
   }
 
-  async function handleApprove(id) {
+  async function handleStatusChange(id, status, notes = '') {
+    setActionLoading(true)
     try {
-      await api.patch(`/events/${id}/approve`, {
-        approval_notes: 'Approved by admin'
+      const endpoint = status === 'approved' ? 'approve' : 'reject'
+      await api.patch(`/events/${id}/${endpoint}`, {
+        approval_notes: notes || `Event ${status} by admin`
       })
-      addToast('Event approved successfully', 'success')
+      addToast(`Event ${status} successfully`, 'success')
       fetchEvents()
     } catch (error) {
-      addToast(error.response?.data?.error || 'Failed to approve event', 'error')
+      addToast(error.response?.data?.error || `Failed to ${status} event`, 'error')
+    } finally {
+      setActionLoading(false)
     }
   }
 
-  async function handleReject(id) {
-    const notes = window.prompt('Enter rejection note:', 'Event rejected.')
-    if (notes === null) return
-
+  async function handleFeature(id, currentStatus) {
     try {
-      await api.patch(`/events/${id}/reject`, {
-        approval_notes: notes
-      })
-      addToast('Event rejected successfully', 'success')
+      await api.patch(`/events/${id}/feature`, { featured: !currentStatus })
+      addToast(currentStatus ? 'Feature removed' : 'Event featured!', 'success')
       fetchEvents()
     } catch (error) {
-      addToast(error.response?.data?.error || 'Failed to reject event', 'error')
-    }
-  }
-
-  async function handleFeature(id) {
-    try {
-      await api.patch(`/events/${id}/feature`, {
-        featured: true
-      })
-      addToast('Event featured successfully', 'success')
-      fetchEvents()
-    } catch (error) {
-      addToast(error.response?.data?.error || 'Failed to feature event', 'error')
+      addToast('Failed to update featured status', 'error')
     }
   }
 
@@ -75,16 +63,13 @@ function EventApprovals() {
         <div className="attendees-title">
           <div>
             <h2>Event Approvals</h2>
-            <p>Review and manage submitted events</p>
+            <p>Admin Control: Review and verify event submissions</p>
           </div>
         </div>
       </div>
 
       <div className="attendees-table">
-        <div
-          className="table-header"
-          style={{ gridTemplateColumns: '1.5fr 1fr 1fr 1fr 1fr 1.5fr' }}
-        >
+        <div className="table-header" style={{ gridTemplateColumns: '1.5fr 1fr 1fr 1fr 1fr 1.5fr' }}>
           <span>Event</span>
           <span>Organizer</span>
           <span>Date</span>
@@ -95,52 +80,39 @@ function EventApprovals() {
 
         {loading ? (
           <div className="table-empty">Loading events...</div>
-        ) : events.length === 0 ? (
-          <div className="table-empty">No events found.</div>
         ) : (
           events.map((event) => (
-            <div
-              key={event.id}
-              className="table-row"
-              style={{ gridTemplateColumns: '1.5fr 1fr 1fr 1fr 1fr 1.5fr' }}
-            >
+            <div key={event.id} className="table-row" style={{ gridTemplateColumns: '1.5fr 1fr 1fr 1fr 1fr 1.5fr', opacity: actionLoading ? 0.6 : 1 }}>
               <span className="row-name">{event.title}</span>
               <span className="row-muted">{event.organizer_name || 'N/A'}</span>
               <span className="row-muted">{formatDate(event.start_date)}</span>
               <span className="row-muted">{event.category_name || 'N/A'}</span>
 
-              <span
-                className={`table-badge ${
-                  event.approval_status === 'approved'
-                    ? 'success'
-                    : event.approval_status === 'rejected'
-                    ? 'danger'
-                    : 'warning'
-                }`}
-              >
+              <span className={`table-badge ${event.approval_status === 'approved' ? 'success' : event.approval_status === 'rejected' ? 'danger' : 'warning'}`}>
                 {event.approval_status}
               </span>
 
               <div className="row-actions">
-                <button
-                  className="table-action-btn success"
-                  onClick={() => handleApprove(event.id)}
+                {event.approval_status === 'pending' && (
+                  <>
+                    <button className="table-action-btn success" onClick={() => handleStatusChange(event.id, 'approved')} disabled={actionLoading}>
+                      Approve
+                    </button>
+                    <button className="table-action-btn danger" onClick={() => {
+                      const n = window.prompt('Reason for rejection?');
+                      if(n) handleStatusChange(event.id, 'rejected', n);
+                    }} disabled={actionLoading}>
+                      Reject
+                    </button>
+                  </>
+                )}
+                
+                <button 
+                  className="table-action-btn primary" 
+                  onClick={() => handleFeature(event.id, event.featured)}
+                  style={{ backgroundColor: event.featured ? '#f59e0b' : '' }}
                 >
-                  Approve
-                </button>
-
-                <button
-                  className="table-action-btn danger"
-                  onClick={() => handleReject(event.id)}
-                >
-                  Reject
-                </button>
-
-                <button
-                  className="table-action-btn primary"
-                  onClick={() => handleFeature(event.id)}
-                >
-                  Feature
+                  {event.featured ? 'Unfeature' : 'Feature'}
                 </button>
               </div>
             </div>
