@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef} from 'react'
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -7,6 +7,8 @@ import { Download, Calendar } from 'lucide-react'
 import '../../styles/Reports.css'
 import api from '../../services/api'
 import { useToast } from '../../components/common/ToastContext'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 
 function Reports() {
   const { addToast } = useToast()
@@ -14,6 +16,8 @@ function Reports() {
   const [loading, setLoading] = useState(true)
   const [startDate, setStartDate] = useState(getDefaultStartDate())
   const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0])
+
+  const reportRef = useRef(null)
 
   function getDefaultStartDate() {
     const date = new Date()
@@ -45,12 +49,86 @@ function Reports() {
     fetchReports()
   }
 
-  function exportToPDF() {
-    addToast('PDF export coming soon', 'info')
+  async function exportToPDF() {
+    if (!reportRef.current) return;
+
+    try {
+      addToast('Generating full report...', 'info');
+      
+      const element = reportRef.current;
+      
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#0f172a',
+        windowHeight: element.scrollHeight, 
+        scrollY: -window.scrollY 
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = 210; // Standard A4 width in mm
+      const pageHeight = 297; // Standard A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const pdf = new jsPDF('p', 'mm', [imgWidth, imgHeight]);
+
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.save(`System_Analytics_${new Date().toISOString().split('T')[0]}.pdf`);
+      
+      addToast('Full PDF Downloaded', 'success');
+    } catch (err) {
+      console.error("PDF Error:", err);
+      addToast('PDF Export failed', 'error');
+    }
   }
 
   function exportToCSV() {
-    addToast('CSV export coming soon', 'info')
+    if (!data) return;
+
+    try {
+      let csvRows = [];
+
+      // 1. Summary Metrics Section
+      csvRows.push(["--- SUMMARY METRICS ---"]);
+      csvRows.push(["Metric", "Value"]);
+      csvRows.push(["Total Revenue", data.revenue?.total_revenue || 0]);
+      csvRows.push(["Total Bookings", data.revenue?.total_bookings || 0]);
+      csvRows.push(["Total Users", data.users?.total_users || 0]);
+      csvRows.push(["Approved Events", data.events?.approved_events || 0]);
+      csvRows.push([]); 
+
+      // 2. Top Events Table Section
+      csvRows.push(["--- TOP EVENTS ---"]);
+      csvRows.push(["Event Title", "Start Date", "Revenue", "Bookings"]);
+      
+      if (data.topEvents && data.topEvents.length > 0) {
+        data.topEvents.forEach(e => {
+          csvRows.push([
+            `"${e.title.replace(/"/g, '""')}"`, // Escape quotes
+            new Date(e.start_date).toLocaleDateString(),
+            e.booking_revenue,
+            e.booking_count
+          ]);
+        });
+      }
+
+      // Convert to string
+      const csvContent = csvRows.map(row => row.join(",")).join("\n");
+      
+      // Download Logic
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Report_${startDate}_to_${endDate}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      addToast('CSV Downloaded', 'success');
+    } catch (err) {
+      addToast('CSV Export failed', 'error');
+    }
   }
 
   if (loading) return <div className="reports-empty">Analyzing system data...</div>
@@ -59,7 +137,7 @@ function Reports() {
   const pieColors = ['#8b5cf6', '#22c55e', '#f59e0b', '#ef4444', '#38bdf8', '#ec4899']
 
   return (
-    <main className="reports-page">
+    <main className="reports-page" ref={reportRef}>
       <div className="reports-header">
         <div>
           <h2>System Reports & Analytics</h2>
