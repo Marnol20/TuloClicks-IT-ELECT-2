@@ -46,9 +46,30 @@ export async function fetchMe() {
   return res.data
 }
 
-export function logoutUser() {
-  localStorage.removeItem(TOKEN_KEY)
-  localStorage.removeItem(USER_KEY)
+export async function changePassword(currentPassword, newPassword) {
+  const res = await api.post('/auth/change-password', {
+    currentPassword,
+    newPassword
+  })
+  return res.data
+}
+
+export async function logoutUser() {
+  try {
+    // Call logout endpoint to blacklist token
+    const token = getToken()
+    if (token) {
+      await api.post('/auth/logout', {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+    }
+  } catch (error) {
+    console.error('Logout error:', error)
+  } finally {
+    localStorage.removeItem('token')
+    localStorage.removeItem('refreshToken')
+    localStorage.removeItem('user')
+  }
 }
 
 export function getToken() {

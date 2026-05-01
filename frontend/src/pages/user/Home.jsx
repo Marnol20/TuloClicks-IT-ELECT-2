@@ -119,7 +119,7 @@ function Home() {
               <button
                 className="user-dashboard-item clickable-card"
                 key={ticket.id}
-                onClick={() => navigate('/home/tickets')}
+                onClick={() => navigate(`/home/tickets/${ticket.id}`)}
               >
                 <div>
                   <h3>{ticket.event_title}</h3>

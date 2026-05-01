@@ -37,6 +37,16 @@ function ProfileDropdown() {
     window.location.href = '/login'
   }
 
+  function handleProfileClick() {
+  if (user.role === 'admin') {
+    handleNavigation('/admin/profile')
+  } else if (user.role === 'organizer') {
+    handleNavigation('/organizer/profile')
+  } else {
+    handleNavigation('/home/profile')
+  }
+}
+
   if (!user) return null
 
   return (
@@ -59,7 +69,7 @@ function ProfileDropdown() {
         <div className="profile-dropdown-menu">
           <button
             className="profile-dropdown-item"
-            onClick={() => handleNavigation('/home/profile')}
+            onClick={handleProfileClick}
           >
             <User size={18} />
             <span>Profile</span>

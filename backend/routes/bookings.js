@@ -100,7 +100,7 @@ router.post('/', authMiddleware, async (req, res) => {
  */
 router.get('/my-bookings', authMiddleware, async (req, res) => {
   const [rows] = await db.query(
-    `SELECT b.*, e.title AS event_title, e.start_date, e.event_image 
+    `SELECT b.*, e.title AS event_title, e.start_date, e.start_time, e.event_image 
      FROM bookings b JOIN events e ON b.event_id = e.id WHERE b.user_id = ? ORDER BY b.booked_at DESC`,
     [req.user.id]
   );

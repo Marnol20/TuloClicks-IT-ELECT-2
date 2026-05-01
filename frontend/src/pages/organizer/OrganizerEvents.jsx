@@ -163,6 +163,12 @@ function OrganizerEvents() {
     setEndTime(event.end_time || '')
     setLocationType(event.location_type || 'physical')
     setCustomLocation(event.custom_location || '')
+
+     // Show current event image
+  if (event.event_image) {
+    setPreviewUrl(`http://localhost:5000/uploads/events/${event.event_image}`)
+  }
+  
     setShowForm(true)
     window.scrollTo(0, 0)
   }

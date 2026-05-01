@@ -126,6 +126,7 @@ function App() {
           }
         >
           <Route index element={<AdminDashboard />} />
+          <Route path="profile" element={<Profile />} />
           <Route path="organizers" element={<OrganizerApprovals />} />
           <Route path="events" element={<EventApprovals />} />
           <Route path="categories" element={<Categories />} />
@@ -146,6 +147,7 @@ function App() {
           }
         >
           <Route index element={<OrganizerDashboard />} />
+          <Route path="profile" element={<Profile />} />
           <Route path="events" element={<OrganizerEvents />} />
           <Route path="speakers" element={<OrganizerSpeakers />} />
           <Route path="tickets" element={<OrganizerTickets />} />
@@ -157,10 +159,10 @@ function App() {
         <Route path="*" element={<Navigate to="/login" replace />} />
 
       </Routes>
-    </BrowserRouter>
-    </ToastProvider>
-  </ThemeProvider>
-)
+        </BrowserRouter>
+      </ToastProvider>
+    </ThemeProvider>
+  )
 }
 
 export default App

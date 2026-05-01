@@ -155,12 +155,12 @@ function MyTickets() {
                   </button>
                 )}
 
-<button
-  className="ticket-action-btn"
-  onClick={() => navigate(`/home/tickets/${ticket.id}`)}
->
-  View Details
-</button>
+                <button
+                  className="ticket-action-btn"
+                  onClick={() => navigate(`/home/tickets/${ticket.id}`)}
+                >
+                  View Details
+                </button>
               </div>
             </div>
           ))}

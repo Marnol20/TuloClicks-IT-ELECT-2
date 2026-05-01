@@ -73,7 +73,7 @@
 /* ===== GRID ===== */
 .reports-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 18px;
   margin-bottom: 20px;
 }
@@ -205,4 +205,137 @@
 
 .reports-export-btn:hover {
   background: #273244;
+}
+
+/* ===== FILTER SECTION ===== */
+.reports-filter {
+  display: flex;
+  gap: 15px;
+  padding: 20px;
+  background: #1e293b;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  align-items: flex-end;
+  border: 1px solid #273244;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.filter-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.filter-group input {
+  padding: 10px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  color: #f8fafc;
+  font-size: 0.95rem;
+}
+
+.filter-group input:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.reports-filter-btn {
+  padding: 10px 24px;
+  background: #8b5cf6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+  font-size: 0.95rem;
+}
+
+.reports-filter-btn:hover {
+  background: #7c3aed;
+}
+
+.reports-filter-btn:active {
+  transform: scale(0.98);
+}
+
+/* ===== ACTION BUTTONS ===== */
+.reports-btn {
+  padding: 10px 16px;
+  background: #334155;
+  color: #f8fafc;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.2s;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.reports-btn:hover {
+  background: #475569;
+}
+
+/* ===== CARD META ===== */
+.report-card-meta {
+  font-size: 0.85rem;
+  color: #64748b;
+  display: block;
+  margin-top: 5px;
+}
+
+/* ===== EVENT DETAILS ===== */
+.event-title {
+  display: block;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.event-date {
+  display: block;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+/* ===== RESPONSIVE - FILTER ===== */
+@media (max-width: 768px) {
+  .reports-filter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-group {
+    flex: 1;
+  }
+
+  .reports-filter-btn {
+    width: 100%;
+  }
+
+  .reports-cards {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .reports-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-panel {
+    min-height: 300px;
+  }
 }
