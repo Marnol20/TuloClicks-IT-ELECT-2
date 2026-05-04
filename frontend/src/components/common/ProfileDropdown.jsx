@@ -7,13 +7,21 @@ function ProfileDropdown() {
   const navigate = useNavigate()
   const location = useLocation()
   const [isOpen, setIsOpen] = useState(false)
+  const [currentMode, setCurrentMode] = useState(null)
   const dropdownRef = useRef(null)
 
   const user = JSON.parse(localStorage.getItem('user') || 'null')
 
-  // Determine current dashboard mode
-  const isUserMode = location.pathname.startsWith('/home')
-  const isOrganizerMode = location.pathname.startsWith('/organizer')
+  // Determine current dashboard mode based on URL path
+  useEffect(() => {
+    if (location.pathname.startsWith('/home')) {
+      setCurrentMode('user')
+    } else if (location.pathname.startsWith('/organizer')) {
+      setCurrentMode('organizer')
+    } else if (location.pathname.startsWith('/admin')) {
+      setCurrentMode('admin')
+    }
+  }, [location.pathname])
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -38,14 +46,25 @@ function ProfileDropdown() {
   }
 
   function handleProfileClick() {
-  if (user.role === 'admin') {
-    handleNavigation('/admin/profile')
-  } else if (user.role === 'organizer') {
-    handleNavigation('/organizer/profile')
-  } else {
-    handleNavigation('/home/profile')
+    if (currentMode === 'admin') {
+      handleNavigation('/admin/profile')
+    } else if (currentMode === 'organizer') {
+      handleNavigation('/organizer/profile')
+    } else {
+      handleNavigation('/home/profile')
+    }
   }
-}
+
+  function handleSwitchMode() {
+    // Only organizers can switch between modes
+    if (user.role === 'organizer') {
+      if (currentMode === 'user') {
+        handleNavigation('/organizer')
+      } else if (currentMode === 'organizer') {
+        handleNavigation('/home')
+      }
+    }
+  }
 
   if (!user) return null
 
@@ -75,27 +94,30 @@ function ProfileDropdown() {
             <span>Profile</span>
           </button>
 
-          <button
-            className="profile-dropdown-item"
-            onClick={() => handleNavigation('/home/tickets')}
-          >
-            <CreditCard size={18} />
-            <span>My Tickets</span>
-          </button>
+          {/* My Tickets - Only for users, not for organizers or admins */}
+          {currentMode === 'user' && (
+            <button
+              className="profile-dropdown-item"
+              onClick={() => handleNavigation('/home/tickets')}
+            >
+              <CreditCard size={18} />
+              <span>My Tickets</span>
+            </button>
+          )}
 
           {/* Switch Dashboard - Only for organizers */}
           {user.role === 'organizer' && (
             <button
               className="profile-dropdown-item"
-              onClick={() => handleNavigation(isUserMode ? '/organizer' : '/home')}
+              onClick={handleSwitchMode}
             >
               <RefreshCw size={18} />
-              <span>{isUserMode ? 'Switch to Organizer' : 'Switch to User'}</span>
+              <span>{currentMode === 'user' ? 'Switch to Organizer' : 'Switch to User'}</span>
             </button>
           )}
 
           {/* Users can apply to become organizers */}
-          {user.role === 'user' && (
+          {user.role === 'user' && currentMode === 'user' && (
             <button
               className="profile-dropdown-item"
               onClick={() => handleNavigation('/home/apply-organizer')}
@@ -109,7 +131,15 @@ function ProfileDropdown() {
 
           <button
             className="profile-dropdown-item"
-            onClick={() => handleNavigation('/home/settings')}
+            onClick={() => {
+              if (currentMode === 'admin') {
+                handleNavigation('/admin/settings')
+              } else if (currentMode === 'organizer') {
+                handleNavigation('/organizer/settings')
+              } else {
+                handleNavigation('/home/settings')
+              }
+            }}
           >
             <Settings size={18} />
             <span>Settings</span>

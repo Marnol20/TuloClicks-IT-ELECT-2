@@ -45,22 +45,36 @@ const BookingWizard = () => {
   }, [])
 
   useEffect(() => {
-    fetchEventDetails()
+      if (id) {
+        fetchEventDetails()
+      }
   }, [id])
 
   const fetchEventDetails = async () => {
     try {
       setLoading(true)
+      setError('')
+      
+      console.log('Fetching event details for ID:', id)
+      
       const [eventRes, ticketsRes] = await Promise.all([
         api.get(`/events/${id}`),
         api.get(`/tickets/event/${id}`)
       ])
 
+      console.log('Event data:', eventRes.data)
+      console.log('Tickets data:', ticketsRes.data)
+
       setEvent(eventRes.data)
       setTickets(ticketsRes.data || [])
+      
+      if (!ticketsRes.data || ticketsRes.data.length === 0) {
+        setError('No tickets available for this event.')
+      }
     } catch (error) {
       console.error('Fetch event details error:', error)
-      setError('Failed to load event details')
+      setError('Failed to load event details. Please try again.')
+      setTickets([])
     } finally {
       setLoading(false)
     }
@@ -112,6 +126,13 @@ const BookingWizard = () => {
 
   const handleBookNow = async () => {
     try {
+      // Check if event is concluded
+      const statusRes = await api.get(`/events/${id}/status`)
+      if (statusRes.data.is_concluded) {
+        addToast('This event has concluded. No new bookings are allowed.', 'error')
+        return
+      }
+
       const token = localStorage.getItem('token')
       if (!token) {
         addToast('Please log in first', 'error')
@@ -207,6 +228,24 @@ const BookingWizard = () => {
     return ticket ? Number(ticket.price) : 0
   }
 
+  const incrementQuantity = () => {
+    const selectedTicket = getSelectedTicket()
+    if (selectedTicket) {
+      const available = selectedTicket.quantity_available - selectedTicket.quantity_sold
+      if (formData.quantity < available) {
+        setFormData(prev => ({ ...prev, quantity: prev.quantity + 1 }))
+      } else {
+        addToast(`Only ${available} tickets available`, 'warning')
+      }
+    }
+  }
+
+  const decrementQuantity = () => {
+    if (formData.quantity > 1) {
+      setFormData(prev => ({ ...prev, quantity: prev.quantity - 1 }))
+    }
+  }
+
   const getTotalAmount = () => {
     return getTicketPrice() * formData.quantity
   }
@@ -222,16 +261,6 @@ const BookingWizard = () => {
     if (event.custom_location) return event.custom_location
     if (event.venue_name) return event.venue_name
     return 'Location not available'
-  }
-
-  const incrementQuantity = () => {
-    setFormData(prev => ({ ...prev, quantity: prev.quantity + 1 }))
-  }
-
-  const decrementQuantity = () => {
-    if (formData.quantity > 1) {
-      setFormData(prev => ({ ...prev, quantity: prev.quantity - 1 }))
-    }
   }
 
   if (loading) {

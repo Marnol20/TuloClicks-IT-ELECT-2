@@ -187,6 +187,26 @@
   margin: 0;
 }
 
+.phone-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.phone-input-wrapper input {
+  flex: 1;
+}
+
+.phone-digit-counter {
+  position: absolute;
+  right: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8b5cf6;
+  background: transparent;
+  padding: 0 4px;
+}
+
 @media (max-width: 640px) {
   .profile-header {
     flex-direction: column;

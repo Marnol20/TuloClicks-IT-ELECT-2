@@ -208,15 +208,53 @@
 }
 
 /* ===== FILTER SECTION ===== */
+.reports-filter-section {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0.04) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 30px;
+}
+
+/* Preset Buttons */
+.filter-presets {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.preset-btn {
+  padding: 8px 16px;
+  background: rgba(139, 92, 246, 0.1);
+  color: #94a3b8;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.preset-btn:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.5);
+  color: #cbd5e1;
+}
+
+.preset-btn.active {
+  background: #8b5cf6;
+  color: white;
+  border-color: #8b5cf6;
+}
+
+/* Custom Date Range Input */
 .reports-filter {
   display: flex;
   gap: 15px;
-  padding: 20px;
-  background: #1e293b;
-  border-radius: 12px;
-  margin-bottom: 30px;
   align-items: flex-end;
-  border: 1px solid #273244;
+  margin-bottom: 16px;
 }
 
 .filter-group {
@@ -233,21 +271,30 @@
   font-size: 0.9rem;
   color: #94a3b8;
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .filter-group input {
-  padding: 10px;
-  background: #0f172a;
-  border: 1px solid #334155;
+  padding: 10px 12px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 2px solid #334155;
   border-radius: 8px;
   color: #f8fafc;
   font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.filter-group input:hover {
+  border-color: rgba(139, 92, 246, 0.4);
+  background: rgba(139, 92, 246, 0.03);
 }
 
 .filter-group input:focus {
   outline: none;
   border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+  background: rgba(15, 23, 42, 0.8);
 }
 
 .reports-filter-btn {
@@ -258,19 +305,56 @@
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  transition: 0.2s;
+  transition: all 0.2s;
   font-size: 0.95rem;
 }
 
 .reports-filter-btn:hover {
   background: #7c3aed;
+  transform: translateY(-2px);
 }
 
 .reports-filter-btn:active {
   transform: scale(0.98);
 }
 
+/* Date Range Summary */
+.date-range-summary {
+  background: rgba(139, 92, 246, 0.06);
+  border-left: 3px solid #8b5cf6;
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.summary-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.summary-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #8b5cf6;
+}
+
 /* ===== ACTION BUTTONS ===== */
+.reports-actions {
+  display: flex;
+  gap: 10px;
+}
+
 .reports-btn {
   padding: 10px 16px;
   background: #334155;
@@ -288,32 +372,24 @@
 
 .reports-btn:hover {
   background: #475569;
+  transform: translateY(-2px);
 }
 
-/* ===== CARD META ===== */
-.report-card-meta {
-  font-size: 0.85rem;
-  color: #64748b;
-  display: block;
-  margin-top: 5px;
-}
-
-/* ===== EVENT DETAILS ===== */
-.event-title {
-  display: block;
-  font-weight: 600;
-  color: #f8fafc;
-}
-
-.event-date {
-  display: block;
-  font-size: 0.85rem;
-  color: #94a3b8;
-  margin-top: 2px;
-}
-
-/* ===== RESPONSIVE - FILTER ===== */
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
+  .reports-filter-section {
+    padding: 16px;
+  }
+
+  .filter-presets {
+    gap: 8px;
+  }
+
+  .preset-btn {
+    padding: 7px 12px;
+    font-size: 0.8rem;
+  }
+
   .reports-filter {
     flex-direction: column;
     align-items: stretch;
@@ -327,15 +403,14 @@
     width: 100%;
   }
 
-  .reports-cards {
-    grid-template-columns: 1fr 1fr;
+  .date-range-summary {
+    flex-direction: column;
+    gap: 10px;
   }
 
-  .reports-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .chart-panel {
-    min-height: 300px;
+  .summary-item {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
   }
 }

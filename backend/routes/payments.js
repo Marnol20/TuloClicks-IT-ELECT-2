@@ -92,7 +92,7 @@ router.post('/', authMiddleware, async (req, res) => {
       amount
     } = req.body;
 
-    if (!booking_id || !amount) {
+    if (!booking_id || amount === undefined || amount === null) {
       return res.status(400).json({ error: 'Booking and amount are required.' });
     }
 

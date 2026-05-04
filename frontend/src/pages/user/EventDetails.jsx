@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import api from '../../services/api'
 import {
   MapPin,
   Clock,
-  Calendar
+  Calendar,
+  ArrowLeft
 } from 'lucide-react'
 import BookingWizard from '../../components/user/BookingWizard'
 import '../../styles/EventDetails.css'
 
 function EventDetails() {
   const { id } = useParams()
+  const navigate = useNavigate()
 
   const [event, setEvent] = useState(null)
   const [speakers, setSpeakers] = useState([])
@@ -78,6 +80,14 @@ function EventDetails() {
   return (
     <div className="event-details-page">
       <div className="event-hero">
+         <button 
+            className="btn-back-to-events"
+            onClick={() => navigate('/home/events')}
+            title="Back to Events"
+          >
+            <ArrowLeft size={20} />
+            <span>Back</span>
+          </button>
         <div className="event-hero-content">
           <div className="event-meta-header">
             <span className="event-day">{formatDate(event.start_date)}</span>

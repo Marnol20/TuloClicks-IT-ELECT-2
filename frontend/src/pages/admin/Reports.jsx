@@ -16,6 +16,7 @@ function Reports() {
   const [loading, setLoading] = useState(true)
   const [startDate, setStartDate] = useState(getDefaultStartDate())
   const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0])
+  const [selectedPreset, setSelectedPreset] = useState('last30')
 
   const reportRef = useRef(null)
 
@@ -23,6 +24,36 @@ function Reports() {
     const date = new Date()
     date.setDate(date.getDate() - 30)
     return date.toISOString().split('T')[0]
+  }
+
+  function applyPreset(preset) {
+    const today = new Date()
+    const end = today.toISOString().split('T')[0]
+    let start
+
+    switch (preset) {
+      case 'today':
+        start = end
+        break
+      case 'last7':
+        start = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        break
+      case 'last30':
+        start = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        break
+      case 'last90':
+        start = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        break
+      case 'last365':
+        start = new Date(today.getTime() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        break
+      default:
+        return
+    }
+
+    setStartDate(start)
+    setEndDate(end)
+    setSelectedPreset(preset)
   }
 
   useEffect(() => {
@@ -46,7 +77,16 @@ function Reports() {
   }
 
   function handleDateFilter() {
+    setSelectedPreset('custom')
     fetchReports()
+  }
+
+  function getDaysInRange() {
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+    const diffTime = Math.abs(end - start)
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    return diffDays + 1
   }
 
   async function exportToPDF() {
@@ -153,17 +193,84 @@ function Reports() {
         </div>
       </div>
 
-      {/* DATE RANGE FILTER */}
-      <section className="reports-filter">
-        <div className="filter-group">
-          <label><Calendar size={16} /> Start Date</label>
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+       {/* IMPROVED DATE RANGE FILTER */}
+      <section className="reports-filter-section">
+        {/* Preset Buttons */}
+        <div className="filter-presets">
+          <button 
+            className={`preset-btn ${selectedPreset === 'today' ? 'active' : ''}`}
+            onClick={() => applyPreset('today')}
+          >
+            Today
+          </button>
+          <button 
+            className={`preset-btn ${selectedPreset === 'last7' ? 'active' : ''}`}
+            onClick={() => applyPreset('last7')}
+          >
+            Last 7 Days
+          </button>
+          <button 
+            className={`preset-btn ${selectedPreset === 'last30' ? 'active' : ''}`}
+            onClick={() => applyPreset('last30')}
+          >
+            Last 30 Days
+          </button>
+          <button 
+            className={`preset-btn ${selectedPreset === 'last90' ? 'active' : ''}`}
+            onClick={() => applyPreset('last90')}
+          >
+            Last 90 Days
+          </button>
+          <button 
+            className={`preset-btn ${selectedPreset === 'last365' ? 'active' : ''}`}
+            onClick={() => applyPreset('last365')}
+          >
+            Last Year
+          </button>
         </div>
-        <div className="filter-group">
-          <label><Calendar size={16} /> End Date</label>
-          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+
+        {/* Custom Date Range */}
+        <div className="reports-filter">
+          <div className="filter-group">
+            <label><Calendar size={16} /> Start Date</label>
+            <input 
+              type="date" 
+              value={startDate} 
+              onChange={(e) => {
+                setStartDate(e.target.value)
+                setSelectedPreset('custom')
+              }} 
+            />
+          </div>
+          <div className="filter-group">
+            <label><Calendar size={16} /> End Date</label>
+            <input 
+              type="date" 
+              value={endDate} 
+              onChange={(e) => {
+                setEndDate(e.target.value)
+                setSelectedPreset('custom')
+              }} 
+            />
+          </div>
+          <button onClick={handleDateFilter} className="reports-filter-btn">Apply Filter</button>
         </div>
-        <button onClick={handleDateFilter} className="reports-filter-btn">Apply Filter</button>
+
+        {/* Date Range Summary */}
+        <div className="date-range-summary">
+          <div className="summary-item">
+            <span className="summary-label">Showing data for:</span>
+            <span className="summary-value">
+              {new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              {' '} → {' '}
+              {new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            </span>
+          </div>
+          <div className="summary-item">
+            <span className="summary-label">Period:</span>
+            <span className="summary-value">{getDaysInRange()} days</span>
+          </div>
+        </div>
       </section>
 
       {/* SUMMARY CARDS */}

@@ -697,4 +697,102 @@ router.delete('/:id', authMiddleware, roleMiddleware('organizer', 'admin'), asyn
   }
 });
 
+
+/**
+ * PUBLIC: get event status (check if concluded)
+ */
+router.get('/:id/status', async (req, res) => {
+  try {
+    const eventId = Number(req.params.id);
+
+    const [events] = await db.query(
+      `SELECT id, title, end_date, end_time FROM events WHERE id = ? LIMIT 1`,
+      [eventId]
+    );
+
+    if (events.length === 0) {
+      return res.status(404).json({ error: 'Event not found.' });
+    }
+
+    const event = events[0];
+    const now = new Date();
+    const eventEndDateTime = new Date(`${event.end_date}T${event.end_time}`);
+
+    const isEventConcluded = now > eventEndDateTime;
+
+    return res.json({
+      id: event.id,
+      title: event.title,
+      end_date: event.end_date,
+      end_time: event.end_time,
+      is_concluded: isEventConcluded,
+      status: isEventConcluded ? 'concluded' : 'active'
+    });
+  } catch (error) {
+    console.error('Get event status error:', error);
+    return res.status(500).json({ error: 'Server error checking event status.' });
+  }
+});
+
+/**
+ * ADMIN/ORGANIZER: conclude event and disable all tickets
+ */
+router.patch('/:id/conclude', authMiddleware, roleMiddleware('organizer', 'admin'), async (req, res) => {
+  const connection = await db.getConnection();
+  try {
+    const eventId = Number(req.params.id);
+    await connection.beginTransaction();
+
+    const [events] = await connection.query(
+      `SELECT * FROM events WHERE id = ? LIMIT 1`,
+      [eventId]
+    );
+
+    if (events.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ error: 'Event not found.' });
+    }
+
+    const event = events[0];
+
+    if (req.user.role !== 'admin' && event.organizer_id !== req.user.id) {
+      await connection.rollback();
+      return res.status(403).json({ error: 'Access denied.' });
+    }
+
+    // Disable all active tickets for this event
+    await connection.query(
+      `UPDATE ticket_types SET is_active = 0 WHERE event_id = ? AND is_active = 1`,
+      [eventId]
+    );
+
+    await connection.query(
+      `UPDATE events SET publish_status = 'concluded' WHERE id = ?`,
+      [eventId]
+    );
+
+    await connection.commit();
+
+    await logActivity({
+      user_id: req.user.id,
+      action: 'EVENT_CONCLUDED',
+      entity_type: 'event',
+      entity_id: eventId,
+      description: `Event ${eventId} concluded and all tickets disabled`,
+      req
+    });
+
+    return res.json({
+      message: 'Event concluded and all tickets have been disabled.',
+      event_id: eventId
+    });
+  } catch (error) {
+    await connection.rollback();
+    console.error('Conclude event error:', error);
+    return res.status(500).json({ error: 'Server error concluding event.' });
+  } finally {
+    connection.release();
+  }
+});
+
 module.exports = router;

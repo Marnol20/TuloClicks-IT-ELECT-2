@@ -27,7 +27,6 @@ import OrganizerApprovals from './pages/admin/OrganizerApprovals'
 import EventApprovals from './pages/admin/EventApprovals'
 import Venues from './pages/admin/Venues'
 import Payments from './pages/admin/Payments'
-import SupportIssues from './pages/admin/SupportIssues'
 import Categories from './pages/admin/Categories'
 import Reports from './pages/admin/Reports'
 import ActivityLogs from './pages/admin/ActivityLogs'
@@ -49,6 +48,8 @@ import ApplyOrganizer from './pages/user/ApplyOrganizer'
 import BookingDetails from './pages/user/BookingDetails'
 import Profile from './pages/user/Profile'
 import Settings from './pages/user/Settings'
+import OrganizerSettings from './pages/organizer/OrganizerSettings'
+import AdminSettings from './pages/admin/AdminSettings'
 
 function App() {
   return (
@@ -127,12 +128,12 @@ function App() {
         >
           <Route index element={<AdminDashboard />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="settings" element={<AdminSettings />} />
           <Route path="organizers" element={<OrganizerApprovals />} />
           <Route path="events" element={<EventApprovals />} />
           <Route path="categories" element={<Categories />} />
           <Route path="venues" element={<Venues />} />
           <Route path="payments" element={<Payments />} />
-          <Route path="support" element={<SupportIssues />} />
           <Route path="reports" element={<Reports />} />
           <Route path="activity-logs" element={<ActivityLogs />} />
         </Route>
@@ -153,6 +154,7 @@ function App() {
           <Route path="tickets" element={<OrganizerTickets />} />
           <Route path="bookings" element={<OrganizerBookings />} />
           <Route path="scan-qr" element={<OrganizerScanQR />} />
+          <Route path="settings" element={<OrganizerSettings />} />
         </Route>
 
         {/* Fallback */}

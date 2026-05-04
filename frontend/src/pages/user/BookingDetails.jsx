@@ -6,7 +6,8 @@ import {
   User,
   CreditCard,
   Upload,
-  Image as ImageIcon
+  Image as ImageIcon,
+  ArrowLeft
 } from 'lucide-react'
 import { QRCodeCanvas } from 'qrcode.react'
 import html2canvas from 'html2canvas'
@@ -110,6 +111,14 @@ function BookingDetails() {
     <div className="event-details-page">
       {/* Hero Section */}
       <div className="event-hero">
+           <button 
+              className="btn-back-to-tickets"
+              onClick={() => navigate('/home/tickets')}
+              title="Back to My Tickets"
+            >
+              <ArrowLeft size={20} />
+              <span>Back</span>
+            </button>
         <div className="event-hero-content">
           <div className="event-meta-header">
             <span className="event-day">Booking Details</span>

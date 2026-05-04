@@ -13,7 +13,7 @@ function OrganizerTickets() {
 
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [price, setPrice] = useState('')
+  const [price, setPrice] = useState('0.00')
   const [quantity, setQuantity] = useState('')
 
   useEffect(() => {
@@ -107,7 +107,7 @@ function OrganizerTickets() {
     setEditingId(null)
     setName('')
     setDescription('')
-    setPrice('')
+    setPrice('0.00')
     setQuantity('')
   }
 

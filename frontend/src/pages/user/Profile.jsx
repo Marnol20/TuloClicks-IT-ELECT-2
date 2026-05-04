@@ -105,6 +105,16 @@ function Profile() {
 
   function handleChange(e) {
     const { name, value } = e.target
+    
+    // If it's a phone field, limit to 11 digits
+    if (name === 'phone') {
+      const phoneValue = value.replace(/\D/g, '') // Remove non-digit characters
+      if (phoneValue.length <= 11) {
+        setFormData(prev => ({ ...prev, [name]: phoneValue }))
+      }
+      return
+    }
+    
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
@@ -205,13 +215,21 @@ function Profile() {
                 Phone Number
               </label>
               {isEditing ? (
+              <div className="phone-input-wrapper">
                 <input
                   type="tel"
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="Enter your phone number"
+                  maxLength="11"
+                  pattern="\d{11}"
+                  title="Phone number must be 11 digits"
                 />
+                <span className="phone-digit-counter">
+                    {formData.phone.length}/11
+                </span>
+              </div>
               ) : (
                 <p className="profile-value">{user?.phone || 'Not set'}</p>
               )}

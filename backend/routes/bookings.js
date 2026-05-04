@@ -50,10 +50,18 @@ router.post('/', authMiddleware, async (req, res) => {
 
     // Check Event Availability
     const [events] = await connection.query(
-      `SELECT * FROM events WHERE id = ? AND approval_status = 'approved' AND publish_status = 'published'`,
+      `SELECT * FROM events WHERE id = ? AND approval_status = 'approved' AND publish_status = 'published' AND publish_status != 'concluded'`,
       [event_id]
     );
-    if (events.length === 0) throw new Error('Event not available.');
+    if (events.length === 0) throw new Error('Event not available or has concluded!.');
+
+    // Also check if event end date/time has passed
+    const event = events[0];
+    const now = new Date();
+    const eventEndDateTime = new Date(`${event.end_date}T${event.end_time}`);
+    if (now > eventEndDateTime) {
+      throw new Error('Event has ended. No new bookings allowed.');
+    }
 
     const reference = generateBookingReference();
     let totalAmount = 0;

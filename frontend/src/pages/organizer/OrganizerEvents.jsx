@@ -243,48 +243,139 @@ return (
               </select>
             </div>
 
-            <div className="form-group">
-              <label>Start Date *</label>
-              <input
-                className="form-input"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                disabled={loading}
-              />
-            </div>
+           {/* Date & Time Section */}
+            <div className="form-section">
+              <h4 className="form-section-title">Event Schedule</h4>
+              
+              <div className="date-time-grid">
+                {/* Start Date */}
+                <div className="date-time-group">
+                  <label>Start Date *</label>
+                  <div className="date-time-input-wrapper">
+                    <input
+                      className="form-input date-time-input"
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      disabled={loading}
+                    />
+                    {startDate && (
+                      <span className="date-preview">
+                        {new Date(startDate).toLocaleDateString('en-US', { 
+                          weekday: 'short', 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })}
+                      </span>
+                    )}
+                  </div>
+                </div>
 
-            <div className="form-group">
-              <label>End Date</label>
-              <input
-                className="form-input"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                disabled={loading}
-              />
-            </div>
+                {/* Start Time */}
+                <div className="date-time-group">
+                  <label>Start Time *</label>
+                  <div className="date-time-input-wrapper">
+                    <input
+                      className="form-input date-time-input"
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      disabled={loading}
+                    />
+                    {startTime && (
+                      <span className="time-preview">
+                        {new Date(`2000-01-01T${startTime}`).toLocaleTimeString('en-US', { 
+                          hour: 'numeric', 
+                          minute: '2-digit',
+                          hour12: true
+                        })}
+                      </span>
+                    )}
+                  </div>
+                </div>
 
-            <div className="form-group">
-              <label>Start Time *</label>
-              <input
-                className="form-input"
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                disabled={loading}
-              />
-            </div>
+                {/* End Date */}
+                <div className="date-time-group">
+                  <label>End Date</label>
+                  <div className="date-time-input-wrapper">
+                    <input
+                      className="form-input date-time-input"
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      disabled={loading}
+                    />
+                    {endDate && (
+                      <span className="date-preview">
+                        {new Date(endDate).toLocaleDateString('en-US', { 
+                          weekday: 'short', 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })}
+                      </span>
+                    )}
+                  </div>
+                </div>
 
-            <div className="form-group">
-              <label>End Time</label>
-              <input
-                className="form-input"
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                disabled={loading}
-              />
+                {/* End Time */}
+                <div className="date-time-group">
+                  <label>End Time</label>
+                  <div className="date-time-input-wrapper">
+                    <input
+                      className="form-input date-time-input"
+                      type="time"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      disabled={loading}
+                    />
+                    {endTime && (
+                      <span className="time-preview">
+                        {new Date(`2000-01-01T${endTime}`).toLocaleTimeString('en-US', { 
+                          hour: 'numeric', 
+                          minute: '2-digit',
+                          hour12: true
+                        })}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Event Duration Summary */}
+              {startDate && startTime && (
+                <div className="event-duration-summary">
+                  <div className="duration-item">
+                    <span className="duration-label">Event Start:</span>
+                    <span className="duration-value">
+                      {new Date(`${startDate}T${startTime}`).toLocaleString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </span>
+                  </div>
+                  {endDate && endTime && (
+                    <div className="duration-item">
+                      <span className="duration-label">Event End:</span>
+                      <span className="duration-value">
+                        {new Date(`${endDate}T${endTime}`).toLocaleString('en-US', {
+                          weekday: 'short',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true
+                        })}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="form-group">
