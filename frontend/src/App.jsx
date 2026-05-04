@@ -30,10 +30,7 @@ import Payments from './pages/admin/Payments'
 import Categories from './pages/admin/Categories'
 import Reports from './pages/admin/Reports'
 import ActivityLogs from './pages/admin/ActivityLogs'
-<<<<<<< HEAD
-=======
-import AdminSupport from './pages/admin/AdminSupport' // Bag-ong Add
->>>>>>> 1f8375c (feat: refactor ticket inventory, add support UI, and implement QR-based review system)
+import AdminSupport from './pages/admin/AdminSupport' 
 
 // Organizer Pages
 import OrganizerDashboard from './pages/organizer/OrganizerDashboard'
@@ -42,6 +39,7 @@ import OrganizerSpeakers from './pages/organizer/OrganizerSpeakers'
 import OrganizerTickets from './pages/organizer/OrganizerTickets'
 import OrganizerBookings from './pages/organizer/OrganizerBookings'
 import OrganizerScanQR from './pages/organizer/OrganizerScanQR'
+import OrganizerSettings from './pages/organizer/OrganizerSettings'
 
 // User Pages
 import Home from './pages/user/Home'
@@ -52,11 +50,7 @@ import ApplyOrganizer from './pages/user/ApplyOrganizer'
 import BookingDetails from './pages/user/BookingDetails'
 import Profile from './pages/user/Profile'
 import Settings from './pages/user/Settings'
-<<<<<<< HEAD
-=======
-import Support from './pages/user/Support' // Bag-ong Add
->>>>>>> 1f8375c (feat: refactor ticket inventory, add support UI, and implement QR-based review system)
-import OrganizerSettings from './pages/organizer/OrganizerSettings'
+import Support from './pages/user/Support' 
 import AdminSettings from './pages/admin/AdminSettings'
 
 function App() {
@@ -64,113 +58,6 @@ function App() {
     <ThemeProvider>
       <ToastProvider>
         <BrowserRouter>
-<<<<<<< HEAD
-        <Routes>
-
-        {/* Landing Page (Public) */}
-        <Route path="/" element={<LandingPage />} />
-
-        {/* Auth Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
-
-        {/* User Routes */}
-        <Route path="/home" element={<UserLayout />}>
-          <Route index element={<Home />} />
-          <Route path="events" element={<BrowseEvents />} />
-          <Route path="events/:id" element={<EventDetails />} />
-
-          <Route
-            path="tickets"
-            element={
-              <ProtectedRoute allowedRoles={['user', 'organizer', 'admin']}>
-                <MyTickets />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="tickets/:id"
-            element={
-              <ProtectedRoute allowedRoles={['user', 'organizer', 'admin']}>
-                <BookingDetails />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="apply-organizer"
-            element={
-              <ProtectedRoute allowedRoles={['user']}>
-                <ApplyOrganizer />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="profile"
-            element={
-              <ProtectedRoute allowedRoles={['user', 'organizer', 'admin']}>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="settings"
-            element={
-              <ProtectedRoute allowedRoles={['user', 'organizer', 'admin']}>
-                <Settings />
-              </ProtectedRoute>
-            }
-          />
-        </Route>
-
-        {/* Admin Routes */}
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<AdminDashboard />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="settings" element={<AdminSettings />} />
-          <Route path="organizers" element={<OrganizerApprovals />} />
-          <Route path="events" element={<EventApprovals />} />
-          <Route path="categories" element={<Categories />} />
-          <Route path="venues" element={<Venues />} />
-          <Route path="payments" element={<Payments />} />
-          <Route path="reports" element={<Reports />} />
-          <Route path="activity-logs" element={<ActivityLogs />} />
-        </Route>
-
-        {/* Organizer Routes */}
-        <Route
-          path="/organizer"
-          element={
-            <ProtectedRoute allowedRoles={['organizer']}>
-              <OrganizerLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<OrganizerDashboard />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="events" element={<OrganizerEvents />} />
-          <Route path="speakers" element={<OrganizerSpeakers />} />
-          <Route path="tickets" element={<OrganizerTickets />} />
-          <Route path="bookings" element={<OrganizerBookings />} />
-          <Route path="scan-qr" element={<OrganizerScanQR />} />
-          <Route path="settings" element={<OrganizerSettings />} />
-        </Route>
-
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
-
-      </Routes>
-=======
           <Routes>
             {/* Landing Page (Public) */}
             <Route path="/" element={<LandingPage />} />
@@ -286,7 +173,6 @@ function App() {
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
->>>>>>> 1f8375c (feat: refactor ticket inventory, add support UI, and implement QR-based review system)
         </BrowserRouter>
       </ToastProvider>
     </ThemeProvider>

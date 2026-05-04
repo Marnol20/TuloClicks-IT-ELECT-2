@@ -40,7 +40,7 @@ router.get('/verify/:reference', authMiddleware, roleMiddleware('organizer', 'ad
 });
 
 /**
- * 2. CREATE NEW BOOKING
+ * 2. CREATE NEW BOOKING (With Inventory Fix)
  */
 router.post('/', authMiddleware, async (req, res) => {
   const connection = await db.getConnection();
@@ -50,15 +50,11 @@ router.post('/', authMiddleware, async (req, res) => {
 
     // Check Event Availability
     const [events] = await connection.query(
-      `SELECT * FROM events WHERE id = ? AND approval_status = 'approved' AND publish_status = 'published' AND publish_status != 'concluded'`,
+      `SELECT * FROM events WHERE id = ? AND approval_status = 'approved' AND publish_status = 'published'`,
       [event_id]
     );
-    if (events.length === 0) throw new Error('Event not available or has concluded!.');
+    if (events.length === 0) throw new Error('Event not available or has concluded.');
 
-<<<<<<< HEAD
-    // Also check if event end date/time has passed
-=======
->>>>>>> 1f8375c (feat: refactor ticket inventory, add support UI, and implement QR-based review system)
     const event = events[0];
     const now = new Date();
     const eventEndDateTime = new Date(`${event.end_date}T${event.end_time}`);
@@ -77,12 +73,8 @@ router.post('/', authMiddleware, async (req, res) => {
     );
     const bookingId = bookingResult.insertId;
 
-    // Process Items & Stock
+    // Process Items & Stock using 'tickets' table
     for (const item of items) {
-<<<<<<< HEAD
-      const [tickets] = await connection.query(`SELECT * FROM ticket_types WHERE id = ?`, [item.ticket_type_id]);
-      const ticket = tickets[0];
-=======
       const [tickets] = await connection.query(`SELECT * FROM tickets WHERE id = ?`, [item.ticket_type_id]);
       const ticket = tickets[0];
 
@@ -92,7 +84,6 @@ router.post('/', authMiddleware, async (req, res) => {
         throw new Error(`Sold out na ang ${ticket.name}. Sorry, dol!`);
       }
 
->>>>>>> 1f8375c (feat: refactor ticket inventory, add support UI, and implement QR-based review system)
       const subtotal = ticket.price * item.quantity;
       totalAmount += subtotal;
 
@@ -100,10 +91,8 @@ router.post('/', authMiddleware, async (req, res) => {
         `INSERT INTO booking_items (booking_id, ticket_type_id, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?)`,
         [bookingId, item.ticket_type_id, item.quantity, ticket.price, subtotal]
       );
-<<<<<<< HEAD
-      await connection.query(`UPDATE ticket_types SET quantity_sold = quantity_sold + ? WHERE id = ?`, [item.quantity, item.ticket_type_id]);
-=======
 
+      // Deduct from availability and add to sold
       await connection.query(
         `UPDATE tickets 
          SET quantity_sold = quantity_sold + ?, 
@@ -111,7 +100,6 @@ router.post('/', authMiddleware, async (req, res) => {
          WHERE id = ?`, 
         [item.quantity, item.quantity, item.ticket_type_id]
       );
->>>>>>> 1f8375c (feat: refactor ticket inventory, add support UI, and implement QR-based review system)
     }
 
     await connection.query(`UPDATE bookings SET total_amount = ? WHERE id = ?`, [totalAmount, bookingId]);
@@ -130,7 +118,7 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 /**
- * 3. RETRIEVAL ROUTES (MY BOOKINGS & DETAILS)
+ * 3. RETRIEVAL ROUTES
  */
 router.get('/my-bookings', authMiddleware, async (req, res) => {
   const [rows] = await db.query(
@@ -143,9 +131,6 @@ router.get('/my-bookings', authMiddleware, async (req, res) => {
 
 router.get('/:id', authMiddleware, async (req, res) => {
   const [bookings] = await db.query(`SELECT b.*, e.title AS event_title FROM bookings b JOIN events e ON b.event_id = e.id WHERE b.id = ?`, [req.params.id]);
-<<<<<<< HEAD
-  const [items] = await db.query(`SELECT bi.*, tt.name AS ticket_name FROM booking_items bi JOIN ticket_types tt ON bi.ticket_type_id = tt.id WHERE bi.booking_id = ?`, [req.params.id]);
-=======
   
   const [items] = await db.query(
     `SELECT bi.*, t.name AS ticket_name 
@@ -154,40 +139,19 @@ router.get('/:id', authMiddleware, async (req, res) => {
      WHERE bi.booking_id = ?`, 
     [req.params.id]
   );
->>>>>>> 1f8375c (feat: refactor ticket inventory, add support UI, and implement QR-based review system)
   res.json({ ...bookings[0], items });
 });
 
 /**
- * 4. ORGANIZER: MANAGE EVENT BOOKINGS
- */
-router.get('/event/:eventId/manage', authMiddleware, roleMiddleware('organizer', 'admin'), async (req, res) => {
-  const [rows] = await db.query(`SELECT * FROM bookings WHERE event_id = ? ORDER BY booked_at DESC`, [req.params.eventId]);
-  res.json(rows);
-});
-
-/**
- * 5. CHECK-IN ATTENDEE
- */
-router.patch('/:id/check-in', authMiddleware, roleMiddleware('organizer', 'admin'), async (req, res) => {
-  await db.query(`UPDATE bookings SET booking_status = 'checked_in', checked_in_at = NOW() WHERE id = ?`, [req.params.id]);
-  logActivity({ user_id: req.user.id, action: 'CHECKIN', entity_id: req.params.id, description: `Manual Check-in`, req });
-  res.json({ message: 'Checked in successfully.' });
-});
-
-/**
-<<<<<<< HEAD
-=======
- * NEW: UPDATE STATUS (CHECK-OUT / TIME-OUT LOGIC)
- * Kini nga route ang mo-handle sa pag-set sa 'attended' status.
+ * 4. UPDATE STATUS (Check-out / Time-out Logic)
  */
 router.patch('/:id/status', authMiddleware, roleMiddleware('organizer', 'admin'), async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body; // status: 'attended'
+  const { status } = req.body; // expected: 'attended'
 
   try {
     const [result] = await db.query(
-      "UPDATE bookings SET booking_status = ?, updated_at = NOW() WHERE id = ?",
+      "UPDATE bookings SET booking_status = ?, updated_at = NOW(), checked_out_at = NOW() WHERE id = ?",
       [status, id]
     );
 
@@ -204,22 +168,22 @@ router.patch('/:id/status', authMiddleware, roleMiddleware('organizer', 'admin')
 });
 
 /**
->>>>>>> 1f8375c (feat: refactor ticket inventory, add support UI, and implement QR-based review system)
- * 6. CANCEL BOOKING
+ * 5. CHECK-IN ATTENDEE
+ */
+router.patch('/:id/check-in', authMiddleware, roleMiddleware('organizer', 'admin'), async (req, res) => {
+  await db.query(`UPDATE bookings SET booking_status = 'checked_in', checked_in_at = NOW() WHERE id = ?`, [req.params.id]);
+  logActivity({ user_id: req.user.id, action: 'CHECKIN', entity_id: req.params.id, description: `Manual Check-in`, req });
+  res.json({ message: 'Checked in successfully.' });
+});
+
+/**
+ * 6. CANCEL BOOKING (Return Stocks)
  */
 router.patch('/:id/cancel', authMiddleware, async (req, res) => {
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
     const [items] = await connection.query(`SELECT * FROM booking_items WHERE booking_id = ?`, [req.params.id]);
-<<<<<<< HEAD
-    for (const item of items) {
-      await connection.query(`UPDATE ticket_types SET quantity_sold = quantity_sold - ? WHERE id = ?`, [item.quantity, item.ticket_type_id]);
-    }
-    await connection.query(`UPDATE bookings SET booking_status = 'cancelled' WHERE id = ?`, [req.params.id]);
-    await connection.commit();
-    res.json({ message: 'Cancelled.' });
-=======
     
     for (const item of items) {
       await connection.query(
@@ -234,7 +198,6 @@ router.patch('/:id/cancel', authMiddleware, async (req, res) => {
     await connection.query(`UPDATE bookings SET booking_status = 'cancelled' WHERE id = ?`, [req.params.id]);
     await connection.commit();
     res.json({ message: 'Cancelled and stocks returned.' });
->>>>>>> 1f8375c (feat: refactor ticket inventory, add support UI, and implement QR-based review system)
   } catch (error) {
     await connection.rollback();
     res.status(500).json({ error: 'Cancel failed.' });

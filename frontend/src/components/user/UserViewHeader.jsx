@@ -19,19 +19,12 @@ function UserViewHeader() {
     return () => window.removeEventListener('profileUpdated', handler)
   }, [])
 
-<<<<<<< HEAD
-  const navItems = [
-    { label: 'Home', path: '/home' },
-    { label: 'Events', path: '/home/events' },
-    { label: 'My Tickets', path: '/home/tickets' }
-=======
-  // Gidugangan nato og Support link diri sa navItems[cite: 2, 5]
+  // Gidugangan nato og Support link diri sa navItems
   const navItems = [
     { label: 'Home', path: '/home' },
     { label: 'Events', path: '/home/events' },
     { label: 'My Tickets', path: '/home/tickets' },
-    { label: 'Support', path: '/home/support' } // Kani ang bag-ong add[cite: 2]
->>>>>>> 1f8375c (feat: refactor ticket inventory, add support UI, and implement QR-based review system)
+    { label: 'Support', path: '/home/support' } 
   ]
 
   function isActive(path) {
