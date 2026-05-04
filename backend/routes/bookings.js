@@ -143,6 +143,29 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 /**
+ * NEW ROUTE: MANAGE BOOKINGS FOR ORGANIZER (Fix para sa 404 error)
+ */
+router.get('/event/:eventId/manage', authMiddleware, roleMiddleware('organizer', 'admin'), async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const [rows] = await db.query(
+      `SELECT * FROM bookings WHERE event_id = ? ORDER BY booked_at DESC`,
+      [eventId]
+    );
+
+    // Optional: Check if the requester is the owner of the event
+    const [eventRows] = await db.query("SELECT organizer_id FROM events WHERE id = ?", [eventId]);
+    if (req.user.role !== 'admin' && eventRows[0].organizer_id !== req.user.id) {
+      return res.status(403).json({ error: 'Dili nimo ni event, dol. Access denied.' });
+    }
+
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error fetching manage bookings.' });
+  }
+});
+
+/**
  * 4. UPDATE STATUS (Check-out / Time-out Logic)
  */
 router.patch('/:id/status', authMiddleware, roleMiddleware('organizer', 'admin'), async (req, res) => {

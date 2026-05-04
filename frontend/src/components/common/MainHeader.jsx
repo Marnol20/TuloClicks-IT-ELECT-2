@@ -10,7 +10,6 @@ function MainHeader() {
   const navigate = useNavigate()
   const user = getCurrentUser()
 
-  // Force re-render when profile is updated
   const [, forceUpdate] = useReducer(x => x + 1, 0)
 
   useEffect(() => {
@@ -42,8 +41,7 @@ function MainHeader() {
         { label: 'Speakers', path: '/organizer/speakers' },
         { label: 'Tickets', path: '/organizer/tickets' },
         { label: 'Bookings', path: '/organizer/bookings' },
-        { label: 'Scan QR', path: '/organizer/scan-qr' },
-        { label: 'Support', path: '/home/support' }
+        { label: 'Scan QR', path: '/organizer/scan-qr' }
       ]
     }
 

@@ -12,7 +12,11 @@ function OrganizerDashboard() {
 
   const totalEvents = events.length
   const totalBookings = bookings.length
-  const checkedInCount = bookings.filter((booking) => booking.booking_status === 'checked_in').length
+  
+  // ADDED: Gi-ihap apil ang 'attended' status para accurate ang Checked In count
+  const checkedInCount = bookings.filter(
+    (booking) => booking.booking_status === 'checked_in' || booking.booking_status === 'attended'
+  ).length
 
   useEffect(() => {
     fetchEvents()
@@ -121,7 +125,7 @@ function OrganizerDashboard() {
         ) : (
           bookings.map((booking) => (
             <div
-              key={booking.id}
+              key={`${booking.id}-${booking.booking_reference}`} // FIXED: Unique key para mawala ang console error
               className="table-row"
               style={{ gridTemplateColumns: '1.2fr 1.4fr 1fr 1fr 1fr 0.8fr' }}
             >
@@ -134,19 +138,19 @@ function OrganizerDashboard() {
 
               <span
                 className={`table-badge ${
-                  booking.booking_status === 'checked_in'
+                  (booking.booking_status === 'checked_in' || booking.booking_status === 'attended')
                     ? 'success'
                     : booking.booking_status === 'cancelled'
                     ? 'danger'
                     : 'warning'
                 }`}
               >
-                {booking.booking_status}
+                {booking.booking_status.replace('_', ' ')}
               </span>
 
               <div className="row-actions">
-                {/* Check kon admitted na ba */}
-                {booking.booking_status === 'checked_in' ? (
+                {/* UPDATED: Check kon admitted (checked_in) o nahuman na (attended) */}
+                {(booking.booking_status === 'checked_in' || booking.booking_status === 'attended') ? (
                   <span style={{ 
                     color: '#10b981', 
                     display: 'flex', 
@@ -158,7 +162,6 @@ function OrganizerDashboard() {
                     <span style={{ fontSize: '18px' }}>✓</span> Admitted
                   </span>
                 ) : 
-                /* Check kon cancelled ba ang ticket */
                 booking.booking_status === 'cancelled' ? (
                   <span style={{ 
                     color: '#ef4444', 
@@ -172,7 +175,6 @@ function OrganizerDashboard() {
                     <span style={{ fontSize: '18px' }}>✕</span> Cancelled
                   </span>
                 ) : (
-                  /* Standard Check-in Button para sa Pending */
                   <button
                     className="table-action-btn primary"
                     onClick={() => handleCheckIn(booking.id)}
