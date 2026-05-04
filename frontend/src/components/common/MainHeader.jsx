@@ -30,7 +30,12 @@ function MainHeader() {
         { label: 'Venues', path: '/admin/venues' },
         { label: 'Payments', path: '/admin/payments' },
         { label: 'Reports', path: '/admin/reports' },
+<<<<<<< HEAD
         { label: 'Activity Logs', path: '/admin/activity-logs' }
+=======
+        { label: 'Activity Logs', path: '/admin/activity-logs' },
+        { label: 'Support', path: '/admin/support' }
+>>>>>>> 1f8375c (feat: refactor ticket inventory, add support UI, and implement QR-based review system)
       ]
     }
 
@@ -41,14 +46,24 @@ function MainHeader() {
         { label: 'Speakers', path: '/organizer/speakers' },
         { label: 'Tickets', path: '/organizer/tickets' },
         { label: 'Bookings', path: '/organizer/bookings' },
+<<<<<<< HEAD
         { label: 'Scan QR', path: '/organizer/scan-qr' }
+=======
+        { label: 'Scan QR', path: '/organizer/scan-qr' },
+        { label: 'Support', path: '/home/support' }
+>>>>>>> 1f8375c (feat: refactor ticket inventory, add support UI, and implement QR-based review system)
       ]
     }
 
     return [
       { label: 'Home', path: '/home' },
       { label: 'Events', path: '/home/events' },
+<<<<<<< HEAD
       { label: 'My Tickets', path: '/home/tickets' }
+=======
+      { label: 'My Tickets', path: '/home/tickets' },
+      { label: 'Support', path: '/home/support' }
+>>>>>>> 1f8375c (feat: refactor ticket inventory, add support UI, and implement QR-based review system)
     ]
   }
 

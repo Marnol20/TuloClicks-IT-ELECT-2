@@ -8,6 +8,10 @@ import {
   ArrowLeft
 } from 'lucide-react'
 import BookingWizard from '../../components/user/BookingWizard'
+<<<<<<< HEAD
+=======
+import EventReviews from '../../components/user/EventReviews' 
+>>>>>>> 1f8375c (feat: refactor ticket inventory, add support UI, and implement QR-based review system)
 import '../../styles/EventDetails.css'
 
 function EventDetails() {
@@ -146,6 +150,17 @@ function EventDetails() {
                 </div>
               )}
             </div>
+<<<<<<< HEAD
+=======
+
+            {/* --- REVIEWS SECTION --- */}
+            {/* Gi-add kining bahina sa ubos sa speaker section */}
+            <hr className="my-10" style={{ borderColor: '#eee' }} />
+            <div className="reviews-section">
+              <h2 className="section-title">Attendee Reviews</h2>
+              <EventReviews eventId={id} />
+            </div>
+>>>>>>> 1f8375c (feat: refactor ticket inventory, add support UI, and implement QR-based review system)
           </div>
 
           <div className="sidebar-content">
