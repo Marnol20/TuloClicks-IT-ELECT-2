@@ -97,6 +97,20 @@ function BrowseEvents() {
     return sorted
   }, [events, search, selectedCategory, selectedLocationType, sortBy])
 
+  const CATEGORY_GRADIENTS = {
+    'Music':       'linear-gradient(135deg, #7c3aed, #ec4899)',
+    'Technology':  'linear-gradient(135deg, #2563eb, #38bdf8)',
+    'Sports':      'linear-gradient(135deg, #16a34a, #84cc16)',
+    'Business':    'linear-gradient(135deg, #d97706, #ef4444)',
+    'Art':         'linear-gradient(135deg, #db2777, #f97316)',
+    'Food':        'linear-gradient(135deg, #ea580c, #fbbf24)',
+    'Education':   'linear-gradient(135deg, #0891b2, #6366f1)',
+  }
+
+  function getCardGradient(event) {
+    return CATEGORY_GRADIENTS[event.category_name] || 'linear-gradient(135deg, #7c3aed, #6366f1)'
+  }
+
   return (
     <section className="user-view-events-page">
       <div className="events-page-header">
@@ -172,38 +186,52 @@ function BrowseEvents() {
           <div className="events-grid">
             {filteredEvents.map((event) => (
               <div className="event-card" key={event.id}>
-                {/* Event Image */}
-                {event.event_image ? (
-                  <img
-                    src={`http://localhost:5000/uploads/events/${event.event_image}`}
-                    alt={event.title}
-                    style={{ width: '100%', height: '200px', objectFit: 'cover', display: 'block' }}
-                  />
-                ) : (
-                  <div style={{ width: '100%', height: '200px', backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280' }}>
-                    No Image
-                  </div>
-                )}
+                <div className="event-card-img-wrap">
+                  {event.event_image ? (
+                    <img
+                      src={`http://localhost:5000/uploads/events/${event.event_image}`}
+                      alt={event.title}
+                      className="event-card-img"
+                    />
+                  ) : (
+                    <div
+                      className="event-card-img-fallback"
+                      style={{ background: getCardGradient(event) }}
+                    >
+                      <span className="event-card-fallback-initial">
+                        {event.title?.[0] ?? '?'}
+                      </span>
+                    </div>
+                  )}
+                  <div className="event-card-img-overlay" />
+                  {event.category_name && (
+                    <span className="event-card-category-badge">
+                      {event.category_name}
+                    </span>
+                  )}
+                  <span className="event-card-date-badge">
+                    {formatDate(event.start_date)}
+                  </span>
+                </div>
 
                 <div className="event-card-content">
-                  <p className="event-card-date">{formatDate(event.start_date)}</p>
                   <h3 className="event-card-title">{event.title}</h3>
-                  <p className="event-card-location">{getLocation(event)}</p>
+                  <p className="event-card-location">📍 {getLocation(event)}</p>
                   <p className="event-card-description">
-                    {event.description?.length > 140
-                      ? `${event.description.slice(0, 140)}...`
+                    {event.description?.length > 120
+                      ? `${event.description.slice(0, 120)}...`
                       : event.description}
                   </p>
 
                   <div className="event-card-footer">
                     <span className="event-card-attendees">
-                      {event.category_name || 'Event'}
+                      {event.location_type === 'online' ? '🌐 Online' : event.location_type === 'hybrid' ? '🔀 Hybrid' : '📍 Physical'}
                     </span>
                     <button
                       className="event-card-btn"
                       onClick={() => navigate(`/home/events/${event.id}`)}
                     >
-                      View Details
+                      View Details →
                     </button>
                   </div>
                 </div>

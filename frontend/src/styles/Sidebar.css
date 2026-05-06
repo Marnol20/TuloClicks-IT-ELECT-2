@@ -1,13 +1,24 @@
 .sidebar {
   width: 230px;
   min-height: 100vh;
-  background: linear-gradient(180deg, #0b1220 0%, #111827 100%);
+  background: linear-gradient(180deg, #080d18 0%, #0d1525 50%, #111827 100%);
   color: var(--text);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 20px 14px;
-  border-right: 1px solid var(--border-soft);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+}
+
+.sidebar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(180deg, transparent, rgba(139, 92, 246, 0.2), transparent);
 }
 
 .sidebar-top {
@@ -20,6 +31,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 4px 2px;
 }
 
 .sidebar-brand-mark {
@@ -32,44 +44,62 @@
   color: white;
   font-size: 18px;
   font-weight: 800;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
 }
 
 .sidebar-logo h2 {
   margin: 0;
   font-size: 22px;
   font-weight: 800;
+  background: linear-gradient(135deg, #ffffff, rgba(255, 255, 255, 0.8));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .sidebar-logo p {
   margin: 4px 0 0;
   font-size: 12px;
-  color: var(--text-soft);
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.04em;
 }
 
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .sidebar-link {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 14px;
+  padding: 11px 14px;
   border-radius: 10px;
-  color: rgba(255, 255, 255, 0.8);
-  transition: background-color 0.2s, color 0.2s;
+  color: rgba(255, 255, 255, 0.55);
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  position: relative;
 }
 
 .sidebar-link:hover {
-  background-color: rgba(255, 255, 255, 0.06);
-  color: white;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
 .sidebar-link.active {
-  background-color: var(--primary);
-  color: white;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(99, 102, 241, 0.12));
+  color: #c4b5fd;
+  border-color: rgba(139, 92, 246, 0.25);
+  font-weight: 700;
+  box-shadow: inset 3px 0 0 #8b5cf6;
+}
+
+.sidebar-link.active svg {
+  color: #a78bfa;
 }
 
 .sidebar-bottom {
@@ -85,21 +115,25 @@
   justify-content: center;
   gap: 8px;
   padding: 12px 14px;
-  border: none;
+  border: 1px solid rgba(239, 68, 68, 0.3);
   border-radius: 10px;
-  background-color: #dc2626;
-  color: white;
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
   font-size: 14px;
   font-weight: 600;
+  transition: all 0.2s ease;
 }
 
 .logout-btn:hover {
-  background-color: #b91c1c;
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
 }
 
 .sidebar-version {
   margin: 0;
   text-align: center;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.25);
+  letter-spacing: 0.04em;
 }

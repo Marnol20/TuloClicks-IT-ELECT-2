@@ -7,7 +7,8 @@ import {
   CreditCard,
   Upload,
   Image as ImageIcon,
-  ArrowLeft
+  ArrowLeft,
+  Download
 } from 'lucide-react'
 import { QRCodeCanvas } from 'qrcode.react'
 import html2canvas from 'html2canvas'
@@ -170,8 +171,9 @@ function BookingDetails() {
                   <QRCodeCanvas value={booking.booking_reference} size={150} includeMargin={true} />
                   <p style={{ color: '#22c55e', fontWeight: 700, marginTop: '10px' }}>{booking.booking_reference}</p>
                 </div>
-                <button className="register-btn" onClick={handleDownloadTicket} disabled={downloading}>
-                  {downloading ? 'Processing...' : 'Download PNG'}
+                <button className="ticket-download-btn" onClick={handleDownloadTicket} disabled={downloading}>
+                  <Download size={15} />
+                  {downloading ? 'Processing…' : 'Download PNG'}
                 </button>
               </div>
             </div>

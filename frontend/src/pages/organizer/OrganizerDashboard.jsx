@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { CalendarDays, Users, CheckCircle2 } from 'lucide-react'
 import { useToast } from '../../components/common/ToastContext'
 import '../../styles/Attendees.css'
 import api from '../../services/api'
@@ -10,32 +11,24 @@ function OrganizerDashboard() {
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(false)
 
-  const totalEvents = events.length
-  const totalBookings = bookings.length
-  
-  // ADDED: Gi-ihap apil ang 'attended' status para accurate ang Checked In count
+  const totalEvents    = events.length
+  const totalBookings  = bookings.length
   const checkedInCount = bookings.filter(
-    (booking) => booking.booking_status === 'checked_in' || booking.booking_status === 'attended'
+    (b) => b.booking_status === 'checked_in' || b.booking_status === 'attended'
   ).length
 
-  useEffect(() => {
-    fetchEvents()
-  }, [])
+  useEffect(() => { fetchEvents() }, [])
 
   useEffect(() => {
-    if (selectedEvent) {
-      fetchBookings(selectedEvent)
-    } else {
-      setBookings([])
-    }
+    if (selectedEvent) fetchBookings(selectedEvent)
+    else setBookings([])
   }, [selectedEvent])
 
   async function fetchEvents() {
     try {
       const res = await api.get('/events/organizer/my-events')
       setEvents(res.data || [])
-    } catch (error) {
-      console.error('Fetch organizer events error:', error)
+    } catch {
       setEvents([])
     }
   }
@@ -45,8 +38,7 @@ function OrganizerDashboard() {
       setLoading(true)
       const res = await api.get(`/bookings/event/${eventId}/manage`)
       setBookings(res.data || [])
-    } catch (error) {
-      console.error('Fetch bookings error:', error)
+    } catch {
       setBookings([])
     } finally {
       setLoading(false)
@@ -63,6 +55,12 @@ function OrganizerDashboard() {
     }
   }
 
+  const heroStats = [
+    { label: 'Total Events',      value: totalEvents,    icon: CalendarDays },
+    { label: 'Bookings Selected', value: totalBookings,  icon: Users        },
+    { label: 'Checked In',        value: checkedInCount, icon: CheckCircle2 }
+  ]
+
   return (
     <main className="attendees-page">
       <div className="organizer-hero-card">
@@ -72,18 +70,15 @@ function OrganizerDashboard() {
         </div>
 
         <div className="organizer-hero-actions">
-          <div className="organizer-hero-value">
-            <span>Total events</span>
-            <strong>{totalEvents}</strong>
-          </div>
-          <div className="organizer-hero-value">
-            <span>Bookings selected</span>
-            <strong>{totalBookings}</strong>
-          </div>
-          <div className="organizer-hero-value">
-            <span>Checked in</span>
-            <strong>{checkedInCount}</strong>
-          </div>
+          {heroStats.map(({ label, value, icon: Icon }) => (
+            <div className="organizer-hero-value" key={label}>
+              <span>
+                <Icon size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 5 }} />
+                {label}
+              </span>
+              <strong>{value}</strong>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -93,7 +88,7 @@ function OrganizerDashboard() {
             value={selectedEvent}
             onChange={(e) => setSelectedEvent(e.target.value)}
           >
-            <option value="">Choose an event</option>
+            <option value="">Choose an event to view bookings</option>
             {events.map((event) => (
               <option key={event.id} value={event.id}>
                 {event.title}
@@ -117,7 +112,7 @@ function OrganizerDashboard() {
         </div>
 
         {!selectedEvent ? (
-          <div className="table-empty">Select an event first to see the data.</div>
+          <div className="table-empty">Select an event above to view its bookings.</div>
         ) : loading ? (
           <div className="table-empty">Loading bookings...</div>
         ) : bookings.length === 0 ? (
@@ -125,20 +120,18 @@ function OrganizerDashboard() {
         ) : (
           bookings.map((booking) => (
             <div
-              key={`${booking.id}-${booking.booking_reference}`} // FIXED: Unique key para mawala ang console error
+              key={`${booking.id}-${booking.booking_reference}`}
               className="table-row"
               style={{ gridTemplateColumns: '1.2fr 1.4fr 1fr 1fr 1fr 0.8fr' }}
             >
               <span className="row-name">{booking.attendee_name}</span>
               <span className="row-muted">{booking.attendee_email}</span>
               <span className="row-muted">{booking.booking_reference}</span>
-              <span className="row-muted">
-                ₱{Number(booking.total_amount).toLocaleString()}
-              </span>
+              <span className="row-muted">₱{Number(booking.total_amount).toLocaleString()}</span>
 
               <span
                 className={`table-badge ${
-                  (booking.booking_status === 'checked_in' || booking.booking_status === 'attended')
+                  booking.booking_status === 'checked_in' || booking.booking_status === 'attended'
                     ? 'success'
                     : booking.booking_status === 'cancelled'
                     ? 'danger'
@@ -149,30 +142,13 @@ function OrganizerDashboard() {
               </span>
 
               <div className="row-actions">
-                {/* UPDATED: Check kon admitted (checked_in) o nahuman na (attended) */}
-                {(booking.booking_status === 'checked_in' || booking.booking_status === 'attended') ? (
-                  <span style={{ 
-                    color: '#10b981', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '5px',
-                    fontWeight: 'bold',
-                    fontSize: '14px'
-                  }}>
-                    <span style={{ fontSize: '18px' }}>✓</span> Admitted
+                {booking.booking_status === 'checked_in' || booking.booking_status === 'attended' ? (
+                  <span style={{ color: '#4ade80', display: 'flex', alignItems: 'center', gap: 5, fontWeight: 700, fontSize: 14 }}>
+                    <CheckCircle2 size={16} /> Admitted
                   </span>
-                ) : 
-                booking.booking_status === 'cancelled' ? (
-                  <span style={{ 
-                    color: '#ef4444', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '5px',
-                    fontWeight: 'bold',
-                    fontSize: '14px',
-                    opacity: 0.8
-                  }}>
-                    <span style={{ fontSize: '18px' }}>✕</span> Cancelled
+                ) : booking.booking_status === 'cancelled' ? (
+                  <span style={{ color: '#f87171', display: 'flex', alignItems: 'center', gap: 5, fontWeight: 700, fontSize: 14, opacity: 0.8 }}>
+                    ✕ Cancelled
                   </span>
                 ) : (
                   <button

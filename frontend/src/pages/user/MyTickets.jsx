@@ -85,9 +85,10 @@ function MyTickets() {
 
   return (
     <section className="user-view-tickets">
-      <div className="section-header">
-        <p className="section-label">Tickets</p>
-        <h2 className="section-title">My Tickets</h2>
+      <div className="tickets-page-hero">
+        <p className="tickets-page-hero-label">Your Collection</p>
+        <h1 className="tickets-page-hero-title">My Tickets</h1>
+        <p className="tickets-page-hero-sub">View and manage all your event bookings in one place.</p>
       </div>
 
       <div className="user-events-toolbar tickets-toolbar">

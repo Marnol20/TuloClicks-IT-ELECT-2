@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Star, MapPin, Calendar } from 'lucide-react'
 import { useToast } from '../../components/common/ToastContext'
+import tcLogo from '../../styles/TuloClicksLogo.png'
 import '../../styles/SignUp.css'
 import api from '../../services/api'
 
@@ -49,7 +50,6 @@ function SignUp() {
   async function handleSubmit(e) {
     e.preventDefault()
 
-    // Validation para sa 11 digits nga nagsugod sa 09
     const phoneRegex = /^09\d{9}$/
 
     if (!name || !email || !password || !confirmPassword || !phone) {
@@ -76,26 +76,21 @@ function SignUp() {
       setLoading(true)
       setError('')
 
-      await api.post('/auth/signup', {
-        name,
-        email,
-        phone,
-        password
-      })
+      await api.post('/auth/signup', { name, email, phone, password })
 
       addToast('Account created successfully!', 'success')
-      
+
       const res = await api.post('/auth/login', {
         email: email.trim().toLowerCase(),
         password
       })
-      
+
       const { token, user } = res.data
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(user))
-      
+
       addToast(`Welcome to TuloClicks, ${user.name}!`, 'success')
-      
+
       if (user.role === 'admin') navigate('/admin')
       else if (user.role === 'organizer') navigate('/organizer')
       else navigate('/home')
@@ -111,71 +106,163 @@ function SignUp() {
 
   return (
     <div className="signup-page">
-      <div className="signup-container">
-        <button className="signup-back-btn" onClick={() => navigate('/')}>
-          <ArrowLeft size={18} /> Back to Home
-        </button>
 
-        <h2>Create Account</h2>
-        <p>Sign up to start using TuloClicks</p>
-
-        <form className="signup-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Full Name</label>
-            <input type="text" placeholder="Enter your full name" value={name} onChange={(e) => setName(e.target.value)} />
+      {/* ── Left panel ── */}
+      <div className="signup-left-panel">
+        <div className="signup-left-bg" />
+        <div className="signup-left-overlay" />
+        <div className="signup-left-content">
+          <div className="signup-left-brand">
+            <img className="signup-left-brand-mark" src={tcLogo} alt="TuloClicks" />
+            <span className="signup-left-brand-name">TuloClicks</span>
           </div>
 
-          <div className="form-group">
-            <label>Email</label>
-            <input type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          </div>
-
-          <div className="form-group">
-            <label>Phone Number</label>
-            <input 
-              type="text" 
-              placeholder="09XXXXXXXXX" 
-              value={phone} 
-              maxLength={11}
-              onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))} 
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Password</label>
-            <input type="password" placeholder="Enter your password" value={password} onChange={handlePasswordChange} />
-            {password && (
-              <div className="password-strength-container">
-                <div className="password-strength-bars">
-                  {[1, 2, 3, 4].map((bar) => (
-                    <div key={bar} className={`strength-bar ${bar <= passwordStrength ? 'active' : ''}`}
-                      style={{ backgroundColor: bar <= passwordStrength ? getPasswordStrengthLabel(passwordStrength).color : '#e5e7eb' }}
-                    />
-                  ))}
+          <div className="signup-left-body">
+            <h2 className="signup-left-headline">
+              Start Your<br />Event Journey<br />Today.
+            </h2>
+            <p className="signup-left-sub">
+              Create your free account and unlock access to hundreds of
+              events happening near you.
+            </p>
+            <div className="signup-feature-cards">
+              <div className="signup-feature-card">
+                <Star size={18} />
+                <div>
+                  <strong>Curated Events</strong>
+                  <span>Handpicked events across all categories</span>
                 </div>
-                <span className="password-strength-text" style={{ color: getPasswordStrengthLabel(passwordStrength).color }}>
-                  {getPasswordStrengthLabel(passwordStrength).text}
-                </span>
               </div>
-            )}
+              <div className="signup-feature-card">
+                <MapPin size={18} />
+                <div>
+                  <strong>Local & Online</strong>
+                  <span>Physical, online, and hybrid events</span>
+                </div>
+              </div>
+              <div className="signup-feature-card">
+                <Calendar size={18} />
+                <div>
+                  <strong>Easy Management</strong>
+                  <span>Manage all your tickets in one place</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="form-group">
-            <label>Confirm Password</label>
-            <input type="password" placeholder="Confirm your password" value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value); setError(''); }} />
+          <div className="signup-left-event-preview">
+            <img
+              src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=600&q=80"
+              alt="Event preview"
+              className="signup-preview-img"
+            />
+            <div className="signup-preview-badge">
+              <span className="signup-preview-dot" />
+              Live events available now
+            </div>
           </div>
-
-          {error && <p className="signup-error" style={{ color: '#ef4444', marginBottom: '16px' }}>{error}</p>}
-
-          <button type="submit" className="signup-submit-btn" disabled={loading}>
-            {loading ? 'Creating Account...' : 'Sign Up'}
-          </button>
-        </form>
-          
-        <p className="login-link">
-          Already have an account? <span style={{ color: '#22c55e', cursor: 'pointer' }} onClick={() => navigate('/login')}>Sign In</span>
-        </p>
+        </div>
       </div>
+
+      {/* ── Right panel (form) ── */}
+      <div className="signup-right-panel">
+        <div className="signup-form-wrap">
+          <button className="signup-back-btn" onClick={() => navigate('/')}>
+            <ArrowLeft size={16} /> Back to Home
+          </button>
+
+          <div className="signup-form-header">
+            <h2>Create Account</h2>
+            <p>Sign up to start using TuloClicks</p>
+          </div>
+
+          <form className="signup-form" onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Full Name</label>
+              <input
+                className="form-input"
+                type="text"
+                placeholder="Enter your full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Email</label>
+              <input
+                className="form-input"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Phone Number</label>
+              <input
+                className="form-input"
+                type="text"
+                placeholder="09XXXXXXXXX"
+                value={phone}
+                maxLength={11}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Password</label>
+              <input
+                className="form-input"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={handlePasswordChange}
+              />
+              {password && (
+                <div className="password-strength-container">
+                  <div className="password-strength-bars">
+                    {[1, 2, 3, 4].map((bar) => (
+                      <div
+                        key={bar}
+                        className={`strength-bar ${bar <= passwordStrength ? 'active' : ''}`}
+                        style={{ backgroundColor: bar <= passwordStrength ? getPasswordStrengthLabel(passwordStrength).color : undefined }}
+                      />
+                    ))}
+                  </div>
+                  <span className="password-strength-text" style={{ color: getPasswordStrengthLabel(passwordStrength).color }}>
+                    {getPasswordStrengthLabel(passwordStrength).text}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="form-group">
+              <label>Confirm Password</label>
+              <input
+                className="form-input"
+                type="password"
+                placeholder="Confirm your password"
+                value={confirmPassword}
+                onChange={(e) => { setConfirmPassword(e.target.value); setError('') }}
+              />
+            </div>
+
+            {error && <p className="signup-error">{error}</p>}
+
+            <button type="submit" className="signup-submit-btn" disabled={loading}>
+              {loading ? 'Creating Account...' : 'Sign Up'}
+            </button>
+          </form>
+
+          <p className="login-link">
+            Already have an account?{' '}
+            <span onClick={() => navigate('/login')}>Sign In</span>
+          </p>
+        </div>
+      </div>
+
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Bell } from 'lucide-react'
 import api from '../../services/api'
 import '../../styles/Notifications.css'
 
@@ -76,7 +77,7 @@ function NotificationBell() {
         onClick={() => setOpen((prev) => !prev)}
         type="button"
       >
-        🔔
+        <Bell size={20} />
         {unreadCount > 0 && (
           <span className="notification-badge">{unreadCount}</span>
         )}

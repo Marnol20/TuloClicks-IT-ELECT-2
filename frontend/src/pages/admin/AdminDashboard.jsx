@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CalendarDays, Users, CreditCard, UserCheck } from 'lucide-react'
+import { CalendarDays, Users, CreditCard, UserCheck, MessageSquare } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import '../../styles/Dashboard.css'
 import StatCard from '../../components/ui/StatCard'
@@ -42,17 +42,15 @@ function AdminDashboard() {
         supportOpen: support.filter(s => s.status === 'open').length
       })
 
-      // Chart Data: Payments summary (example: last 5 successful payments)
       const payData = payments.slice(0, 5).map((p, index) => ({
         name: `P-${index + 1}`,
         amount: Number(p.amount || p.total_amount || 0)
       }))
       setChartData(payData)
 
-      // Pie Chart Data: Event status breakdown
       setEventStatusData([
         { name: 'Approved', value: events.filter(e => e.approval_status === 'approved').length, color: '#10b981' },
-        { name: 'Pending', value: events.filter(e => e.approval_status === 'pending').length, color: '#f59e0b' },
+        { name: 'Pending',  value: events.filter(e => e.approval_status === 'pending').length,  color: '#f59e0b' },
         { name: 'Rejected', value: events.filter(e => e.approval_status === 'rejected').length, color: '#ef4444' }
       ])
     } catch (err) {
@@ -61,43 +59,58 @@ function AdminDashboard() {
   }
 
   const cards = [
-    { label: 'Organizers', value: stats.organizers, icon: UserCheck },
-    { label: 'Pending Events', value: stats.pendingEvents, icon: CalendarDays },
-    { label: 'Payments', value: stats.totalPayments, icon: CreditCard },
-    { label: 'Support Issues', value: stats.supportOpen, icon: Users }
+    { label: 'Organizers',     value: stats.organizers,     icon: UserCheck,     iconColor: '#22c55e' },
+    { label: 'Pending Events', value: stats.pendingEvents,  icon: CalendarDays,  iconColor: '#f59e0b' },
+    { label: 'Payments',       value: stats.totalPayments,  icon: CreditCard,    iconColor: '#8b5cf6' },
+    { label: 'Support Issues', value: stats.supportOpen,    icon: MessageSquare, iconColor: '#ef4444' }
+  ]
+
+  const quickActions = [
+    { label: 'Manage Organizers', sub: 'Review and approve organizers', icon: Users,        path: '/admin/organizers' },
+    { label: 'Approve Events',    sub: 'Review pending event submissions', icon: CalendarDays, path: '/admin/events'      },
+    { label: 'View Payments',     sub: 'Track payment records',          icon: CreditCard,   path: '/admin/payments'    },
+    { label: 'Support Issues',    sub: 'Handle open support tickets',    icon: MessageSquare, path: '/admin/support'     }
   ]
 
   return (
     <main className="dashboard">
       <div className="dashboard-hero">
         <div>
-          <p className="dashboard-hero-label">Admin overview</p>
+          <p className="dashboard-hero-label">Admin Overview</p>
           <h1>Run the platform with confidence</h1>
           <p>Track approvals, payments, and support activity from a clean executive dashboard.</p>
         </div>
         <button className="dashboard-btn primary" onClick={() => navigate('/admin/events')}>
-          Review Events
+          Review Events →
         </button>
       </div>
 
-      <div className="stats-grid clean" style={{ marginTop: '20px' }}>
+      <div className="stats-grid clean">
         {cards.map((c) => (
-          <StatCard key={c.label} label={c.label} value={c.value} icon={c.icon} />
+          <StatCard key={c.label} label={c.label} value={c.value} icon={c.icon} iconColor={c.iconColor} />
         ))}
       </div>
 
-      {/* CHARTS SECTION */}
-      <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '20px', marginTop: '30px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '20px', marginBottom: '24px' }}>
         <div className="reports-panel">
           <h3>Recent Revenue (Success Payments)</h3>
-          <div style={{ width: '100%', height: 300 }}>
+          <div style={{ width: '100%', height: 280 }}>
             <ResponsiveContainer>
               <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2d3748" />
-                <XAxis dataKey="name" stroke="#a0aec0" />
-                <YAxis stroke="#a0aec0" />
-                <Tooltip contentStyle={{ backgroundColor: '#1a202c', border: 'none' }} />
-                <Bar dataKey="amount" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                <defs>
+                  <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%"   stopColor="#8b5cf6" />
+                    <stop offset="100%" stopColor="#7c3aed" stopOpacity={0.7} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="name" stroke="#475569" tick={{ fontSize: 12 }} />
+                <YAxis stroke="#475569" tick={{ fontSize: 12 }} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: 13 }}
+                  cursor={{ fill: 'rgba(139,92,246,0.08)' }}
+                />
+                <Bar dataKey="amount" fill="url(#barGrad)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -105,31 +118,46 @@ function AdminDashboard() {
 
         <div className="reports-panel">
           <h3>Event Status Breakdown</h3>
-          <div style={{ width: '100%', height: 300 }}>
+          <div style={{ width: '100%', height: 240 }}>
             <ResponsiveContainer>
               <PieChart>
-                <Pie data={eventStatusData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                <Pie
+                  data={eventStatusData}
+                  innerRadius={55}
+                  outerRadius={85}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
                   {eventStatusData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: 13 }}
+                />
               </PieChart>
             </ResponsiveContainer>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', fontSize: '12px' }}>
-              {eventStatusData.map(d => <span key={d.name} style={{ color: d.color }}>● {d.name}</span>)}
-            </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '18px', flexWrap: 'wrap' }}>
+            {eventStatusData.map(d => (
+              <span key={d.name} style={{ color: d.color, fontWeight: 700, fontSize: 13 }}>● {d.name}</span>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="dashboard-section" style={{ marginTop: '30px' }}>
+      <div className="dashboard-section">
         <h3>Quick Actions</h3>
         <div className="quick-grid">
-          <button onClick={() => navigate('/admin/organizers')}>Manage Organizers</button>
-          <button onClick={() => navigate('/admin/events')}>Approve Events</button>
-          <button onClick={() => navigate('/admin/payments')}>View Payments</button>
-          <button onClick={() => navigate('/admin/support')}>Support Issues</button>
+          {quickActions.map(({ label, sub, icon: Icon, path }) => (
+            <button key={label} onClick={() => navigate(path)}>
+              <div className="quick-action-icon">
+                <Icon size={18} color="#a78bfa" />
+              </div>
+              <span className="quick-action-label">{label}</span>
+              <span className="quick-action-sub">{sub}</span>
+            </button>
+          ))}
         </div>
       </div>
     </main>

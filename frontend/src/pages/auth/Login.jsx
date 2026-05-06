@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff, Ticket, Bell, Shield } from 'lucide-react'
 import { useToast } from '../../components/common/ToastContext'
+import tcLogo from '../../styles/TuloClicksLogo.png'
 import '../../styles/Login.css'
 import api from '../../services/api'
 
@@ -67,101 +68,117 @@ function Login() {
 
   return (
     <div className="login-page">
-      <div className="login-panel">
-        <div className="login-brand-outside">
-          <div className="brand-mark-outside logo-mark-hover">TC</div>
-          <div className="brand-outside-text">
-            <div className="brand-name-outside">TuloClicks</div>
-            <div className="brand-tagline-outside">Event Management Platform</div>
+
+      {/* ── Left panel ── */}
+      <div className="login-left-panel">
+        <div className="login-left-bg" />
+        <div className="login-left-overlay" />
+        <div className="login-left-content">
+          <div className="login-left-brand">
+            <img className="login-left-brand-mark" src={tcLogo} alt="TuloClicks" />
+            <span className="login-left-brand-name">TuloClicks</span>
           </div>
-        </div>
 
-        <div className="login-card">
-          <div className="login-card-body">
-            <button className="login-back-btn" onClick={() => navigate('/')}>
-              <ArrowLeft size={18} /> Back to Home
-            </button>
-
-            <h2 style={{ marginTop: '20px' }}>Sign In</h2>
-            <p className="login-subtitle">Enter your credentials to access your account</p>
-
-            <form className="login-form" onSubmit={handleSubmit} style={{ marginTop: '30px' }}>
-              <div className="form-group">
-                <label>Email Address</label>
-                <input
-                  className="form-input"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => { setEmail(e.target.value); setError(''); }}
-                  required
-                />
-              </div>
-
-              <div className="form-group" style={{ position: 'relative' }}>
-                <label>Password</label>
-                <input
-                  className="form-input"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => { setPassword(e.target.value); setError(''); }}
-                  required
-                />
-                <button 
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={{ 
-                    position: 'absolute', 
-                    right: '12px', 
-                    top: '38px', 
-                    background: 'none', 
-                    border: 'none', 
-                    color: '#64748b', 
-                    cursor: 'pointer' 
-                  }}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-
-              <div className="form-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', fontSize: '14px', color: '#cbd5e1' }}>
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    style={{ marginRight: '8px' }}
-                  />
-                  Remember Me
-                </label>
-                <span 
-                  style={{ color: '#22c55e', fontSize: '14px', cursor: 'pointer' }}
-                  onClick={() => addToast('Please contact admin to reset password', 'info')}
-                >
-                  Forgot Password?
-                </span>
-              </div>
-
-              {error && <p className="login-error" style={{ color: '#ef4444', fontSize: '13px', marginBottom: '15px' }}>{error}</p>}
-
-              <button type="submit" className="login-submit-btn" disabled={loading}>
-                {loading ? 'Authenticating...' : 'Sign In'}
-              </button>
-            </form>
-
-            <p className="signup-link" style={{ marginTop: '25px', textAlign: 'center' }}>
-              Don't have an account?{' '}
-              <span 
-                style={{ color: '#22c55e', cursor: 'pointer', fontWeight: 'bold' }} 
-                onClick={() => navigate('/signup')}
-              >
-                Sign Up
-              </span>
+          <div className="login-left-body">
+            <h2 className="login-left-headline">
+              Your Next<br />Unforgettable<br />Experience<br />Awaits.
+            </h2>
+            <p className="login-left-sub">
+              Join thousands of event-goers who discover, book,
+              and enjoy events through TuloClicks.
             </p>
+            <ul className="login-left-perks">
+              <li><Ticket size={15} /> 500+ curated events every month</li>
+              <li><Bell size={15} /> Instant ticket & reminder notifications</li>
+              <li><Shield size={15} /> Secure, hassle-free booking</li>
+            </ul>
+          </div>
+
+          <div className="login-left-testimonial">
+            <p className="login-testimonial-quote">
+              "TuloClicks made event discovery so easy — I found my favorite festival through it!"
+            </p>
+            <span className="login-testimonial-author">— Maria Santos, Event Enthusiast</span>
           </div>
         </div>
       </div>
+
+      {/* ── Right panel (form) ── */}
+      <div className="login-right-panel">
+        <div className="login-form-wrap">
+          <button className="login-back-btn" onClick={() => navigate('/')}>
+            <ArrowLeft size={16} /> Back to Home
+          </button>
+
+          <div className="login-form-header">
+            <h2>Sign In</h2>
+            <p className="login-subtitle">Enter your credentials to access your account</p>
+          </div>
+
+          <form className="login-form" onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Email Address</label>
+              <input
+                className="form-input"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setError('') }}
+                required
+              />
+            </div>
+
+            <div className="form-group" style={{ position: 'relative' }}>
+              <label>Password</label>
+              <input
+                className="form-input"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setError('') }}
+                required
+              />
+              <button
+                type="button"
+                className="login-eye-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+            </div>
+
+            <div className="login-form-footer">
+              <label className="login-remember">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                Remember Me
+              </label>
+              <span
+                className="login-forgot"
+                onClick={() => addToast('Please contact admin to reset password', 'info')}
+              >
+                Forgot Password?
+              </span>
+            </div>
+
+            {error && <p className="login-error">{error}</p>}
+
+            <button type="submit" className="login-submit-btn" disabled={loading}>
+              {loading ? 'Authenticating...' : 'Sign In'}
+            </button>
+          </form>
+
+          <p className="signup-link">
+            Don't have an account?{' '}
+            <span onClick={() => navigate('/signup')}>Sign Up</span>
+          </p>
+        </div>
+      </div>
+
     </div>
   )
 }

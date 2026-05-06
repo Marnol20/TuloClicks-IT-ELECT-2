@@ -36,33 +36,40 @@
 .add-venue-btn,
 .create-btn {
   border: none;
-  background: var(--primary);
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
   color: white;
-  padding: 11px 16px;
+  padding: 11px 18px;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 700;
+  box-shadow: 0 6px 18px rgba(139, 92, 246, 0.25);
+  transition: all 0.2s ease;
 }
 
 .new-event-btn:hover,
 .add-speaker-btn:hover,
 .add-venue-btn:hover,
 .create-btn:hover {
-  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(139, 92, 246, 0.35);
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
 }
 
 .cancel-btn {
   border: 1px solid var(--border);
   background: var(--bg-elevated);
-  color: var(--text);
+  color: var(--text-soft);
   padding: 11px 16px;
   border-radius: 12px;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
 .cancel-btn:hover {
-  background: #172132;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: var(--text);
 }
 
 .create-form {
@@ -150,11 +157,20 @@
 .event-card,
 .venue-card,
 .speaker-card {
-  background: var(--card);
+  background: linear-gradient(145deg, var(--card), rgba(15, 23, 42, 0.85));
   border: 1px solid var(--border);
   border-radius: 18px;
   padding: 20px;
   box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.event-card:hover,
+.venue-card:hover,
+.speaker-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(139, 92, 246, 0.25);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(139, 92, 246, 0.1);
 }
 
 .event-card-top,

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useToast } from '../../components/common/ToastContext';
 
 const AdminSupport = () => {
+  const { addToast } = useToast();
   const [tickets, setTickets] = useState([]);
 
   const fetchTickets = async () => {
@@ -32,10 +34,10 @@ const AdminSupport = () => {
         }
       );
       fetchTickets();
-      alert('Ticket status updated successfully!');
+      addToast('Ticket status updated successfully!', 'success');
     } catch (err) {
       console.error("Failed to update status", err);
-      alert('Error updating status');
+      addToast('Error updating status', 'error');
     }
   };
 

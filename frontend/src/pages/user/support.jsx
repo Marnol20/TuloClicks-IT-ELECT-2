@@ -1,84 +1,102 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import { useState } from 'react'
+import axios from 'axios'
+import { useToast } from '../../components/common/ToastContext'
+import '../../styles/Support.css'
 
 const Support = () => {
+  const { addToast } = useToast()
   const [formData, setFormData] = useState({
     subject: '',
     issue_type: 'technical',
     description: ''
-  });
+  })
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // 1. Kuhaa ang token gikan sa localStorage
-    // Siguroha nga 'token' ang key name nga imong gigamit pag-save sa login
-    const token = localStorage.getItem('token'); 
-
+    e.preventDefault()
+    const token = localStorage.getItem('token')
     try {
-      // 2. I-pasa ang token sa headers para sa authMiddleware
-      await axios.post('http://localhost:5000/api/support', formData, { 
-        headers: {
-          Authorization: `Bearer ${token}` 
-        },
-        withCredentials: true 
-      });
-
-      alert('Success: Your ticket has been submitted!');
-      setFormData({ subject: '', issue_type: 'technical', description: '' });
+      await axios.post('http://localhost:5000/api/support', formData, {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true
+      })
+      addToast('Your ticket has been submitted!', 'success')
+      setFormData({ subject: '', issue_type: 'technical', description: '' })
     } catch (err) {
-      console.error(err);
+      console.error(err)
       if (err.response && err.response.status === 401) {
-        alert('Error: Unauthorized. Please logout and login again.');
+        addToast('Unauthorized. Please logout and login again.', 'error')
       } else {
-        alert('Error: Could not send ticket.');
+        addToast('Could not send ticket. Please try again.', 'error')
       }
     }
-  };
+  }
 
   return (
-    <div className="support-container" style={{ padding: '20px', color: 'white' }}>
-      <h2>Contact Support</h2>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxWidth: '500px', marginTop: '20px' }}>
-        
-        <input 
-          type="text" 
-          placeholder="Subject" 
-          value={formData.subject}
-          onChange={(e) => setFormData({...formData, subject: e.target.value})}
-          style={{ padding: '10px', borderRadius: '5px', backgroundColor: '#1e293b', color: 'white', border: '1px solid #334155' }}
-          required 
-        />
+    <div className="support-page">
+      {/* ── Hero ── */}
+      <div className="support-page-hero">
+        <p className="support-hero-eyebrow">Help Center</p>
+        <h1 className="support-hero-title">Contact Support</h1>
+        <p className="support-hero-sub">
+          Having an issue? Submit a ticket and our team will get back to you as soon as possible.
+        </p>
+      </div>
 
-        <select 
-          value={formData.issue_type}
-          onChange={(e) => setFormData({...formData, issue_type: e.target.value})}
-          style={{ padding: '10px', borderRadius: '5px', backgroundColor: '#1e293b', color: 'white', border: '1px solid #334155' }}
-        >
-          <option value="technical">Technical Issue</option>
-          <option value="refund">Refund</option>
-          <option value="complaint">Complaint</option>
-          <option value="other">Other</option>
-        </select>
+      {/* ── Form Card ── */}
+      <div className="support-content-area">
+        <div className="support-card">
+          <h2 className="support-card-title">Submit a Ticket</h2>
+          <p className="support-card-desc">
+            Fill out the form below and describe your issue in detail.
+          </p>
 
-        <textarea 
-          placeholder="Describe your issue..." 
-          rows="5"
-          value={formData.description}
-          onChange={(e) => setFormData({...formData, description: e.target.value})}
-          style={{ padding: '10px', borderRadius: '5px', backgroundColor: '#1e293b', color: 'white', border: '1px solid #334155' }}
-          required
-        ></textarea>
+          <form className="support-form" onSubmit={handleSubmit}>
+            <div className="support-form-group">
+              <label>Subject</label>
+              <input
+                className="support-input"
+                type="text"
+                placeholder="Brief summary of your issue"
+                value={formData.subject}
+                onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                required
+              />
+            </div>
 
-        <button 
-          type="submit" 
-          style={{ padding: '12px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
-        >
-          Submit Ticket
-        </button>
-      </form>
+            <div className="support-form-group">
+              <label>Issue Type</label>
+              <select
+                className="support-select"
+                value={formData.issue_type}
+                onChange={(e) => setFormData({ ...formData, issue_type: e.target.value })}
+              >
+                <option value="technical">Technical Issue</option>
+                <option value="refund">Refund</option>
+                <option value="complaint">Complaint</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div className="support-form-group">
+              <label>Description</label>
+              <textarea
+                className="support-textarea"
+                placeholder="Describe your issue in detail..."
+                rows="6"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                required
+              />
+            </div>
+
+            <button type="submit" className="support-submit-btn">
+              Submit Ticket
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
-  );
-};
+  )
+}
 
-export default Support;
+export default Support

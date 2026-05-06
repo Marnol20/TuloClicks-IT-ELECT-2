@@ -4,13 +4,20 @@
 
 .notification-bell-btn {
   position: relative;
-  border: 1px solid var(--border);
-  background: var(--card);
-  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-soft);
   border-radius: 12px;
   padding: 10px 12px;
   font-size: 18px;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notification-bell-btn:hover {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: rgba(139, 92, 246, 0.3);
+  color: #a78bfa;
 }
 
 .notification-badge {
@@ -20,7 +27,7 @@
   min-width: 18px;
   height: 18px;
   border-radius: 999px;
-  background: #ef4444;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
   color: white;
   font-size: 11px;
   font-weight: 700;
@@ -28,6 +35,7 @@
   align-items: center;
   justify-content: center;
   padding: 0 5px;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
 }
 
 .notification-dropdown {
@@ -37,11 +45,12 @@
   width: 360px;
   max-height: 460px;
   overflow: hidden;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: var(--shadow-md);
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(10, 16, 30, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(139, 92, 246, 0.08);
   z-index: 300;
+  backdrop-filter: blur(12px);
 }
 
 .notification-dropdown-header {
@@ -49,20 +58,28 @@
   justify-content: space-between;
   align-items: center;
   padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .notification-dropdown-header h4 {
   margin: 0;
   color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .notification-dropdown-header button {
   border: none;
   background: transparent;
-  color: var(--primary);
-  font-weight: 700;
+  color: #a78bfa;
+  font-weight: 600;
+  font-size: 12px;
   cursor: pointer;
+  transition: color 0.2s;
+}
+
+.notification-dropdown-header button:hover {
+  color: #c4b5fd;
 }
 
 .notification-list {
@@ -71,17 +88,29 @@
 }
 
 .notification-empty {
-  padding: 16px;
+  padding: 24px 16px;
   color: var(--text-muted);
+  text-align: center;
+  font-size: 14px;
 }
 
 .notification-item {
   padding: 14px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.15s ease;
+}
+
+.notification-item:hover {
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .notification-item.unread {
-  background: rgba(139, 92, 246, 0.08);
+  background: rgba(139, 92, 246, 0.07);
+  border-left: 3px solid rgba(139, 92, 246, 0.4);
+}
+
+.notification-item.unread:hover {
+  background: rgba(139, 92, 246, 0.1);
 }
 
 .notification-item.read {
@@ -103,10 +132,15 @@
 .notification-item-top button {
   border: none;
   background: transparent;
-  color: var(--primary);
+  color: #a78bfa;
   cursor: pointer;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.notification-item-top button:hover {
+  color: #c4b5fd;
 }
 
 .notification-item p {

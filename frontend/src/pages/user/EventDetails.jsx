@@ -81,14 +81,23 @@ function EventDetails() {
   return (
     <div className="event-details-page">
       <div className="event-hero">
-         <button 
-            className="btn-back-to-events"
-            onClick={() => navigate('/home/events')}
-            title="Back to Events"
-          >
-            <ArrowLeft size={20} />
-            <span>Back</span>
-          </button>
+        {event.event_image ? (
+          <div
+            className="event-hero-bg"
+            style={{ backgroundImage: `url(http://localhost:5000/uploads/events/${event.event_image})` }}
+          />
+        ) : (
+          <div className="event-hero-bg-fallback" />
+        )}
+
+        <button
+          className="btn-back-to-events"
+          onClick={() => navigate('/home/events')}
+          title="Back to Events"
+        >
+          <ArrowLeft size={20} />
+          <span>Back</span>
+        </button>
         <div className="event-hero-content">
           <div className="event-meta-header">
             <span className="event-day">{formatDate(event.start_date)}</span>

@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { getCurrentUser, logoutUser } from '../../services/auth'
 import NotificationBell from '../common/NotificationBell'
 import ProfileDropdown from '../common/ProfileDropdown'
+import tcLogo from '../../styles/TuloClicksLogo.png'
 import '../../styles/ProfileDropdown.css'
 import React, { useReducer, useEffect } from 'react'
 
@@ -56,7 +57,7 @@ function UserViewHeader() {
   return (
     <header className="user-view-header">
       <div className="user-view-brand" onClick={handleLogoClick}>
-        <div className="user-view-brand-mark logo-mark-hover">T</div>
+        <img className="user-view-brand-mark logo-mark-hover" src={tcLogo} alt="TuloClicks" />
         <div className="user-view-brand-text">
           <h2>TuloClicks</h2>
           <p>Event Platform</p>

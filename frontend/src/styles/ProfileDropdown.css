@@ -6,12 +6,18 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0;
-  border: none;
-  background: transparent;
+  padding: 6px 10px 6px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
   color: #ffffff;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+.profile-dropdown-toggle:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.14);
 }
 
 .profile-avatar {
@@ -51,14 +57,25 @@
   top: calc(100% + 8px);
   right: 0;
   min-width: 220px;
-  background: rgba(15, 23, 42, 0.98);
+  background: linear-gradient(145deg, rgba(13, 20, 35, 0.98), rgba(9, 14, 26, 0.98));
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(10px);
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(139, 92, 246, 0.08);
+  backdrop-filter: blur(14px);
   z-index: 1000;
   padding: 6px;
   animation: dropdownFadeIn 0.2s ease;
+  overflow: hidden;
+}
+
+.profile-dropdown-menu::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #8b5cf6, #6366f1, transparent);
 }
 
 @keyframes dropdownFadeIn {

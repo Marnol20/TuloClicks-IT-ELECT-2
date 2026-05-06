@@ -49,12 +49,14 @@ function SettingsPage() {
 
   return (
     <div className="settings-page">
-      <div className="settings-container">
-        <div className="settings-header">
-          <SettingsIcon size={28} />
-          <h1>Settings</h1>
-        </div>
+      {/* ── Hero Banner ── */}
+      <div className="settings-page-hero">
+        <p className="settings-hero-eyebrow">Account</p>
+        <h1 className="settings-hero-title">Settings</h1>
+        <p className="settings-hero-sub">Customize your preferences and account security.</p>
+      </div>
 
+      <div className="settings-container">
         <div className="settings-layout">
           <nav className="settings-tabs">
             {tabs.map((tab) => (
