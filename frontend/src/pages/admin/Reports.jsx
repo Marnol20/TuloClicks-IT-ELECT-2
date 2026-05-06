@@ -395,13 +395,13 @@ function Reports() {
           <div className="reports-table">
             {(data.topEvents || []).map((e) => (
               <div key={e.id} className="reports-table-row">
-                <div>
-                  <span className="event-title">{e.title.substring(0, 25)}...</span>
-                  <span className="event-date">{new Date(e.start_date).toLocaleDateString()}</span>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <span className="report-event-name">{e.title}</span>
+                  <span className="report-event-date">{new Date(e.start_date).toLocaleDateString()}</span>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ color: '#22c55e' }}>₱{Number(e.booking_revenue || 0).toLocaleString()}</div>
-                  <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{e.booking_count || 0} bookings</div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#22c55e' }}>₱{Number(e.booking_revenue || 0).toLocaleString()}</div>
+                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>{e.booking_count || 0} bookings</div>
                 </div>
               </div>
             ))}
