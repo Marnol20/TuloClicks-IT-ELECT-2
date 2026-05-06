@@ -1,0 +1,195 @@
+/* ─── Page ─── */
+.admin-support-page {
+  padding: 24px;
+  min-height: 100vh;
+  background: var(--bg);
+  font-family: 'Inter', sans-serif;
+}
+
+/* ─── Hero Card ─── */
+@keyframes support-admin-ken {
+  from { transform: scale(1.04); }
+  to   { transform: scale(1.12); }
+}
+
+.support-admin-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 26px;
+  margin-bottom: 26px;
+  padding: 48px 52px 42px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.support-admin-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('https://images.unsplash.com/photo-1423666639041-f56000c27a9a?auto=format&fit=crop&w=1920&q=80');
+  background-size: cover;
+  background-position: center 35%;
+  filter: brightness(0.22) saturate(1.4);
+  animation: support-admin-ken 22s ease-in-out infinite alternate;
+}
+
+.support-admin-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(160deg, rgba(59,130,246,0.4) 0%, rgba(6,10,22,0.5) 60%),
+    linear-gradient(0deg, rgba(6,10,22,0.92) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.support-admin-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.support-admin-hero h2 {
+  margin: 0 0 10px;
+  font-size: 34px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.1;
+}
+
+.support-admin-hero p {
+  margin: 0;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.7;
+  max-width: 500px;
+}
+
+/* ─── Hero Stats ─── */
+.support-admin-stats {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.support-admin-stat {
+  padding: 16px 22px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  min-width: 110px;
+  text-align: center;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.support-admin-stat:hover {
+  background: rgba(255, 255, 255, 0.11);
+}
+
+.support-admin-stat-val {
+  display: block;
+  font-size: 26px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.support-admin-stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.support-admin-stat.open   .support-admin-stat-val { color: #fbbf24; }
+.support-admin-stat.resolved .support-admin-stat-val { color: #4ade80; }
+.support-admin-stat.closed .support-admin-stat-val { color: #38bdf8; }
+
+/* ─── Action Buttons ─── */
+.support-resolve-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 9px;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
+}
+
+.support-resolve-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(34, 197, 94, 0.38);
+}
+
+.support-close-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.support-close-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+.support-done-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.support-progress-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 9px;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+.support-progress-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.38);
+}

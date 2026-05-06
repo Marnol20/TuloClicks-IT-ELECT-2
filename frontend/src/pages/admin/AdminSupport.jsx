@@ -1,98 +1,162 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useToast } from '../../components/common/ToastContext';
+import { useEffect, useState } from 'react'
+import { CheckCircle, XCircle, CheckCheck, Clock } from 'lucide-react'
+import { useToast } from '../../components/common/ToastContext'
+import '../../styles/Attendees.css'
+import '../../styles/AdminSupport.css'
+import api from '../../services/api'
 
-const AdminSupport = () => {
-  const { addToast } = useToast();
-  const [tickets, setTickets] = useState([]);
-
-  const fetchTickets = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/support/admin/all', { 
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true 
-      });
-      setTickets(res.data);
-    } catch (err) {
-      console.error("Failed to fetch tickets", err);
-    }
-  };
+function AdminSupport() {
+  const { addToast } = useToast()
+  const [tickets, setTickets] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchTickets();
-  }, []);
+    fetchTickets()
+  }, [])
 
-  const updateStatus = async (id, newStatus) => {
+  async function fetchTickets() {
     try {
-      const token = localStorage.getItem('token');
-      await axios.patch(`http://localhost:5000/api/support/${id}/status`, 
-        { status: newStatus },
-        { 
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true 
-        }
-      );
-      fetchTickets();
-      addToast('Ticket status updated successfully!', 'success');
-    } catch (err) {
-      console.error("Failed to update status", err);
-      addToast('Error updating status', 'error');
+      setLoading(true)
+      const res = await api.get('/support/admin/all')
+      setTickets(res.data || [])
+    } catch {
+      setTickets([])
+    } finally {
+      setLoading(false)
     }
-  };
+  }
+
+  async function updateStatus(id, newStatus) {
+    try {
+      await api.patch(`/support/${id}/status`, { status: newStatus })
+      addToast('Ticket status updated', 'success')
+      fetchTickets()
+    } catch (err) {
+      addToast(err.response?.data?.error || 'Failed to update status', 'error')
+    }
+  }
+
+  const openCount       = tickets.filter((t) => t.status === 'open').length
+  const inProgressCount = tickets.filter((t) => t.status === 'in_progress').length
+  const resolvedCount   = tickets.filter((t) => t.status === 'resolved').length
+  const closedCount     = tickets.filter((t) => t.status === 'closed').length
+
+  function statusBadgeClass(status) {
+    if (status === 'resolved')    return 'success'
+    if (status === 'closed')      return 'info'
+    if (status === 'in_progress') return 'info'
+    return 'warning'
+  }
+
+  function statusLabel(status) {
+    if (status === 'in_progress') return 'In Progress'
+    return status.charAt(0).toUpperCase() + status.slice(1)
+  }
 
   return (
-    <div style={{ padding: '20px', color: 'white' }}>
-      <h2>Support Tickets Management</h2>
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
-        <thead>
-          <tr style={{ backgroundColor: '#1e293b', textAlign: 'left' }}>
-            <th style={{ padding: '12px' }}>User</th>
-            <th style={{ padding: '12px' }}>Subject</th>
-            <th style={{ padding: '12px' }}>Type</th>
-            <th style={{ padding: '12px' }}>Status</th>
-            <th style={{ padding: '12px' }}>Date</th>
-            <th style={{ padding: '12px' }}>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tickets.map(ticket => (
-            <tr key={ticket.id} style={{ borderBottom: '1px solid #334155' }}>
-              <td style={{ padding: '12px' }}>{ticket.user_name}</td>
-              <td style={{ padding: '12px' }}>{ticket.subject}</td>
-              <td style={{ padding: '12px' }}>{ticket.issue_type}</td>
-              <td style={{ padding: '12px' }}>
-                <span style={{ 
-                  padding: '4px 8px', 
-                  borderRadius: '4px', 
-                  backgroundColor: ticket.status === 'open' ? '#ef4444' : '#22c55e',
-                  fontSize: '12px'
-                }}>
-                  {ticket.status}
-                </span>
-              </td>
-              <td style={{ padding: '12px' }}>{new Date(ticket.created_at).toLocaleDateString()}</td>
-              <td style={{ padding: '12px' }}>
-                <select 
-                  value={ticket.status}
-                  onChange={(e) => updateStatus(ticket.id, e.target.value)}
-                  style={{ backgroundColor: '#334155', color: 'white', border: 'none', padding: '5px', borderRadius: '4px', cursor: 'pointer' }}
-                >
-                  <option value="open">Open</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="resolved">Resolved</option>
-                  <option value="closed">Closed</option>
-                </select>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {tickets.length === 0 && (
-        <p style={{ textAlign: 'center', marginTop: '20px', color: '#9ca3af' }}>No support tickets available.</p>
-      )}
-    </div>
-  );
-};
+    <main className="admin-support-page">
 
-export default AdminSupport;
+      {/* ── Hero ── */}
+      <div className="support-admin-hero">
+        <div>
+          <h2>Support Tickets</h2>
+          <p>Manage and respond to user complaints, refund requests, and technical concerns.</p>
+        </div>
+        <div className="support-admin-stats">
+          <div className="support-admin-stat open">
+            <span className="support-admin-stat-val">{openCount}</span>
+            <span className="support-admin-stat-label">Open</span>
+          </div>
+          <div className="support-admin-stat" style={{ '--val-color': '#38bdf8' }}>
+            <span className="support-admin-stat-val" style={{ color: '#38bdf8' }}>{inProgressCount}</span>
+            <span className="support-admin-stat-label">In Progress</span>
+          </div>
+          <div className="support-admin-stat resolved">
+            <span className="support-admin-stat-val">{resolvedCount}</span>
+            <span className="support-admin-stat-label">Resolved</span>
+          </div>
+          <div className="support-admin-stat closed">
+            <span className="support-admin-stat-val">{closedCount}</span>
+            <span className="support-admin-stat-label">Closed</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Table ── */}
+      <div className="attendees-table">
+        <div className="table-header" style={{ gridTemplateColumns: '1fr 1.3fr 1.5fr 0.85fr 0.85fr 0.8fr 1.1fr' }}>
+          <span>User</span>
+          <span>Email</span>
+          <span>Subject</span>
+          <span>Type</span>
+          <span>Status</span>
+          <span>Date</span>
+          <span>Action</span>
+        </div>
+
+        {loading ? (
+          <div className="table-empty">Loading tickets…</div>
+        ) : tickets.length === 0 ? (
+          <div className="table-empty">No support tickets found.</div>
+        ) : (
+          tickets.map((ticket) => (
+            <div
+              key={ticket.id}
+              className="table-row"
+              style={{ gridTemplateColumns: '1fr 1.3fr 1.5fr 0.85fr 0.85fr 0.8fr 1.1fr' }}
+            >
+              <span className="row-name">{ticket.user_name}</span>
+              <span className="row-muted">{ticket.user_email}</span>
+              <span className="row-muted">{ticket.subject}</span>
+              <span className="row-muted" style={{ textTransform: 'capitalize' }}>
+                {ticket.issue_type?.replace(/_/g, ' ')}
+              </span>
+
+              <span className={`table-badge ${statusBadgeClass(ticket.status)}`}>
+                {statusLabel(ticket.status)}
+              </span>
+
+              <span className="row-muted">
+                {new Date(ticket.created_at).toLocaleDateString()}
+              </span>
+
+              <div className="row-actions">
+                {ticket.status === 'open' && (
+                  <button
+                    className="support-progress-btn"
+                    onClick={() => updateStatus(ticket.id, 'in_progress')}
+                  >
+                    <Clock size={12} /> In Progress
+                  </button>
+                )}
+                {ticket.status === 'in_progress' && (
+                  <button
+                    className="support-resolve-btn"
+                    onClick={() => updateStatus(ticket.id, 'resolved')}
+                  >
+                    <CheckCircle size={12} /> Resolve
+                  </button>
+                )}
+                {ticket.status === 'resolved' && (
+                  <button
+                    className="support-close-btn"
+                    onClick={() => updateStatus(ticket.id, 'closed')}
+                  >
+                    <XCircle size={12} /> Close
+                  </button>
+                )}
+                {ticket.status === 'closed' && (
+                  <span className="support-done-badge">
+                    <CheckCheck size={12} /> Done
+                  </span>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </main>
+  )
+}
+
+export default AdminSupport

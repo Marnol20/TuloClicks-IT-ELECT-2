@@ -3,8 +3,9 @@ import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts'
-import { Download, Calendar } from 'lucide-react'
+import { Download, Calendar, BarChart2 } from 'lucide-react'
 import '../../styles/Reports.css'
+import '../../styles/AdminPages.css'
 import api from '../../services/api'
 import { useToast } from '../../components/common/ToastContext'
 import jsPDF from 'jspdf'
@@ -178,18 +179,38 @@ function Reports() {
 
   return (
     <main className="reports-page" ref={reportRef}>
-      <div className="reports-header">
+      <div className="admin-hero">
+        <div className="admin-hero-bg" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1920&q=80')" }} />
+        <div className="admin-hero-overlay" style={{ background: 'linear-gradient(160deg,rgba(99,102,241,0.42) 0%,rgba(6,10,22,0.5) 60%),linear-gradient(0deg,rgba(6,10,22,0.92) 0%,transparent 60%)' }} />
         <div>
-          <h2>System Reports & Analytics</h2>
-          <p>Comprehensive platform analytics and performance metrics</p>
+          <h2>Reports & Analytics</h2>
+          <p>Comprehensive platform analytics, revenue trends, and performance metrics.</p>
         </div>
-        <div className="reports-actions">
-          <button onClick={exportToPDF} className="reports-btn">
-            <Download size={16} /> PDF
-          </button>
-          <button onClick={exportToCSV} className="reports-btn">
-            <Download size={16} /> CSV
-          </button>
+        <div className="admin-hero-stats">
+          {data && (
+            <>
+              <div className="admin-hero-stat green">
+                <span className="admin-hero-stat-val">₱{Number(data.revenue?.total_revenue || 0).toLocaleString()}</span>
+                <span className="admin-hero-stat-label">Revenue</span>
+              </div>
+              <div className="admin-hero-stat blue">
+                <span className="admin-hero-stat-val">{data.revenue?.total_bookings || 0}</span>
+                <span className="admin-hero-stat-label">Bookings</span>
+              </div>
+              <div className="admin-hero-stat purple">
+                <span className="admin-hero-stat-val">{data.users?.total_users || 0}</span>
+                <span className="admin-hero-stat-label">Users</span>
+              </div>
+            </>
+          )}
+          <div className="reports-actions">
+            <button onClick={exportToPDF} className="reports-btn">
+              <Download size={15} /> PDF
+            </button>
+            <button onClick={exportToCSV} className="reports-btn">
+              <Download size={15} /> CSV
+            </button>
+          </div>
         </div>
       </div>
 

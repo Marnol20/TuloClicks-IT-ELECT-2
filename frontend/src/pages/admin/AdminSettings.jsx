@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Settings as SettingsIcon, Bell, Lock, Palette, Globe, Save, AlertCircle, Shield } from 'lucide-react'
+import { Bell, Lock, Palette, Globe, Save, Shield } from 'lucide-react'
 import { useTheme } from '../../components/common/ThemeContext'
 import { useToast } from '../../components/common/ToastContext'
 import api from '../../services/api'
@@ -62,11 +62,12 @@ function AdminSettings() {
 
   return (
     <div className="settings-page">
+      <div className="settings-page-hero">
+        <p className="settings-hero-eyebrow">Configuration</p>
+        <h1 className="settings-hero-title">Admin Settings</h1>
+        <p className="settings-hero-sub">Manage notifications, security, appearance, and platform preferences.</p>
+      </div>
       <div className="settings-container">
-        <div className="settings-header">
-          <SettingsIcon size={28} />
-          <h1>Admin Settings</h1>
-        </div>
 
         <div className="settings-layout">
           <nav className="settings-tabs">

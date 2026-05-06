@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
+import { Eye, X, CheckCircle, XCircle } from 'lucide-react'
 import { useToast } from '../../components/common/ToastContext'
-import { Eye, X } from 'lucide-react' // Gidugangan og icons
 import '../../styles/Attendees.css'
+import '../../styles/AdminPages.css'
 import api from '../../services/api'
 
 function Payments() {
@@ -9,21 +10,16 @@ function Payments() {
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
-  
-  // State para sa pag-preview sa image
   const [selectedImage, setSelectedImage] = useState(null)
 
-  useEffect(() => {
-    fetchPayments()
-  }, [])
+  useEffect(() => { fetchPayments() }, [])
 
   async function fetchPayments() {
     try {
       setLoading(true)
       const res = await api.get('/payments/admin/all')
       setPayments(res.data || [])
-    } catch (error) {
-      console.error('Fetch payments error:', error)
+    } catch {
       setPayments([])
     } finally {
       setLoading(false)
@@ -31,36 +27,57 @@ function Payments() {
   }
 
   async function handleUpdateStatus(id, status) {
-    let reason = '';
+    let reason = ''
     if (status === 'refund') {
-      reason = window.prompt('Enter refund reason:', 'Refund processed by admin');
-      if (reason === null) return;
+      reason = window.prompt('Enter refund reason:', 'Refund processed by admin')
+      if (reason === null) return
     }
-
-    const confirm = window.confirm(`Mark this payment as ${status}?`)
-    if (!confirm) return
+    if (!window.confirm(`Mark this payment as ${status}?`)) return
 
     setActionLoading(true)
     try {
-      await api.patch(`/payments/${id}/${status}`, {
-        refund_reason: reason
-      })
+      await api.patch(`/payments/${id}/${status}`, { refund_reason: reason })
       addToast(`Payment marked as ${status}`, 'success')
       fetchPayments()
-    } catch (error) {
-      addToast(error.response?.data?.error || 'Update failed', 'error')
+    } catch (err) {
+      addToast(err.response?.data?.error || 'Update failed', 'error')
     } finally {
       setActionLoading(false)
     }
   }
 
+  const pending  = payments.filter((p) => p.payment_status === 'pending').length
+  const success  = payments.filter((p) => p.payment_status === 'success').length
+  const refunded = payments.filter((p) => p.payment_status === 'refunded').length
+
+  function statusBadge(status) {
+    if (status === 'success')  return 'success'
+    if (status === 'refunded') return 'info'
+    if (status === 'failed')   return 'danger'
+    return 'warning'
+  }
+
   return (
-    <main className="attendees-page">
-      <div className="attendees-top">
-        <div className="attendees-title">
-          <div>
-            <h2>Payment Transactions</h2>
-            <p>Admin Control: Verify GCash screenshots and manage transaction status</p>
+    <main className="admin-page">
+      <div className="admin-hero">
+        <div className="admin-hero-bg" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=1920&q=80')" }} />
+        <div className="admin-hero-overlay" style={{ background: 'linear-gradient(160deg,rgba(16,185,129,0.38) 0%,rgba(6,10,22,0.5) 60%),linear-gradient(0deg,rgba(6,10,22,0.92) 0%,transparent 60%)' }} />
+        <div>
+          <h2>Payment Transactions</h2>
+          <p>Verify GCash screenshots and manage transaction status for all bookings.</p>
+        </div>
+        <div className="admin-hero-stats">
+          <div className="admin-hero-stat yellow">
+            <span className="admin-hero-stat-val">{pending}</span>
+            <span className="admin-hero-stat-label">Pending</span>
+          </div>
+          <div className="admin-hero-stat green">
+            <span className="admin-hero-stat-val">{success}</span>
+            <span className="admin-hero-stat-label">Verified</span>
+          </div>
+          <div className="admin-hero-stat blue">
+            <span className="admin-hero-stat-val">{refunded}</span>
+            <span className="admin-hero-stat-label">Refunded</span>
           </div>
         </div>
       </div>
@@ -76,44 +93,39 @@ function Payments() {
         </div>
 
         {loading ? (
-          <div className="table-empty">Loading payments...</div>
+          <div className="table-empty">Loading payments…</div>
         ) : payments.length === 0 ? (
           <div className="table-empty">No payments found.</div>
         ) : (
           payments.map((payment) => (
-            <div key={payment.id} className="table-row" style={{ gridTemplateColumns: '1.2fr 1fr 1fr 0.8fr 0.8fr 1.8fr', opacity: actionLoading ? 0.7 : 1 }}>
+            <div
+              key={payment.id}
+              className="table-row"
+              style={{ gridTemplateColumns: '1.2fr 1fr 1fr 0.8fr 0.8fr 1.8fr', opacity: actionLoading ? 0.6 : 1 }}
+            >
               <span className="row-name">{payment.payment_reference || payment.booking_reference}</span>
               <span className="row-muted">{payment.attendee_name}</span>
               <span className="row-muted">{payment.event_title}</span>
               <span className="row-muted">₱{Number(payment.amount).toLocaleString()}</span>
 
-              <span className={`table-badge ${
-                  payment.payment_status === 'success' ? 'success' : 
-                  payment.payment_status === 'refunded' ? 'info' : 
-                  payment.payment_status === 'failed' ? 'danger' : 'warning'
-                }`}>
+              <span className={`table-badge ${statusBadge(payment.payment_status)}`}>
                 {payment.payment_status}
               </span>
 
-              <div className="row-actions" style={{ display: 'flex', gap: '8px' }}>
-                {/* PROOF BUTTON: Mugawas lang kon naay attachment sa database */}
+              <div className="row-actions">
                 {payment.attachment && (
-                  <button 
-                    className="table-action-btn info" 
-                    onClick={() => setSelectedImage(payment.attachment)}
-                    style={{ backgroundColor: '#3b82f6', display: 'flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    <Eye size={14} /> Proof
+                  <button className="admin-proof-btn" onClick={() => setSelectedImage(payment.attachment)}>
+                    <Eye size={13} /> Proof
                   </button>
                 )}
 
                 {payment.payment_status === 'pending' && (
                   <>
                     <button className="table-action-btn success" onClick={() => handleUpdateStatus(payment.id, 'success')} disabled={actionLoading}>
-                      Verify
+                      <CheckCircle size={13} /> Verify
                     </button>
                     <button className="table-action-btn danger" onClick={() => handleUpdateStatus(payment.id, 'fail')} disabled={actionLoading}>
-                      Fail
+                      <XCircle size={13} /> Fail
                     </button>
                   </>
                 )}
@@ -125,7 +137,7 @@ function Payments() {
                 )}
 
                 {(payment.payment_status === 'refunded' || payment.payment_status === 'failed') && (
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>No actions available</span>
+                  <span className="admin-no-action">No actions available</span>
                 )}
               </div>
             </div>
@@ -133,36 +145,20 @@ function Payments() {
         )}
       </div>
 
-      {/* POPUP MODAL PARA SA SCREENSHOT PREVIEW */}
       {selectedImage && (
-        <div 
-          className="image-modal-overlay" 
-          style={{
-            position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-            backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', 
-            justifyContent: 'center', alignItems: 'center', zIndex: 1000
-          }}
-          onClick={() => setSelectedImage(null)}
-        >
-          <div 
-            className="image-modal-content" 
-            style={{ position: 'relative', background: '#1e293b', padding: '20px', borderRadius: '12px', maxWidth: '90%', maxHeight: '90%' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <button 
-              onClick={() => setSelectedImage(null)}
-              style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#ef4444', border: 'none', borderRadius: '50%', color: 'white', cursor: 'pointer', padding: '5px' }}
-            >
-              <X size={20} />
+        <div className="admin-modal-overlay" onClick={() => setSelectedImage(null)}>
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="admin-modal-close" onClick={() => setSelectedImage(null)}>
+              <X size={16} />
             </button>
-            <h3 style={{ marginBottom: '15px', textAlign: 'center', color: '#fff' }}>GCash Proof of Payment</h3>
-            <img 
-              src={`http://localhost:5000/uploads/payments/${selectedImage}`} 
-              alt="GCash Proof" 
-              style={{ maxWidth: '100%', maxHeight: '70vh', borderRadius: '8px', display: 'block' }}
+            <p className="admin-modal-title">GCash Proof of Payment</p>
+            <img
+              className="admin-modal-img"
+              src={`http://localhost:5000/uploads/payments/${selectedImage}`}
+              alt="GCash Proof"
               onError={(e) => {
-                e.target.src = 'https://via.placeholder.com/400?text=Image+Not+Found';
-                addToast('Could not load image. Check backend folder.', 'error');
+                e.target.src = 'https://via.placeholder.com/400?text=Image+Not+Found'
+                addToast('Could not load image.', 'error')
               }}
             />
           </div>

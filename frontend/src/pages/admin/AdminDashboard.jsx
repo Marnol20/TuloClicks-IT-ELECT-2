@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { CalendarDays, Users, CreditCard, UserCheck, MessageSquare } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import '../../styles/Dashboard.css'
+import '../../styles/AdminPages.css'
 import StatCard from '../../components/ui/StatCard'
 import api from '../../services/api'
 
@@ -91,7 +92,7 @@ function AdminDashboard() {
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '20px', marginBottom: '24px' }}>
+      <div className="admin-charts-grid">
         <div className="reports-panel">
           <h3>Recent Revenue (Success Payments)</h3>
           <div style={{ width: '100%', height: 280 }}>
@@ -138,9 +139,9 @@ function AdminDashboard() {
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '18px', flexWrap: 'wrap' }}>
+          <div className="admin-pie-legend">
             {eventStatusData.map(d => (
-              <span key={d.name} style={{ color: d.color, fontWeight: 700, fontSize: 13 }}>● {d.name}</span>
+              <span key={d.name} className="admin-pie-legend-item" style={{ color: d.color }}>● {d.name}</span>
             ))}
           </div>
         </div>
