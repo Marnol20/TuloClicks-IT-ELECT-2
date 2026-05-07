@@ -86,6 +86,25 @@ const BookingWizard = () => {
       addToast('Please select a ticket and quantity', 'warning')
       return
     }
+    
+    // Check if selected ticket has availability
+    const selectedTicket = tickets.find(t => t.id === Number(formData.ticketId))
+    if (!selectedTicket) {
+      addToast('Selected ticket not found', 'error')
+      return
+    }
+    
+    const available = selectedTicket.quantity_available
+    if (available <= 0) {
+      addToast('This ticket is no longer available', 'error')
+      return
+    }
+    
+    if (formData.quantity > available) {
+      addToast(`Only ${available} tickets available`, 'warning')
+      return
+    }
+    
     setCurrentStage(2)
   }
 
@@ -231,7 +250,7 @@ const BookingWizard = () => {
   const incrementQuantity = () => {
     const selectedTicket = getSelectedTicket()
     if (selectedTicket) {
-      const available = selectedTicket.quantity_available - selectedTicket.quantity_sold
+      const available = selectedTicket.quantity_available
       if (formData.quantity < available) {
         setFormData(prev => ({ ...prev, quantity: prev.quantity + 1 }))
       } else {
@@ -342,25 +361,34 @@ const BookingWizard = () => {
             <div className="ticket-selection">
               <label className="section-label">Choose Ticket Type</label>
               <div className="ticket-grid">
-                {tickets.map((ticket) => (
-                  <div
-                    key={ticket.id}
-                    className={`ticket-card ${formData.ticketId === ticket.id ? 'selected' : ''}`}
-                    onClick={() => setFormData(prev => ({ ...prev, ticketId: ticket.id }))}
-                  >
-                    <div className="ticket-card-header">
-                      <span className="ticket-type">{ticket.name}</span>
-                      <span className="ticket-avail">{ticket.quantity_available - ticket.quantity_sold} left</span>
-                    </div>
+                {tickets.map((ticket) => {
+                  const available = ticket.quantity_available;
+                  return (
+                    <div
+                      key={ticket.id}
+                      className={`ticket-card ${formData.ticketId === ticket.id ? 'selected' : ''} ${available === 0 ? 'disabled' : ''}`}
+                      onClick={() => {
+                        if (available > 0) {
+                          setFormData(prev => ({ ...prev, ticketId: ticket.id }));
+                        }
+                      }}
+                      style={{ opacity: available === 0 ? 0.5 : 1, cursor: available === 0 ? 'not-allowed' : 'pointer' }}
+                    >
+                      <div className="ticket-card-header">
+                        <span className="ticket-type">{ticket.name}</span>
+                        <span className="ticket-avail">
+                          {available === 0 ? 'Sold Out' : `${available} left`}
+                        </span>
+                      </div>
                     <div className="ticket-price-tag">₱{Number(ticket.price).toLocaleString()}</div>
                     {formData.ticketId === ticket.id && (
                       <div className="ticket-check"><CheckCircle size={20} /></div>
                     )}
                   </div>
-                ))}
-              </div>
+                  );
+                })}
+             </div>
             </div>
-
             <div className="quantity-section">
               <label className="section-label">Number of Tickets</label>
               <div className="quantity-control">
@@ -417,8 +445,12 @@ const BookingWizard = () => {
                   <input
                     type="tel"
                     value={formData.contactNumber}
-                    onChange={(e) => setFormData(prev => ({ ...prev, contactNumber: e.target.value }))}
-                    placeholder="Enter your contact number"
+                    onChange={(e) => {
+                      const phoneNumber = e.target.value.replace(/\D/g, '').slice(0, 11);
+                      setFormData(prev => ({ ...prev, contactNumber: phoneNumber }));
+                    }}
+                    placeholder="Enter your contact number (11 digits max)"
+                    maxLength="11"
                     required
                   />
                 </div>

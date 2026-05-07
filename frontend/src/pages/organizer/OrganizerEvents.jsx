@@ -153,10 +153,18 @@ function OrganizerEvents() {
     
     // I-format ang dates para sa HTML5 date input (YYYY-MM-DD)
     if (event.start_date) {
-      setStartDate(new Date(event.start_date).toISOString().split('T')[0])
+      const utcDate = new Date(event.start_date)
+      const offset = utcDate.getTimezoneOffset() * 60000
+      const localDate = new Date(utcDate.getTime() - offset)
+      const startDateStr = localDate.toISOString().split('T')[0]
+      setStartDate(startDateStr)
     }
     if (event.end_date) {
-      setEndDate(new Date(event.end_date).toISOString().split('T')[0])
+      const utcDate = new Date(event.end_date)
+      const offset = utcDate.getTimezoneOffset() * 60000
+      const localDate = new Date(utcDate.getTime() - offset)
+      const endDateStr = localDate.toISOString().split('T')[0]
+      setEndDate(endDateStr)
     }
     
     setStartTime(event.start_time)
@@ -193,6 +201,49 @@ function OrganizerEvents() {
   function formatDate(date) {
     if (!date) return 'N/A'
     return new Date(date).toLocaleDateString()
+  }
+
+  function getEventStatus(event) {
+    const now = new Date()
+    
+    try {
+      // Convert UTC date to local date accounting for timezone
+      let startDatePart = event.start_date
+      if (startDatePart && startDatePart.includes('T')) {
+        const utcDate = new Date(startDatePart)
+        const offset = utcDate.getTimezoneOffset() * 60000
+        const localDate = new Date(utcDate.getTime() - offset)
+        startDatePart = localDate.toISOString().split('T')[0]
+      }
+      
+      // Convert UTC date to local date accounting for timezone
+      let endDatePart = event.end_date
+      if (endDatePart && endDatePart.includes('T')) {
+        const utcDate = new Date(endDatePart)
+        const offset = utcDate.getTimezoneOffset() * 60000
+        const localDate = new Date(utcDate.getTime() - offset)
+        endDatePart = localDate.toISOString().split('T')[0]
+      }
+      
+      // Use local times from start_time and end_time
+      const startTimeStr = event.start_time || '00:00:00'
+      const endTimeStr = event.end_time || '23:59:59'
+      
+      // Combine date and time
+      const startDateTime = new Date(`${startDatePart}T${startTimeStr}`)
+      const endDateTime = new Date(`${endDatePart}T${endTimeStr}`)
+      
+      if (now < startDateTime) {
+        return '⏳ Not Yet Started'
+      } else if (now >= startDateTime && now <= endDateTime) {
+        return '🔴 Ongoing'
+      } else {
+        return '✓ Concluded'
+      }
+    } catch (error) {
+      console.error('Date parsing error:', error)
+      return '❓ Unknown'
+    }
   }
 
 return (
@@ -504,13 +555,18 @@ return (
                 paddingTop: '15px'
               }}>
                 <div className="info-block">
-                  <span className="info-label">Date</span>
-                  <span className="info-value">{formatDate(event.start_date)}</span>
+                  <span className="info-label">Start Date</span>
+                  <span className="info-value">{formatDate(event.start_date)} at {event.start_time}</span>
                 </div>
 
                 <div className="info-block">
-                  <span className="info-label">Time</span>
-                  <span className="info-value">{event.start_time}</span>
+                  <span className="info-label">End Date</span>
+                  <span className="info-value">{formatDate(event.end_date)} at {event.end_time}</span>
+                </div>
+
+                <div className="info-block">
+                  <span className="info-label">Status</span>
+                  <span className="info-value">{getEventStatus(event)}</span>
                 </div>
 
                 <div className="info-block">

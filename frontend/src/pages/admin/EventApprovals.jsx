@@ -56,6 +56,49 @@ function EventApprovals() {
     return new Date(date).toLocaleDateString()
   }
 
+  function getEventStatus(event) {
+    const now = new Date()
+    
+    try {
+      // Convert UTC date to local date accounting for timezone
+      let startDatePart = event.start_date
+      if (startDatePart && startDatePart.includes('T')) {
+        const utcDate = new Date(startDatePart)
+        const offset = utcDate.getTimezoneOffset() * 60000
+        const localDate = new Date(utcDate.getTime() - offset)
+        startDatePart = localDate.toISOString().split('T')[0]
+      }
+      
+      // Convert UTC date to local date accounting for timezone
+      let endDatePart = event.end_date
+      if (endDatePart && endDatePart.includes('T')) {
+        const utcDate = new Date(endDatePart)
+        const offset = utcDate.getTimezoneOffset() * 60000
+        const localDate = new Date(utcDate.getTime() - offset)
+        endDatePart = localDate.toISOString().split('T')[0]
+      }
+      
+      // Use local times from start_time and end_time
+      const startTimeStr = event.start_time || '00:00:00'
+      const endTimeStr = event.end_time || '23:59:59'
+      
+      // Combine date and time
+      const startDateTime = new Date(`${startDatePart}T${startTimeStr}`)
+      const endDateTime = new Date(`${endDatePart}T${endTimeStr}`)
+      
+      if (now < startDateTime) {
+        return '⏳ Not Yet Started'
+      } else if (now >= startDateTime && now <= endDateTime) {
+        return '🔴 Ongoing'
+      } else {
+        return '✓ Concluded'
+      }
+    } catch (error) {
+      console.error('Date parsing error:', error)
+      return '❓ Unknown'
+    }
+  }
+
   const pending  = events.filter((e) => e.approval_status === 'pending').length
   const approved = events.filter((e) => e.approval_status === 'approved').length
   const rejected = events.filter((e) => e.approval_status === 'rejected').length
@@ -108,7 +151,11 @@ function EventApprovals() {
             >
               <span className="row-name">{event.title}</span>
               <span className="row-muted">{event.organizer_name || 'N/A'}</span>
-              <span className="row-muted">{formatDate(event.start_date)}</span>
+              <span className="row-muted">
+                {formatDate(event.start_date)} → {formatDate(event.end_date)}
+                <br />
+                <span style={{ fontSize: '0.85rem' }}>{getEventStatus(event)}</span>
+              </span>
               <span className="row-muted">{event.category_name || 'N/A'}</span>
 
               <span className={`table-badge ${

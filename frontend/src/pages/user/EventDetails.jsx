@@ -5,7 +5,8 @@ import {
   MapPin,
   Clock,
   Calendar,
-  ArrowLeft
+  ArrowLeft,
+  User
 } from 'lucide-react'
 import BookingWizard from '../../components/user/BookingWizard'
 import EventReviews from '../../components/user/EventReviews' 
@@ -44,9 +45,92 @@ function EventDetails() {
     }
   }
 
+  const getCleanDate = (dateStr) => {
+    if (!dateStr) return null;
+    
+    // Create a date object (this automatically converts UTC to Local)
+    const d = new Date(dateStr);
+    
+    // If the date is invalid (or not an ISO string), fall back to original
+    if (isNaN(d.getTime())) return dateStr.split('T')[0];
+
+    // Extract the year, month, and day based on YOUR local timezone
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  };
+
   function formatDate(date) {
-    if (!date) return 'No date'
-    return new Date(date).toLocaleDateString()
+    const datePart = getCleanDate(date);
+    if (!datePart) return 'No date';
+    
+    const d = new Date(datePart);
+    return isNaN(d.getTime()) ? 'Invalid Date' : d.toLocaleDateString();
+  }
+
+  function formatDateTime(date, time) {
+    const datePart = getCleanDate(date);
+    if (!datePart || !time) return 'Not available';
+
+    // Use the CLEANED datePart here, not the original date!
+    const combinedISO = `${datePart}T${time}`;
+    const d = new Date(combinedISO);
+
+    if (isNaN(d.getTime())) return 'Invalid Date';
+
+    return d.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  }
+
+  function getEventStatus(event) {
+    const now = new Date()
+    
+    try {
+      // Convert UTC date to local date accounting for timezone
+      let startDatePart = event.start_date
+      if (startDatePart && startDatePart.includes('T')) {
+        const utcDate = new Date(startDatePart)
+        const offset = utcDate.getTimezoneOffset() * 60000
+        const localDate = new Date(utcDate.getTime() - offset)
+        startDatePart = localDate.toISOString().split('T')[0]
+      }
+      
+      // Convert UTC date to local date accounting for timezone
+      let endDatePart = event.end_date
+      if (endDatePart && endDatePart.includes('T')) {
+        const utcDate = new Date(endDatePart)
+        const offset = utcDate.getTimezoneOffset() * 60000
+        const localDate = new Date(utcDate.getTime() - offset)
+        endDatePart = localDate.toISOString().split('T')[0]
+      }
+      
+      // Use local times from start_time and end_time
+      const startTimeStr = event.start_time || '00:00:00'
+      const endTimeStr = event.end_time || '23:59:59'
+      
+      // Combine date and time
+      const startDateTime = new Date(`${startDatePart}T${startTimeStr}`)
+      const endDateTime = new Date(`${endDatePart}T${endTimeStr}`)
+      
+      if (now < startDateTime) {
+        return '⏳ Not Yet Started'
+      } else if (now >= startDateTime && now <= endDateTime) {
+        return '🔴 Ongoing'
+      } else {
+        return '✓ Concluded'
+      }
+    } catch (error) {
+      console.error('Date parsing error:', error)
+      return '❓ Unknown'
+    }
   }
 
   function getLocation() {
@@ -119,11 +203,6 @@ function EventDetails() {
               <MapPin size={16} />
               <span>{getLocation()}</span>
             </div>
-
-            <div className="detail-item">
-              <Calendar size={16} />
-              <span>{formatDate(event.start_date)}</span>
-            </div>
           </div>
         </div>
       </div>
@@ -131,6 +210,52 @@ function EventDetails() {
       <div className="event-details-content">
         <div className="content-grid">
           <div className="main-content">
+            {/* Event Info Section */}
+            <div className="event-info-section">
+              <h2>Event Information</h2>
+              
+              <div className="info-grid">
+                <div className="info-item">
+                  <p className="info-label">
+                    <Calendar size={14} style={{ display: 'inline', marginRight: '6px' }} />
+                    Start Date & Time
+                  </p>
+                  <p className="info-value">
+                    {formatDateTime(event.start_date, event.start_time)}
+                  </p>
+                </div>
+
+                <div className="info-item">
+                  <p className="info-label">
+                    <Calendar size={14} style={{ display: 'inline', marginRight: '6px' }} />
+                    End Date & Time
+                  </p>
+                  <p className="info-value">
+                    {formatDateTime(event.end_date, event.end_time)}
+                  </p>
+                </div>
+
+                <div className="info-item">
+                  <p className="info-label">
+                    Event Status
+                  </p>
+                  <p style={{ fontSize: '1rem', color: '#f4f5f7', margin: 0, fontWeight: '500' }}>
+                    {getEventStatus(event)}
+                  </p>
+                </div>
+
+                <div className="info-item">
+                  <p className="info-label">
+                    <User size={14} style={{ display: 'inline', marginRight: '6px' }} />
+                    Organizer
+                  </p>
+                  <p className="info-value">
+                    {event.organizer_name || 'Not available'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="speaker-section">
               <h2>Speakers</h2>
 

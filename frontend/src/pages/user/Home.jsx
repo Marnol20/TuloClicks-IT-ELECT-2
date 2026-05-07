@@ -58,7 +58,7 @@ function Home() {
     <div className="user-dashboard">
       {/* ── Hero ── */}
       <section className="user-dashboard-hero">
-        <p className="user-dashboard-label">Welcome back{user.name ? `, ${user.name.split(' ')[0]}` : ''}</p>
+        <p className="user-dashboard-label">Welcome back{user.name ? `, ${user?.name?.split(' ')?.[0] || 'User'}` : ''}</p>
         <h1 className="user-dashboard-title">Discover and manage your event experience</h1>
         <p className="user-dashboard-text">
           Track your bookings, explore upcoming events, and stay updated with your tickets — all in one place.
