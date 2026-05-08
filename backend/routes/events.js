@@ -240,16 +240,14 @@ router.post('/', authMiddleware, roleMiddleware('organizer', 'admin'), upload.si
       });
     }
 
-if (location_type === 'physical' && venue_id) {
+    if (location_type === 'physical' && venue_id) {
       const venueId = Number(venue_id);
       
-      const updateStartDate = start_date || event.start_date;
-      const updateEndDate = end_date || event.end_date;
-      const updateStartTime = start_time || event.start_time;
-      const updateEndTime = end_time || event.end_time;
+      const actualEndDate = end_date || start_date;
+      const actualEndTime = end_time || '23:59:59';
 
-      const eventStartDateTime = `${start_date}T${start_time}`;
-      const eventEndDateTime = `${end_date || start_date}T${end_time || '23:59:59'}`;
+      const requestedStart = `${start_date} ${start_time}`;
+      const requestedEnd = `${actualEndDate} ${actualEndTime}`;
 
       // Query for conflicting events in the same venue
       // Include events with approval_status 'pending' or 'approved' (not rejected)
@@ -271,7 +269,7 @@ if (location_type === 'physical' && venue_id) {
             AND CONCAT(COALESCE(end_date, start_date), ' ', COALESCE(end_time, '23:59:59')) >= ?
           )
         `,
-        [venueId, eventId, eventEndDateTime, eventStartDateTime]
+        [venueId, requestedEnd, requestedStart]
       );
 
       if (conflictingEvents.length > 0) {
