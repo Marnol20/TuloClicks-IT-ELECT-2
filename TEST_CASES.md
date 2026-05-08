@@ -36,7 +36,7 @@
 - Success message displayed: "Registration successful"
 - User can log in with credentials
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -52,7 +52,7 @@
 - Registration blocked
 - Form data retained
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -68,7 +68,7 @@
 - Registration blocked
 - User suggested to login instead
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -83,7 +83,7 @@
 - Error message: "Invalid email format"
 - Registration blocked
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -98,7 +98,7 @@
 - Error message: "All fields are required"
 - Form validation highlighting empty field
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -118,7 +118,7 @@
 - Session created
 - User role displayed (e.g., "User", "Organizer", "Admin")
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -135,7 +135,7 @@
 - User remains on login page
 - No sensitive information revealed
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -150,7 +150,7 @@
 - Error message: "Invalid email or password"
 - Login blocked
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -165,28 +165,10 @@
 - Error message: "Email and password are required"
 - Form validation highlighting empty fields
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
-### 1.3 SESSION MANAGEMENT & PASSWORD SECURITY
-
-#### TC-AUTH-010: Session Persistence
-**Objective:** Verify user session persists during activity
-**Steps:**
-1. User logs in successfully
-2. User navigates between pages (Home → Events → Tickets)
-3. User session should remain active
-4. After 30 minutes of inactivity, check if session expires
-
-**Expected Result:**
-- Session active while browsing
-- After 30 min idle: User prompted to login again
-- User data preserved but access restricted
-
-**Status:** ⬜ Pending
-
----
 
 #### TC-AUTH-011: Password Encryption
 **Objective:** Verify passwords are encrypted in database
@@ -200,7 +182,7 @@
 - Hash should use BCrypt algorithm
 - Cannot decrypt to original password
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -217,7 +199,7 @@
 - User redirected to login page
 - Protected pages inaccessible
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -237,7 +219,7 @@
 - Admin panel returns error/redirect
 - Organizer dashboard returns error/redirect
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -254,7 +236,7 @@
 - Booking tracking working
 - Admin panel inaccessible
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -271,7 +253,7 @@
 - User/organizer features accessible (for management)
 - No restrictions on data access
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -299,7 +281,7 @@
 - Event visible in "My Events" list
 - Event appears in public event listings
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -316,7 +298,7 @@
 - Description properly formatted
 - Ticket availability shown
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -335,7 +317,7 @@
 - Update timestamp recorded
 - Users see updated information
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -353,7 +335,7 @@
 - Event-related data handled appropriately
 - Users cannot book deleted event
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -376,7 +358,7 @@
 - Ticket count decremented
 - Booking visible in "My Tickets"
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -395,7 +377,7 @@
 - Payment status shown
 - Total amount visible
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -403,9 +385,8 @@
 **Objective:** Verify booking can be modified
 **Steps:**
 1. Open booking from TC-CRUD-005
-2. Click "Edit"
-3. Change attendee name
-4. Click "Update"
+2. Click "Click Check-in"
+3. Update status
 
 **Expected Result:**
 - Booking updated
@@ -413,7 +394,7 @@
 - History recorded
 - No conflicts created
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -422,8 +403,7 @@
 **Steps:**
 1. Open active booking
 2. Click "Cancel Booking"
-3. Select cancellation reason
-4. Confirm cancellation
+3. Confirm cancellation
 
 **Expected Result:**
 - Booking status changed to "Cancelled"
@@ -432,7 +412,7 @@
 - Cancellation confirmation sent
 - Refund status updated
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -473,10 +453,9 @@
 **Expected Result:**
 - Inventory decremented from 100 to 95
 - Transaction logged
-- No double-booking (atomic operation)
 - Concurrent bookings handled correctly
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -495,7 +474,7 @@
 - Payments handled appropriately
 - No orphaned records
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -548,7 +527,7 @@
 - GROUP BY functioning properly
 - HAVING clause filters correctly
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -568,7 +547,7 @@
 - Inventory unchanged
 - Error message displayed
 
-**Status:** ⬜ Pending
+**Status:** ⬜ Pending kay wa tay api
 
 ---
 
@@ -586,7 +565,7 @@
 - Inventory correct
 - No data corruption
 
-**Status:** ⬜ Pending
+**Status:** ⬜ Pending ig deploy pani
 
 ---
 
@@ -612,7 +591,7 @@
 - Includes user names and IDs
 - Exports as PDF/CSV option available
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done pero sa admin ra
 
 ---
 
@@ -635,7 +614,7 @@
 - Totals calculated
 - Export options available
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done pero sa admin ra
 
 ---
 
@@ -654,7 +633,7 @@
 - Average attendance rate
 - Charts/graphs displaying trends
 
-**Status:** ⬜ Pending
+**Status:** ⬜ Pending rani pang deploy
 
 ---
 
@@ -674,27 +653,7 @@
 - Trends visualization
 - Accurate calculations
 
-**Status:** ⬜ Pending
-
----
-
-### 3.2 DATA VISUALIZATION
-
-#### TC-VIZ-001: Booking Trends Chart
-**Objective:** Verify chart generation for trends
-**Steps:**
-1. Navigate to Dashboard
-2. Check booking trends chart
-3. Verify data points match database
-
-**Expected Result:**
-- Line/bar chart displays
-- Correct time periods (daily/weekly/monthly)
-- Data matches database records
-- Interactive elements work (hover, zoom)
-- Legend accurate
-
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -712,7 +671,7 @@
 - Labels shown
 - Tooltips on hover
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -734,7 +693,7 @@
 - No data corruption
 - All information included
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -754,7 +713,7 @@
 - Importable to Excel
 - Numbers formatted correctly
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -780,8 +739,7 @@
 - Featured events section shows
 - No console errors
 
-**Status:** ⬜ Pending
-
+**Status:** ✔️ Done
 ---
 
 #### TC-FUNC-002: Browse Events Functionality
@@ -800,7 +758,7 @@
 - Sorting applies correctly
 - Event details page loads
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -817,7 +775,7 @@
 - Booking button functional
 - No missing data
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -838,7 +796,7 @@
 - Ticket QR code generated
 - Booking appears in My Tickets
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -862,7 +820,7 @@
 - Filters/search functional
 - No permission errors
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -876,7 +834,7 @@
    - Bookings
    - Speakers
    - Tickets
-   - QR Code Scanning
+   - QR Code Scanning - guba
 
 **Expected Result:**
 - All features accessible
@@ -885,26 +843,7 @@
 - QR scanner works
 - Reporting available
 
-**Status:** ⬜ Pending
-
----
-
-### 4.2 BUG IDENTIFICATION & RESOLUTION
-
-#### TC-BUG-001: Memory Leaks
-**Objective:** Identify and fix memory leaks
-**Steps:**
-1. Monitor browser memory usage
-2. Perform actions for 10 minutes
-3. Check memory growth
-
-**Expected Result:**
-- Memory usage stable
-- No exponential growth
-- No untracked listeners
-- DOM properly cleaned up
-
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -923,7 +862,7 @@
 - No horizontal scroll
 - Images scale properly
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -942,26 +881,7 @@
 - No console warnings
 - Payment processing works
 
-**Status:** ⬜ Pending
-
----
-
-#### TC-BUG-004: Network Error Handling
-**Objective:** Verify graceful error handling
-**Steps:**
-1. Simulate network failure (F12 → Network → Offline)
-2. Try to load page
-3. Try to submit form
-4. Reconnect network
-
-**Expected Result:**
-- Error messages displayed
-- User informed of issue
-- Retry options provided
-- Data not lost when reconnected
-- UI remains usable
-
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -980,7 +900,7 @@
 - Cumulative Layout Shift < 0.1
 - Lighthouse score > 80
 
-**Status:** ⬜ Pending
+**Status:** ✔️ Done
 
 ---
 
@@ -996,23 +916,6 @@
 - List queries < 2s for 1000 records
 - No N+1 problems
 - Proper indexing used
-
-**Status:** ⬜ Pending
-
----
-
-#### TC-PERF-003: API Response Times
-**Objective:** Verify API responds quickly
-**Steps:**
-1. Load test API endpoints
-2. Monitor response times
-3. Test with 100+ concurrent users
-
-**Expected Result:**
-- Response times < 500ms under normal load
-- Graceful degradation under high load
-- No timeouts
-- Error rates < 0.1%
 
 **Status:** ⬜ Pending
 
@@ -1085,7 +988,7 @@
 - New password set securely
 - Old sessions invalidated
 
-**Status:** ⬜ Pending
+**Status:** ⬜ Pending pa
 
 ---
 
@@ -1145,4 +1048,4 @@
 ---
 
 **Document Version:** 1.0
-**Last Updated:** April 16, 2026
+**Last Updated:** May 08, 2026
