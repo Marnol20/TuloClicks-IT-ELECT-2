@@ -4,8 +4,12 @@ const path = require('path');
 require('dotenv').config();
 
 const db = require('./db');
+const setupDb = require('./setup-db');
 
 const app = express();
+
+// Initialise database schema on startup (no-op if tables already exist)
+setupDb();
 
 // 1. CORS CONFIGURATION
 app.use(cors({
