@@ -240,6 +240,61 @@ router.post('/', authMiddleware, roleMiddleware('organizer', 'admin'), upload.si
       });
     }
 
+        if (location_type === 'physical' && venue_id) {
+      const venueId = Number(venue_id);
+      
+      // Convert dates to comparable format
+      const eventStartDate = new Date(`${start_date}T${start_time}`);
+      const eventEndDate = end_date ? new Date(`${end_date}T${end_time}`) : eventStartDate;
+
+      // Query for conflicting events in the same venue
+      // Include events with approval_status 'pending' or 'approved' (not rejected)
+      const [conflictingEvents] = await db.query(
+        `
+        SELECT 
+          id, 
+          title, 
+          start_date, 
+          start_time, 
+          end_date, 
+          end_time,
+          approval_status
+        FROM events 
+        WHERE venue_id = ? 
+          AND approval_status IN ('pending', 'approved')
+          AND (
+            (DATE(start_date) <= ? AND (end_date IS NULL OR DATE(end_date) >= ?))
+            OR
+            (DATE(start_date) <= DATE(?) AND (end_date IS NULL OR DATE(end_date) >= DATE(?)))
+          )
+        `,
+        [venueId, start_date, start_date, end_date || start_date, end_date || start_date]
+      );
+
+      if (conflictingEvents.length > 0) {
+      const conflict = conflictingEvents[0];
+
+      const conflictStart = new Date(`${conflict.start_date}T${conflict.start_time}`);
+      const conflictEnd = conflict.end_date 
+        ? new Date(`${conflict.end_date}T${conflict.end_time}`)
+        : conflictStart;
+      
+        if (eventStartDate <= conflictEnd && eventEndDate >= conflictStart) {
+          return res.status(409).json({
+            error: `Venue is already booked during this time. Conflicting event: "${conflict.title}" (${conflict.start_date} ${conflict.start_time} - ${conflict.end_date || conflict.start_date} ${conflict.end_time})`,
+            conflict: {
+              event_id: conflict.id,
+              event_title: conflict.title,
+              conflict_start: conflict.start_date,
+              conflict_start_time: conflict.start_time,
+              conflict_end: conflict.end_date,
+              conflict_end_time: conflict.end_time
+            }
+          });
+        }
+      }
+    }
+
     const baseSlug = makeSlug(title);
     const uniqueSlug = `${baseSlug}-${Date.now()}`;
 
