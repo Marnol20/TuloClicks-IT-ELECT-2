@@ -15,11 +15,15 @@ setupDb();
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://tuloclicks.vercel.app'
+    'https://tuloclicks.vercel.app',
+    /\.vercel\.app$/
   ],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'] // Gidugangan para sa token
 }));
+
+app.options('*', cors());
 
 // 2. MIDDLEWARE
 app.use(express.json({ limit: '50mb' }));
