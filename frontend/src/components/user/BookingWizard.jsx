@@ -17,6 +17,10 @@ const BookingWizard = () => {
   const [error, setError] = useState('')
   // ✅ NEW: Track if event is concluded
   const [isEventConcluded, setIsEventConcluded] = useState(false)
+  // ✅ NEW: Track if confirm modal is open
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  // ✅ NEW: Track if booking is being processed
+  const [isBookingProcessing, setIsBookingProcessing] = useState(false)
 
   const [currentStage, setCurrentStage] = useState(1)
   const [formData, setFormData] = useState({
@@ -183,6 +187,7 @@ const BookingWizard = () => {
 
   const handleBookNow = async () => {
     try {
+      setIsBookingProcessing(true)
       const statusRes = await api.get(`/events/${id}/status`)
       if (statusRes.data.is_concluded) {
         addToast('This event has concluded. No new bookings are allowed.', 'error')
@@ -226,13 +231,22 @@ const BookingWizard = () => {
     } catch (error) {
       const errorMsg = error.response?.data?.error || 'Failed to create booking'
       addToast(errorMsg, 'error')
+    } finally {
+      setIsBookingProcessing(false)
     }
   }
 
-  // ✅ UPDATED: Confirm booking with better logging
+  // ✅ UPDATED: Confirm booking - proper modal handling
   const handleConfirmBooking = async () => {
-    console.log('✅ Confirm Booking button clicked')
+    console.log('✅ Confirm Booking - Modal confirmed, processing booking')
+    setShowConfirmModal(false)
     await handleBookNow()
+  }
+
+  // ✅ NEW: Cancel modal without confirming
+  const handleCancelConfirm = () => {
+    console.log('✅ Booking cancelled by user')
+    setShowConfirmModal(false)
   }
 
   const goBack = (stage) => {
@@ -333,88 +347,116 @@ const BookingWizard = () => {
               <h2>Select Your Ticket</h2>
             </div>
             
-            {/* ✅ NEW: Show message if event is concluded */}
-            {isEventConcluded && (
-              <div style={{
-                padding: '1rem',
-                background: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
-                borderRadius: '8px',
-                color: '#fca5a5',
-                marginBottom: '1rem',
-                textAlign: 'center'
-              }}>
-                <p style={{ margin: 0, fontWeight: '600' }}>
-                  ⏰ This event has already concluded. Bookings are no longer available.
-                </p>
-              </div>
-            )}
-            
-            <div className="event-summary-card">
-              <div className="event-summary-main">
-                <h3>{event.title}</h3>
-                <div className="event-summary-details">
-                  <span><Calendar size={14} /> {formatDate(event.start_date)}</span>
-                  <span><MapPin size={14} /> {getLocation()}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* ✅ UPDATED: Disable ticket selection if event is concluded */}
-            <div className="ticket-selection">
-              <label className="section-label">Choose Ticket Type</label>
-              <div className="ticket-grid">
-                {tickets.map((ticket) => {
-                  const available = ticket.quantity_available;
-                  return (
-                    <div
-                      key={ticket.id}
-                      className={`ticket-card ${formData.ticketId === ticket.id ? 'selected' : ''} ${available === 0 || isEventConcluded ? 'disabled' : ''}`}
-                      onClick={() => {
-                        if (available > 0 && !isEventConcluded) {
-                          setFormData(prev => ({ ...prev, ticketId: ticket.id }));
-                        }
-                      }}
-                    >
-                      <div className="ticket-card-header">
-                        <span className="ticket-type">{ticket.name}</span>
-                        <span className="ticket-avail">
-                          {available === 0 ? 'Sold Out' : `${available} left`}
-                        </span>
-                      </div>
-                    <div className="ticket-price-tag">₱{Number(ticket.price).toLocaleString()}</div>
-                    {formData.ticketId === ticket.id && (
-                      <div className="ticket-check"><CheckCircle size={20} /></div>
-                    )}
+            {/* ✅ BUG 1 COMPLETE FIX: Completely hide tickets if event is concluded */}
+            {isEventConcluded ? (
+              <>
+                <div className="event-summary-card">
+                  <div className="event-summary-main">
+                    <h3>{event.title}</h3>
+                    <div className="event-summary-details">
+                      <span><Calendar size={14} /> {formatDate(event.start_date)}</span>
+                      <span><MapPin size={14} /> {getLocation()}</span>
+                    </div>
                   </div>
-                  );
-                })}
-             </div>
-            </div>
-            <div className="quantity-section">
-              <label className="section-label">Number of Tickets</label>
-              <div className="quantity-control">
-                <button className="qty-btn" onClick={decrementQuantity} disabled={formData.quantity <= 1}><Minus size={18} /></button>
-                <span className="qty-value">{formData.quantity}</span>
-                <button className="qty-btn" onClick={incrementQuantity}><Plus size={18} /></button>
-              </div>
-              {formData.ticketId && (
-                <div className="quantity-total">Total: <span>₱{getTotalAmount().toLocaleString()}</span></div>
-              )}
-            </div>
+                </div>
 
-            <div className="stage-footer">
-              {/* ✅ UPDATED: Disable button if event is concluded */}
-              <button 
-                type="button" 
-                className="btn-continue" 
-                onClick={handleStage1Submit}
-                disabled={isEventConcluded}
-                style={{ opacity: isEventConcluded ? 0.5 : 1, cursor: isEventConcluded ? 'not-allowed' : 'pointer' }}
-              >
-                {isEventConcluded ? 'Event Concluded' : 'Continue to Details'}
-              </button>
-            </div>
+                {/* ✅ BUG 1 FIX: Show this message instead of tickets */}
+                <div style={{
+                  padding: '2rem 1rem',
+                  textAlign: 'center',
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  borderRadius: '12px',
+                  marginBottom: '1rem'
+                }}>
+                  <h3 style={{ color: '#fca5a5', marginBottom: '0.5rem', fontSize: '1.1rem', margin: '0 0 0.5rem 0' }}>
+                    ⏰ Event Concluded
+                  </h3>
+                  <p style={{ color: 'rgba(255, 255, 255, 0.6)', margin: '0.5rem 0' }}>
+                    This event has already ended and is no longer accepting bookings.
+                  </p>
+                  <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.9rem', margin: '0.5rem 0' }}>
+                    Please check our available events and try booking another one.
+                  </p>
+                </div>
+
+                <div className="stage-footer">
+                  <button 
+                    type="button" 
+                    className="btn-continue"
+                    onClick={() => navigate('/home/events')}
+                  >
+                    Browse Other Events
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="event-summary-card">
+                  <div className="event-summary-main">
+                    <h3>{event.title}</h3>
+                    <div className="event-summary-details">
+                      <span><Calendar size={14} /> {formatDate(event.start_date)}</span>
+                      <span><MapPin size={14} /> {getLocation()}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ✅ Original ticket selection code - only show if NOT concluded */}
+                <div className="ticket-selection">
+                  <label className="section-label">Choose Ticket Type</label>
+                  <div className="ticket-grid">
+                    {tickets.map((ticket) => {
+                      const available = ticket.quantity_available;
+                      return (
+                        <div
+                          key={ticket.id}
+                          className={`ticket-card ${formData.ticketId === ticket.id ? 'selected' : ''} ${available === 0 ? 'disabled' : ''}`}
+                          onClick={() => {
+                            if (available > 0) {
+                              setFormData(prev => ({ ...prev, ticketId: ticket.id }));
+                            }
+                          }}
+                        >
+                          <div className="ticket-card-header">
+                            <span className="ticket-type">{ticket.name}</span>
+                            <span className="ticket-avail">
+                              {available === 0 ? 'Sold Out' : `${available} left`}
+                            </span>
+                          </div>
+                          <div className="ticket-price-tag">₱{Number(ticket.price).toLocaleString()}</div>
+                          {formData.ticketId === ticket.id && (
+                            <div className="ticket-check"><CheckCircle size={20} /></div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="quantity-section">
+                  <label className="section-label">Number of Tickets</label>
+                  <div className="quantity-control">
+                    <button className="qty-btn" onClick={decrementQuantity} disabled={formData.quantity <= 1}><Minus size={18} /></button>
+                    <span className="qty-value">{formData.quantity}</span>
+                    <button className="qty-btn" onClick={incrementQuantity}><Plus size={18} /></button>
+                  </div>
+                  {formData.ticketId && (
+                    <div className="quantity-total">Total: <span>₱{getTotalAmount().toLocaleString()}</span></div>
+                  )}
+                </div>
+
+                <div className="stage-footer">
+                  <button 
+                    type="button" 
+                    className="btn-continue" 
+                    onClick={handleStage1Submit}
+                  >
+                    Continue to Details
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -596,7 +638,7 @@ const BookingWizard = () => {
           </div>
         )}
 
-        {/* ✅ BUG 2 FIX: Stage 4 (Review & Confirm) - Now properly displays when currentStage === 4 */}
+        {/* ✅ BUG 2 FIX: Stage 4 (Review & Confirm) - Proper ConfirmModal implementation */}
         {currentStage === 4 && (
           <div className="stage-panel">
             <div className="stage-header">
@@ -605,7 +647,6 @@ const BookingWizard = () => {
             </div>
 
             <div className="confirmation-card">
-               {/* Confirmation content remains same as your original file */}
                <div className="confirm-section">
                 <div className="confirm-section-header"><span>Event Details</span></div>
                 <div className="confirm-item"><span className="confirm-label">Event</span><span className="confirm-value">{event.title}</span></div>
@@ -627,18 +668,32 @@ const BookingWizard = () => {
 
             <div className="stage-footer">
               <button type="button" onClick={() => goBack(3)} className="btn-back">Back</button>
-              <div className="btn-group">
-                <ConfirmModal
-                  onConfirm={handleConfirmBooking}
-                  confirmText="Confirm Booking"
-                  cancelText="Cancel"
-                  title="Confirm Booking"
-                  message="Are you sure you want to proceed with this booking?"
-                >
-                  <button type="button" className="btn-confirm">Confirm Booking</button>
-                </ConfirmModal>
-              </div>
+              {/* ✅ FIXED: Separate button outside modal that triggers the modal */}
+              <button 
+                type="button"
+                className="btn-confirm"
+                onClick={() => setShowConfirmModal(true)}
+                disabled={isBookingProcessing}
+                style={{ 
+                  opacity: isBookingProcessing ? 0.6 : 1, 
+                  cursor: isBookingProcessing ? 'not-allowed' : 'pointer' 
+                }}
+              >
+                {isBookingProcessing ? 'Processing...' : 'Confirm Booking'}
+              </button>
             </div>
+
+            {/* ✅ FIXED: Proper ConfirmModal with isOpen state management */}
+            <ConfirmModal
+              isOpen={showConfirmModal}
+              title="Confirm Booking"
+              message="Are you sure you want to proceed with this booking?"
+              confirmText="Confirm"
+              cancelText="Cancel"
+              onConfirm={handleConfirmBooking}
+              onCancel={handleCancelConfirm}
+              isLoading={isBookingProcessing}
+            />
           </div>
         )}
       </div>
