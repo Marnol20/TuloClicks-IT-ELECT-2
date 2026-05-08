@@ -2,7 +2,7 @@ import axios from 'axios'
 import { getToken, logoutUser } from './auth'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://tuloclicks-it-elect-2-production.up.railway.app/api',
 })
 
 api.interceptors.request.use(
