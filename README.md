@@ -1,4 +1,4 @@
-# TuloClicks: Comprehensive Event Management System
+# TuloClicks: Event Management System
 
 ## Project Overview
 
