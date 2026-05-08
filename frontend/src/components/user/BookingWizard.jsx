@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useToast } from '../common/ToastContext'
 import api from '../../services/api'
 import ConfirmModal from '../common/ConfirmModal'
-import { Ticket, User, CreditCard, CheckCircle, Calendar, MapPin, Minus, Plus } from 'lucide-react'
+import { Ticket, User, CreditCard, CheckCircle, Calendar, MapPin, Minus, Plus, AlertCircle } from 'lucide-react'
 import '../../styles/BookingWizard.css'
 
 const BookingWizard = () => {
@@ -15,11 +15,11 @@ const BookingWizard = () => {
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  // ✅ NEW: Track if event is concluded
+  // ✅ Track if event is concluded
   const [isEventConcluded, setIsEventConcluded] = useState(false)
-  // ✅ NEW: Track if confirm modal is open
+  // ✅ Track if confirm modal is open
   const [showConfirmModal, setShowConfirmModal] = useState(false)
-  // ✅ NEW: Track if booking is being processed
+  // ✅ Track if booking is being processed
   const [isBookingProcessing, setIsBookingProcessing] = useState(false)
 
   const [currentStage, setCurrentStage] = useState(1)
@@ -56,7 +56,6 @@ const BookingWizard = () => {
       }
   }, [id])
 
-  // ✅ UPDATED: Enhanced to check event status early
   const fetchEventDetails = async () => {
     try {
       setLoading(true)
@@ -65,17 +64,16 @@ const BookingWizard = () => {
       const [eventRes, ticketsRes, statusRes] = await Promise.all([
         api.get(`/events/${id}`),
         api.get(`/tickets/event/${id}`),
-        // ✅ NEW: Fetch event status to check if concluded
         api.get(`/events/${id}/status`)
       ])
 
       setEvent(eventRes.data)
       setTickets(ticketsRes.data || [])
       
-      // ✅ NEW: Check if event is concluded and set state
-      if (statusRes.data.is_concluded) {
+      // ✅ Check if event is concluded from status endpoint
+      if (statusRes.data.is_concluded || eventRes.data.status === 'concluded') {
         setIsEventConcluded(true)
-        setError('This event has already concluded. Bookings are no longer available.')
+        setError('This event has already concluded.')
       }
       
       if (!ticketsRes.data || ticketsRes.data.length === 0) {
@@ -90,13 +88,12 @@ const BookingWizard = () => {
     }
   }
 
-  // ✅ UPDATED: Added early event status check
   const handleStage1Submit = (e) => {
     e.preventDefault()
     
-    // ✅ NEW: Prevent progression if event is concluded
+    // ✅ FINAL PREVENT: Stop any progression if concluded
     if (isEventConcluded) {
-      addToast('This event has concluded. No new bookings are allowed.', 'error')
+      addToast('Bookings are closed for this event.', 'error')
       return
     }
     
@@ -131,7 +128,6 @@ const BookingWizard = () => {
       addToast('Please fill in all required fields', 'warning')
       return
     }
-    // Final check for contact number length
     if (formData.contactNumber.length !== 11) {
       addToast('Contact number must be exactly 11 digits', 'warning')
       return
@@ -139,7 +135,6 @@ const BookingWizard = () => {
     setCurrentStage(3)
   }
 
-  // ✅ UPDATED: Better validation and logging for Stage 3->4 progression
   const handleStage3Submit = (e) => {
     e.preventDefault()
     if (!formData.paymentMethod) {
@@ -180,17 +175,16 @@ const BookingWizard = () => {
       }
     }
     
-    // ✅ NEW: Ensure stage progresses to 4 (confirm stage)
-    console.log('✅ Moving to Stage 4 - Review & Confirm')
     setCurrentStage(4)
   }
 
   const handleBookNow = async () => {
     try {
       setIsBookingProcessing(true)
+      // Check status one last time before API call
       const statusRes = await api.get(`/events/${id}/status`)
       if (statusRes.data.is_concluded) {
-        addToast('This event has concluded. No new bookings are allowed.', 'error')
+        addToast('This event has just concluded. Booking failed.', 'error')
         return
       }
 
@@ -236,16 +230,12 @@ const BookingWizard = () => {
     }
   }
 
-  // ✅ UPDATED: Confirm booking - proper modal handling
   const handleConfirmBooking = async () => {
-    console.log('✅ Confirm Booking - Modal confirmed, processing booking')
     setShowConfirmModal(false)
     await handleBookNow()
   }
 
-  // ✅ NEW: Cancel modal without confirming
   const handleCancelConfirm = () => {
-    console.log('✅ Booking cancelled by user')
     setShowConfirmModal(false)
   }
 
@@ -347,49 +337,23 @@ const BookingWizard = () => {
               <h2>Select Your Ticket</h2>
             </div>
             
-            {/* ✅ BUG 1 COMPLETE FIX: Completely hide tickets if event is concluded */}
+            {/* ✅ UPDATED: If concluded, hide the booking UI entirely */}
             {isEventConcluded ? (
-              <>
-                <div className="event-summary-card">
-                  <div className="event-summary-main">
-                    <h3>{event.title}</h3>
-                    <div className="event-summary-details">
-                      <span><Calendar size={14} /> {formatDate(event.start_date)}</span>
-                      <span><MapPin size={14} /> {getLocation()}</span>
-                    </div>
-                  </div>
+              <div className="concluded-state-container" style={{ textAlign: 'center', padding: '40px 20px' }}>
+                <div style={{ marginBottom: '20px', color: '#ef4444' }}>
+                  <AlertCircle size={64} style={{ margin: '0 auto' }} />
                 </div>
-
-                {/* ✅ BUG 1 FIX: Show this message instead of tickets */}
-                <div style={{
-                  padding: '2rem 1rem',
-                  textAlign: 'center',
-                  background: 'rgba(239, 68, 68, 0.1)',
-                  border: '1px solid rgba(239, 68, 68, 0.3)',
-                  borderRadius: '12px',
-                  marginBottom: '1rem'
-                }}>
-                  <h3 style={{ color: '#fca5a5', marginBottom: '0.5rem', fontSize: '1.1rem', margin: '0 0 0.5rem 0' }}>
-                    ⏰ Event Concluded
-                  </h3>
-                  <p style={{ color: 'rgba(255, 255, 255, 0.6)', margin: '0.5rem 0' }}>
-                    This event has already ended and is no longer accepting bookings.
-                  </p>
-                  <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.9rem', margin: '0.5rem 0' }}>
-                    Please check our available events and try booking another one.
-                  </p>
-                </div>
-
-                <div className="stage-footer">
-                  <button 
-                    type="button" 
-                    className="btn-continue"
-                    onClick={() => navigate('/home/events')}
-                  >
-                    Browse Other Events
-                  </button>
-                </div>
-              </>
+                <h3 style={{ fontSize: '1.5rem', marginBottom: '10px' }}>Registration Closed</h3>
+                <p style={{ color: '#666', marginBottom: '30px' }}>
+                  This event ("{event?.title}") has already concluded. Tickets are no longer available for purchase.
+                </p>
+                <button 
+                  className="btn-continue" 
+                  onClick={() => navigate('/home/events')}
+                >
+                  Return to Events
+                </button>
+              </div>
             ) : (
               <>
                 <div className="event-summary-card">
@@ -402,7 +366,6 @@ const BookingWizard = () => {
                   </div>
                 </div>
 
-                {/* ✅ Original ticket selection code - only show if NOT concluded */}
                 <div className="ticket-selection">
                   <label className="section-label">Choose Ticket Type</label>
                   <div className="ticket-grid">
@@ -638,7 +601,6 @@ const BookingWizard = () => {
           </div>
         )}
 
-        {/* ✅ BUG 2 FIX: Stage 4 (Review & Confirm) - Proper ConfirmModal implementation */}
         {currentStage === 4 && (
           <div className="stage-panel">
             <div className="stage-header">
@@ -668,22 +630,16 @@ const BookingWizard = () => {
 
             <div className="stage-footer">
               <button type="button" onClick={() => goBack(3)} className="btn-back">Back</button>
-              {/* ✅ FIXED: Separate button outside modal that triggers the modal */}
               <button 
                 type="button"
                 className="btn-confirm"
                 onClick={() => setShowConfirmModal(true)}
                 disabled={isBookingProcessing}
-                style={{ 
-                  opacity: isBookingProcessing ? 0.6 : 1, 
-                  cursor: isBookingProcessing ? 'not-allowed' : 'pointer' 
-                }}
               >
                 {isBookingProcessing ? 'Processing...' : 'Confirm Booking'}
               </button>
             </div>
 
-            {/* ✅ FIXED: Proper ConfirmModal with isOpen state management */}
             <ConfirmModal
               isOpen={showConfirmModal}
               title="Confirm Booking"
