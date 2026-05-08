@@ -15,6 +15,8 @@ const BookingWizard = () => {
   const [tickets, setTickets] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  // ✅ NEW: Track if event is concluded
+  const [isEventConcluded, setIsEventConcluded] = useState(false)
 
   const [currentStage, setCurrentStage] = useState(1)
   const [formData, setFormData] = useState({
@@ -50,18 +52,27 @@ const BookingWizard = () => {
       }
   }, [id])
 
+  // ✅ UPDATED: Enhanced to check event status early
   const fetchEventDetails = async () => {
     try {
       setLoading(true)
       setError('')
       
-      const [eventRes, ticketsRes] = await Promise.all([
+      const [eventRes, ticketsRes, statusRes] = await Promise.all([
         api.get(`/events/${id}`),
-        api.get(`/tickets/event/${id}`)
+        api.get(`/tickets/event/${id}`),
+        // ✅ NEW: Fetch event status to check if concluded
+        api.get(`/events/${id}/status`)
       ])
 
       setEvent(eventRes.data)
       setTickets(ticketsRes.data || [])
+      
+      // ✅ NEW: Check if event is concluded and set state
+      if (statusRes.data.is_concluded) {
+        setIsEventConcluded(true)
+        setError('This event has already concluded. Bookings are no longer available.')
+      }
       
       if (!ticketsRes.data || ticketsRes.data.length === 0) {
         setError('No tickets available for this event.')
@@ -75,8 +86,16 @@ const BookingWizard = () => {
     }
   }
 
+  // ✅ UPDATED: Added early event status check
   const handleStage1Submit = (e) => {
     e.preventDefault()
+    
+    // ✅ NEW: Prevent progression if event is concluded
+    if (isEventConcluded) {
+      addToast('This event has concluded. No new bookings are allowed.', 'error')
+      return
+    }
+    
     if (!formData.ticketId || !formData.quantity) {
       addToast('Please select a ticket and quantity', 'warning')
       return
@@ -116,6 +135,7 @@ const BookingWizard = () => {
     setCurrentStage(3)
   }
 
+  // ✅ UPDATED: Better validation and logging for Stage 3->4 progression
   const handleStage3Submit = (e) => {
     e.preventDefault()
     if (!formData.paymentMethod) {
@@ -156,6 +176,8 @@ const BookingWizard = () => {
       }
     }
     
+    // ✅ NEW: Ensure stage progresses to 4 (confirm stage)
+    console.log('✅ Moving to Stage 4 - Review & Confirm')
     setCurrentStage(4)
   }
 
@@ -207,8 +229,10 @@ const BookingWizard = () => {
     }
   }
 
+  // ✅ UPDATED: Confirm booking with better logging
   const handleConfirmBooking = async () => {
-    handleBookNow();
+    console.log('✅ Confirm Booking button clicked')
+    await handleBookNow()
   }
 
   const goBack = (stage) => {
@@ -309,6 +333,23 @@ const BookingWizard = () => {
               <h2>Select Your Ticket</h2>
             </div>
             
+            {/* ✅ NEW: Show message if event is concluded */}
+            {isEventConcluded && (
+              <div style={{
+                padding: '1rem',
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: '8px',
+                color: '#fca5a5',
+                marginBottom: '1rem',
+                textAlign: 'center'
+              }}>
+                <p style={{ margin: 0, fontWeight: '600' }}>
+                  ⏰ This event has already concluded. Bookings are no longer available.
+                </p>
+              </div>
+            )}
+            
             <div className="event-summary-card">
               <div className="event-summary-main">
                 <h3>{event.title}</h3>
@@ -319,6 +360,7 @@ const BookingWizard = () => {
               </div>
             </div>
 
+            {/* ✅ UPDATED: Disable ticket selection if event is concluded */}
             <div className="ticket-selection">
               <label className="section-label">Choose Ticket Type</label>
               <div className="ticket-grid">
@@ -327,9 +369,9 @@ const BookingWizard = () => {
                   return (
                     <div
                       key={ticket.id}
-                      className={`ticket-card ${formData.ticketId === ticket.id ? 'selected' : ''} ${available === 0 ? 'disabled' : ''}`}
+                      className={`ticket-card ${formData.ticketId === ticket.id ? 'selected' : ''} ${available === 0 || isEventConcluded ? 'disabled' : ''}`}
                       onClick={() => {
-                        if (available > 0) {
+                        if (available > 0 && !isEventConcluded) {
                           setFormData(prev => ({ ...prev, ticketId: ticket.id }));
                         }
                       }}
@@ -362,7 +404,16 @@ const BookingWizard = () => {
             </div>
 
             <div className="stage-footer">
-              <button type="button" className="btn-continue" onClick={handleStage1Submit}>Continue to Details</button>
+              {/* ✅ UPDATED: Disable button if event is concluded */}
+              <button 
+                type="button" 
+                className="btn-continue" 
+                onClick={handleStage1Submit}
+                disabled={isEventConcluded}
+                style={{ opacity: isEventConcluded ? 0.5 : 1, cursor: isEventConcluded ? 'not-allowed' : 'pointer' }}
+              >
+                {isEventConcluded ? 'Event Concluded' : 'Continue to Details'}
+              </button>
             </div>
           </div>
         )}
@@ -545,6 +596,7 @@ const BookingWizard = () => {
           </div>
         )}
 
+        {/* ✅ BUG 2 FIX: Stage 4 (Review & Confirm) - Now properly displays when currentStage === 4 */}
         {currentStage === 4 && (
           <div className="stage-panel">
             <div className="stage-header">
@@ -583,7 +635,7 @@ const BookingWizard = () => {
                   title="Confirm Booking"
                   message="Are you sure you want to proceed with this booking?"
                 >
-                  <button className="btn-confirm">Confirm Booking</button>
+                  <button type="button" className="btn-confirm">Confirm Booking</button>
                 </ConfirmModal>
               </div>
             </div>

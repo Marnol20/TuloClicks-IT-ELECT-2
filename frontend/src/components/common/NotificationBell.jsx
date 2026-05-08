@@ -7,6 +7,8 @@ function NotificationBell() {
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [open, setOpen] = useState(false)
+  // ✅ NEW: Track which notification is being marked as read
+  const [markingReadId, setMarkingReadId] = useState(null)
   const wrapperRef = useRef(null)
 
   useEffect(() => {
@@ -45,23 +47,59 @@ function NotificationBell() {
     }
   }
 
+  // ✅ UPDATED: Better state management with optimistic updates
   async function handleMarkOneRead(id) {
     try {
+      setMarkingReadId(id)
+      
+      // ✅ NEW: Optimistically update local state immediately
+      setNotifications(prevNotifications =>
+        prevNotifications.map(notif =>
+          notif.id === id ? { ...notif, is_read: 1 } : notif
+        )
+      )
+      
+      // ✅ NEW: Decrement unread count immediately
+      setUnreadCount(prev => Math.max(0, prev - 1))
+      
+      // Make API call to persist the change
       await api.patch(`/notifications/${id}/read`)
+      
+      // ✅ NEW: Refetch to ensure consistency with server
       await fetchNotifications()
       await fetchUnreadCount()
     } catch (error) {
       console.error('Mark one read error:', error)
+      // ✅ NEW: Revert local state on error
+      await fetchNotifications()
+      await fetchUnreadCount()
+    } finally {
+      setMarkingReadId(null)
     }
   }
 
+  // ✅ UPDATED: Better state management for mark all read
   async function handleMarkAllRead() {
     try {
+      // ✅ NEW: Optimistically mark all as read
+      setNotifications(prevNotifications =>
+        prevNotifications.map(notif => ({ ...notif, is_read: 1 }))
+      )
+      
+      // ✅ NEW: Set unread count to 0 immediately
+      setUnreadCount(0)
+      
+      // Make API call to persist the change
       await api.patch('/notifications/me/read-all')
+      
+      // ✅ NEW: Refetch to ensure consistency
       await fetchNotifications()
       await fetchUnreadCount()
     } catch (error) {
       console.error('Mark all read error:', error)
+      // ✅ NEW: Revert local state on error
+      await fetchNotifications()
+      await fetchUnreadCount()
     }
   }
 
@@ -87,9 +125,16 @@ function NotificationBell() {
         <div className="notification-dropdown">
           <div className="notification-dropdown-header">
             <h4>Notifications</h4>
-            <button type="button" onClick={handleMarkAllRead}>
-              Mark all read
-            </button>
+            {/* ✅ UPDATED: Only show "Mark all read" button if there are unread notifications */}
+            {unreadCount > 0 && (
+              <button 
+                type="button" 
+                onClick={handleMarkAllRead}
+                style={{ opacity: 0.7, cursor: 'pointer' }}
+              >
+                Mark all read
+              </button>
+            )}
           </div>
 
           <div className="notification-list">
@@ -100,17 +145,32 @@ function NotificationBell() {
                 <div
                   key={item.id}
                   className={`notification-item ${item.is_read ? 'read' : 'unread'}`}
+                  style={{
+                    opacity: markingReadId === item.id ? 0.6 : 1,
+                    transition: 'opacity 0.2s ease'
+                  }}
                 >
                   <div className="notification-item-top">
                     <strong>{item.title}</strong>
+                    {/* ✅ UPDATED: Only show "Mark read" button for unread notifications */}
                     {!item.is_read && (
-                      <button type="button" onClick={() => handleMarkOneRead(item.id)}>
-                        Mark read
+                      <button 
+                        type="button" 
+                        onClick={() => handleMarkOneRead(item.id)}
+                        disabled={markingReadId === item.id}
+                        style={{
+                          cursor: markingReadId === item.id ? 'not-allowed' : 'pointer',
+                          opacity: markingReadId === item.id ? 0.5 : 1
+                        }}
+                      >
+                        {markingReadId === item.id ? 'Marking...' : 'Mark read'}
                       </button>
                     )}
                   </div>
                   <p>{item.message}</p>
-                  <span>{formatDate(item.created_at)}</span>
+                  <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>
+                    {formatDate(item.created_at)}
+                  </span>
                 </div>
               ))
             )}

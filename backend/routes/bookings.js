@@ -201,11 +201,36 @@ router.patch('/:id/check-in', authMiddleware, roleMiddleware('organizer', 'admin
 
 /**
  * 6. CANCEL BOOKING (Return Stocks)
+ * ✅ UPDATED: Added user ownership verification + extra validations
  */
 router.patch('/:id/cancel', authMiddleware, async (req, res) => {
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
+    
+    // ✅ NEW: Verify user owns this booking
+    const [bookings] = await connection.query(
+      `SELECT user_id, booking_status FROM bookings WHERE id = ?`,
+      [req.params.id]
+    );
+    
+    if (bookings.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ error: 'Booking not found.' });
+    }
+    
+    // ✅ NEW: Check if user owns the booking
+    if (bookings[0].user_id !== req.user.id) {
+      await connection.rollback();
+      return res.status(403).json({ error: 'You can only cancel your own bookings.' });
+    }
+    
+    // ✅ NEW: Prevent double-cancellation
+    if (bookings[0].booking_status === 'cancelled') {
+      await connection.rollback();
+      return res.status(400).json({ error: 'This booking is already cancelled.' });
+    }
+    
     const [items] = await connection.query(`SELECT * FROM booking_items WHERE booking_id = ?`, [req.params.id]);
     
     for (const item of items) {
@@ -220,6 +245,11 @@ router.patch('/:id/cancel', authMiddleware, async (req, res) => {
     
     await connection.query(`UPDATE bookings SET booking_status = 'cancelled' WHERE id = ?`, [req.params.id]);
     await connection.commit();
+    
+    // ✅ NEW: Log activity and notify user
+    logActivity({ user_id: req.user.id, action: 'CANCEL_BOOKING', entity_id: req.params.id, description: `Cancelled by user`, req });
+    createNotification({ user_id: req.user.id, title: 'Booking Cancelled', message: `Your booking has been cancelled and tickets refunded.`, type: 'info' });
+    
     res.json({ message: 'Cancelled and stocks returned.' });
   } catch (error) {
     await connection.rollback();
