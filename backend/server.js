@@ -23,7 +23,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'] // Gidugangan para sa token
 }));
 
-app.options('*', cors());
+app.options('/:path*', cors());
 
 // 2. MIDDLEWARE
 app.use(express.json({ limit: '50mb' }));
