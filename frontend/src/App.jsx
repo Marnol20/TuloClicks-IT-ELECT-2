@@ -50,7 +50,7 @@ import ApplyOrganizer from './pages/user/ApplyOrganizer'
 import BookingDetails from './pages/user/BookingDetails'
 import Profile from './pages/user/Profile'
 import Settings from './pages/user/Settings'
-import Support from './pages/user/Support' 
+import Support from './pages/user/support' 
 import AdminSettings from './pages/admin/AdminSettings'
 
 function App() {
