@@ -313,15 +313,15 @@ router.post('/forgot-password', async (req, res) => {
 
     // BAG-ONG CODE: I-save as Support Ticket para makita diritso sa Admin Support page table
     await db.query(
-      `INSERT INTO support_tickets (user_id, subject, issue_type, status, created_at) 
-       VALUES (?, 'Password Reset Request', 'technical_issue', 'open', NOW())`,
-      [user.id]
+      `INSERT INTO support_tickets (user_id, subject, issue_type, description, status) 
+       VALUES (?, 'Password Reset Request', 'technical', ?, 'open')`,
+      [user.id, `User ${user.name} (${cleanEmail}) is requesting a password reset.`]
     );
 
     // I-insert ang notification para sa bell icon
     await db.query(
-      `INSERT INTO notifications (user_id, title, message, created_at) 
-       VALUES (?, ?, ?, NOW())`,
+      `INSERT INTO notifications (user_id, title, message, type) 
+       VALUES (?, ?, ?, 'info')`,
       [
         adminId, 
         'Password Reset Request', 

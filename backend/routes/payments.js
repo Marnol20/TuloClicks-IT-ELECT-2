@@ -210,6 +210,10 @@ router.patch('/:id/fail', authMiddleware, roleMiddleware('admin'), async (req, r
     await connection.beginTransaction();
 
     const [payments] = await connection.query(`SELECT * FROM payments WHERE id = ? LIMIT 1`, [paymentId]);
+    if (payments.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ error: 'Payment not found.' });
+    }
     const payment = payments[0];
     const [bookingRows] = await connection.query(`SELECT * FROM bookings WHERE id = ? LIMIT 1`, [payment.booking_id]);
     const booking = bookingRows[0];
@@ -218,11 +222,13 @@ router.patch('/:id/fail', authMiddleware, roleMiddleware('admin'), async (req, r
     await connection.query(`UPDATE bookings SET payment_status = 'pending', booking_status = 'pending' WHERE id = ?`, [payment.booking_id]);
 
     await connection.commit();
+    await logActivity({ user_id: req.user.id, action: 'PAYMENT_FAILED', entity_type: 'payment', entity_id: paymentId, description: `Failed payment ID ${paymentId}`, req });
     await createNotification({ user_id: booking.user_id, title: 'Payment Rejected', message: `Payment for ${booking.booking_reference} failed. Please try again.`, type: 'error', related_id: paymentId });
 
     return res.json({ message: 'Payment rejected. Booking remains pending.' });
   } catch (error) {
     await connection.rollback();
+    console.error('Fail payment error:', error);
     return res.status(500).json({ error: 'Server error' });
   } finally {
     connection.release();
@@ -240,15 +246,25 @@ router.patch('/:id/refund', authMiddleware, roleMiddleware('admin'), async (req,
     await connection.beginTransaction();
 
     const [payments] = await connection.query(`SELECT * FROM payments WHERE id = ? LIMIT 1`, [paymentId]);
+    if (payments.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ error: 'Payment not found.' });
+    }
+    
     const payment = payments[0];
-
+    const [bookingRows] = await connection.query(`SELECT * FROM bookings WHERE id = ? LIMIT 1`, [payment.booking_id]);
+    const booking = bookingRows[0];
     await connection.query(`UPDATE payments SET payment_status = 'refunded', refund_reason = ? WHERE id = ?`, [refund_reason || 'Refunded', paymentId]);
     await connection.query(`UPDATE bookings SET payment_status = 'refunded', booking_status = 'refunded' WHERE id = ?`, [payment.booking_id]);
 
     await connection.commit();
+    await logActivity({ user_id: req.user.id, action: 'PAYMENT_REFUND', entity_type: 'payment', entity_id: paymentId, description: `Refunded payment ID ${paymentId}`, req });
+    await createNotification({ user_id: booking.user_id, title: 'Payment Refunded', message: `Your payment has been refunded. Reason: ${refund_reason || 'Refunded by admin'}`, type: 'info', related_id: paymentId });
+
     return res.json({ message: 'Payment refunded successfully.' });
   } catch (error) {
     await connection.rollback();
+    console.error('Refund payment error:', error);
     return res.status(500).json({ error: 'Server error' });
   } finally {
     connection.release();
