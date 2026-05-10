@@ -27,7 +27,6 @@ function MainHeader() {
         { label: 'Dashboard', path: '/admin' },
         { label: 'Organizers', path: '/admin/organizers' },
         { label: 'Events', path: '/admin/events' },
-        // UPDATED: Gi-add ang Categories diri
         { label: 'Categories', path: '/admin/categories' }, 
         { label: 'Venues', path: '/admin/venues' },
         { label: 'Payments', path: '/admin/payments' },
