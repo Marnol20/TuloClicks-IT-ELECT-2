@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CalendarDays, Users, CreditCard, UserCheck, MessageSquare } from 'lucide-react'
+// UPDATED: Gi-add ang Tag icon para sa Categories
+import { CalendarDays, Users, CreditCard, UserCheck, MessageSquare, Tag } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import '../../styles/Dashboard.css'
 import '../../styles/AdminPages.css'
@@ -70,6 +71,8 @@ function AdminDashboard() {
     { label: 'Manage Organizers', sub: 'Review and approve organizers', icon: Users,        path: '/admin/organizers' },
     { label: 'Approve Events',    sub: 'Review pending event submissions', icon: CalendarDays, path: '/admin/events'      },
     { label: 'View Payments',     sub: 'Track payment records',          icon: CreditCard,   path: '/admin/payments'    },
+    // UPDATED: Gi-add ang Manage Categories sa Quick Actions
+    { label: 'Manage Categories', sub: 'Add or edit event categories',   icon: Tag,          path: '/admin/categories'  },
     { label: 'Support Issues',    sub: 'Handle open support tickets',    icon: MessageSquare, path: '/admin/support'     }
   ]
 
@@ -95,7 +98,6 @@ function AdminDashboard() {
       <div className="admin-charts-grid">
         <div className="reports-panel">
           <h3>Recent Revenue (Success Payments)</h3>
-          {/* UPDATED: Gi-wrap og div nga adunay fixed height para sa Recharts */}
           <div style={{ width: '100%', height: '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
@@ -120,7 +122,6 @@ function AdminDashboard() {
 
         <div className="reports-panel">
           <h3>Event Status Breakdown</h3>
-          {/* UPDATED: Gi-wrap og div nga adunay fixed height para sa Recharts */}
           <div style={{ width: '100%', height: '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>

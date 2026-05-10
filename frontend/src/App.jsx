@@ -31,6 +31,8 @@ import Categories from './pages/admin/Categories'
 import Reports from './pages/admin/Reports'
 import ActivityLogs from './pages/admin/ActivityLogs'
 import AdminSupport from './pages/admin/AdminSupport' 
+import AdminSettings from './pages/admin/AdminSettings'
+import Categories from './pages/admin/Categories' 
 
 // Organizer Pages
 import OrganizerDashboard from './pages/organizer/OrganizerDashboard'
@@ -51,7 +53,7 @@ import BookingDetails from './pages/user/BookingDetails'
 import Profile from './pages/user/Profile'
 import Settings from './pages/user/Settings'
 import Support from './pages/user/support' 
-import AdminSettings from './pages/admin/AdminSettings'
+
 
 function App() {
   return (
@@ -147,6 +149,7 @@ function App() {
               <Route path="reports" element={<Reports />} />
               <Route path="activity-logs" element={<ActivityLogs />} />
               <Route path="support" element={<AdminSupport />} />
+              <Route path="/admin/categories" element={<Categories />} />
             </Route>
 
             {/* Organizer Routes */}
