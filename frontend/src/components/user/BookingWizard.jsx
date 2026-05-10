@@ -236,8 +236,13 @@ const BookingWizard = () => {
     }
   }
 
-  // ✅ UPDATED: Confirm booking - proper modal handling
+  // ✅ UPDATED: Confirm booking with event conclusion check
   const handleConfirmBooking = async () => {
+    if (isEventConcluded) {
+      addToast('Event has concluded. Booking cannot proceed.', 'error')
+      setShowConfirmModal(false)
+      return
+    }
     console.log('✅ Confirm Booking - Modal confirmed, processing booking')
     setShowConfirmModal(false)
     await handleBookNow()
@@ -668,15 +673,21 @@ const BookingWizard = () => {
 
             <div className="stage-footer">
               <button type="button" onClick={() => goBack(3)} className="btn-back">Back</button>
-              {/* ✅ FIXED: Separate button outside modal that triggers the modal - NOW DISABLES WHEN EVENT CONCLUDED */}
+              {/* ✅ FIXED: Button with improved concluded event check */}
               <button 
                 type="button"
                 className="btn-confirm"
-                onClick={() => setShowConfirmModal(true)}
-                disabled={isBookingProcessing || isEventConcluded}
+                onClick={() => {
+                  if (isEventConcluded) {
+                    addToast('Cannot book concluded events', 'error')
+                    return
+                  }
+                  setShowConfirmModal(true)
+                }}
+                disabled={isBookingProcessing}
                 style={{ 
-                  opacity: isBookingProcessing || isEventConcluded ? 0.6 : 1, 
-                  cursor: isBookingProcessing || isEventConcluded ? 'not-allowed' : 'pointer' 
+                  opacity: isBookingProcessing ? 0.6 : 1, 
+                  cursor: isBookingProcessing ? 'not-allowed' : 'pointer' 
                 }}
               >
                 {isBookingProcessing ? 'Processing...' : 'Confirm Booking'}
