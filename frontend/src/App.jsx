@@ -32,7 +32,6 @@ import Reports from './pages/admin/Reports'
 import ActivityLogs from './pages/admin/ActivityLogs'
 import AdminSupport from './pages/admin/AdminSupport' 
 import AdminSettings from './pages/admin/AdminSettings'
-import Categories from './pages/admin/Categories' 
 
 // Organizer Pages
 import OrganizerDashboard from './pages/organizer/OrganizerDashboard'
@@ -149,7 +148,6 @@ function App() {
               <Route path="reports" element={<Reports />} />
               <Route path="activity-logs" element={<ActivityLogs />} />
               <Route path="support" element={<AdminSupport />} />
-              <Route path="/admin/categories" element={<Categories />} />
             </Route>
 
             {/* Organizer Routes */}
