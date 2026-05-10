@@ -15,6 +15,7 @@ function Categories() {
 
   async function fetchCategories() {
     try {
+      // Nagtawag sa admin endpoint para makuha tanan categories
       const res = await api.get('/categories/admin/all')
       setCategories(res.data || [])
     } catch {
@@ -25,12 +26,16 @@ function Categories() {
   async function handleCreate() {
     if (!name.trim()) { setError('Category name is required'); return }
     try {
-      await api.post('/categories', { name: name.trim(), description: description.trim() })
+      // Pag-post og bag-ong category sa database
+      await api.post('/categories', { 
+        name: name.trim(), 
+        description: description.trim() 
+      })
       setError('')
       setShowForm(false)
       setName('')
       setDescription('')
-      fetchCategories()
+      fetchCategories() // Refresh ang list human ma-create
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to create category')
     }
