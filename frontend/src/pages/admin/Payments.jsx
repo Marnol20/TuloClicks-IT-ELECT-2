@@ -36,6 +36,7 @@ function Payments() {
 
     setActionLoading(true)
     try {
+      // Gigamitan og PATCH para sa status updates, siguroha nga gi-allow kini sa imong CORS
       await api.patch(`/payments/${id}/${status}`, { refund_reason: reason })
       addToast(`Payment marked as ${status}`, 'success')
       fetchPayments()
@@ -154,7 +155,7 @@ function Payments() {
             <p className="admin-modal-title">GCash Proof of Payment</p>
             <img
               className="admin-modal-img"
-              src={`https://tuloclicks-it-elect-2-production.up.railway.app/uploads/payments/${selectedImage}`}
+              src={`${import.meta.env.VITE_API_URL}/uploads/payments/${selectedImage}`}
               alt="GCash Proof"
               onError={(e) => {
                 e.target.src = 'https://via.placeholder.com/400?text=Image+Not+Found'

@@ -16,6 +16,7 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'https://tuloclicks.vercel.app',
+    process.env.FRONTEND_URL, // Gidugangan para sa dynamic Railway variable
     /\.vercel\.app$/
   ],
   credentials: true,
@@ -30,6 +31,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Static files for uploads
+// Siguroha nga ang folder folders/payments o folders/proofs nag-exist sa imong Railway
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/', (req, res) => {
@@ -96,5 +98,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
