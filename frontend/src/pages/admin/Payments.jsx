@@ -154,7 +154,7 @@ function Payments() {
             <p className="admin-modal-title">GCash Proof of Payment</p>
             <img
               className="admin-modal-img"
-              // UPDATED: Gigamitan sa root VITE_API_URL nga walay /api aron husto ang image path
+              // Giusab aron maminaw sa VITE_API_URL nga walay /api
               src={`${import.meta.env.VITE_API_URL}/uploads/payments/${selectedImage}`}
               alt="GCash Proof"
               onError={(e) => {
