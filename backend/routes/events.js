@@ -746,9 +746,6 @@ router.delete('/:id', authMiddleware, roleMiddleware('organizer', 'admin'), asyn
 });
 
 
-/**
- * PUBLIC: get event status (check if concluded)
- */
 router.get('/:id/status', async (req, res) => {
   try {
     const eventId = Number(req.params.id);
@@ -763,8 +760,29 @@ router.get('/:id/status', async (req, res) => {
     }
 
     const event = events[0];
+    
+    // ✅ FIXED: Better date comparison accounting for timezone
     const now = new Date();
-    const eventEndDateTime = new Date(`${event.end_date}T${event.end_time}`);
+    
+    // Parse end_date (format: YYYY-MM-DD) and end_time (format: HH:MM:SS)
+    const endDateParts = event.end_date.split('-'); // [YYYY, MM, DD]
+    const endTimeParts = event.end_time.split(':'); // [HH, MM, SS]
+    
+    // Create event end datetime in local timezone
+    const eventEndDateTime = new Date(
+      parseInt(endDateParts[0]),           // year
+      parseInt(endDateParts[1]) - 1,       // month (0-indexed)
+      parseInt(endDateParts[2]),           // day
+      parseInt(endTimeParts[0]),           // hours
+      parseInt(endTimeParts[1]),           // minutes
+      parseInt(endTimeParts[2])            // seconds
+    );
+
+    console.log('📅 Event end time check:', {
+      now: now.toISOString(),
+      eventEndDateTime: eventEndDateTime.toISOString(),
+      is_concluded: now > eventEndDateTime
+    });
 
     const isEventConcluded = now > eventEndDateTime;
 
@@ -778,7 +796,7 @@ router.get('/:id/status', async (req, res) => {
     });
   } catch (error) {
     console.error('Get event status error:', error);
-    return res.status(500).json({ error: 'Server error checking event status.' });
+    res.status(500).json({ error: 'Failed to check event status.' });
   }
 });
 
