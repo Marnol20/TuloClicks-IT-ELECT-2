@@ -1,8 +1,11 @@
 import axios from 'axios'
 import { getToken, logoutUser } from './auth'
 
+// Define the base URL once to ensure consistency across the file
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://tuloclicks-it-elect-2-production.up.railway.app/api';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://tuloclicks-it-elect-2-production.up.railway.app/api',
+  baseURL: BASE_URL,
 })
 
 api.interceptors.request.use(
@@ -36,8 +39,9 @@ api.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem('refreshToken')
         if (refreshToken) {
+          // Changed to use the BASE_URL instead of hardcoded localhost
           const res = await axios.post(
-            `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/refresh`,
+            `${BASE_URL}/auth/refresh`,
             { refreshToken }
           )
 
