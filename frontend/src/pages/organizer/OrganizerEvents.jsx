@@ -63,7 +63,6 @@ function OrganizerEvents() {
     setLoading(true)
     try {
       if (eventImage) {
-        // Send with FormData if image exists
         const formData = new FormData()
         formData.append('title', title)
         formData.append('description', description)
@@ -85,7 +84,6 @@ function OrganizerEvents() {
           addToast('Event created successfully', 'success')
         }
       } else {
-        // Send without FormData if no image
         const payload = {
           title,
           description,
@@ -151,7 +149,6 @@ function OrganizerEvents() {
     setCategoryId(event.category_id)
     setVenueId(event.venue_id || '')
     
-    // I-format ang dates para sa HTML5 date input (YYYY-MM-DD)
     if (event.start_date) {
       const utcDate = new Date(event.start_date)
       const offset = utcDate.getTimezoneOffset() * 60000
@@ -172,10 +169,10 @@ function OrganizerEvents() {
     setLocationType(event.location_type || 'physical')
     setCustomLocation(event.custom_location || '')
 
-     // Show current event image
-  if (event.event_image) {
-    setPreviewUrl(`http://localhost:5000/uploads/events/${event.event_image}`)
-  }
+    // Giusab aron maminaw sa VITE_API_URL
+    if (event.event_image) {
+      setPreviewUrl(`${import.meta.env.VITE_API_URL}/uploads/events/${event.event_image}`)
+    }
   
     setShowForm(true)
     window.scrollTo(0, 0)
@@ -205,9 +202,7 @@ function OrganizerEvents() {
 
   function getEventStatus(event) {
     const now = new Date()
-    
     try {
-      // Convert UTC date to local date accounting for timezone
       let startDatePart = event.start_date
       if (startDatePart && startDatePart.includes('T')) {
         const utcDate = new Date(startDatePart)
@@ -215,8 +210,6 @@ function OrganizerEvents() {
         const localDate = new Date(utcDate.getTime() - offset)
         startDatePart = localDate.toISOString().split('T')[0]
       }
-      
-      // Convert UTC date to local date accounting for timezone
       let endDatePart = event.end_date
       if (endDatePart && endDatePart.includes('T')) {
         const utcDate = new Date(endDatePart)
@@ -224,12 +217,8 @@ function OrganizerEvents() {
         const localDate = new Date(utcDate.getTime() - offset)
         endDatePart = localDate.toISOString().split('T')[0]
       }
-      
-      // Use local times from start_time and end_time
       const startTimeStr = event.start_time || '00:00:00'
       const endTimeStr = event.end_time || '23:59:59'
-      
-      // Combine date and time
       const startDateTime = new Date(`${startDatePart}T${startTimeStr}`)
       const endDateTime = new Date(`${endDatePart}T${endTimeStr}`)
       
@@ -246,7 +235,7 @@ function OrganizerEvents() {
     }
   }
 
-return (
+  return (
     <main className="events-page">
       <div className="events-top">
         <div className="events-title">
@@ -255,7 +244,6 @@ return (
             <p>Create and manage your organizer events</p>
           </div>
         </div>
-
         <button className="new-event-btn" onClick={() => setShowForm(true)}>
           New Event
         </button>
@@ -264,7 +252,6 @@ return (
       {showForm && (
         <div className="create-form">
           <h3>{editingId ? 'Edit Event' : 'Create New Event'}</h3>
-
           <div className="form-grid">
             <div className="form-group">
               <label>Event Title *</label>
@@ -294,12 +281,9 @@ return (
               </select>
             </div>
 
-           {/* Date & Time Section */}
             <div className="form-section">
               <h4 className="form-section-title">Event Schedule</h4>
-              
               <div className="date-time-grid">
-                {/* Start Date */}
                 <div className="date-time-group">
                   <label>Start Date *</label>
                   <div className="date-time-input-wrapper">
@@ -312,18 +296,12 @@ return (
                     />
                     {startDate && (
                       <span className="date-preview">
-                        {new Date(startDate).toLocaleDateString('en-US', { 
-                          weekday: 'short', 
-                          year: 'numeric', 
-                          month: 'short', 
-                          day: 'numeric' 
-                        })}
+                        {new Date(startDate).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
                       </span>
                     )}
                   </div>
                 </div>
 
-                {/* Start Time */}
                 <div className="date-time-group">
                   <label>Start Time *</label>
                   <div className="date-time-input-wrapper">
@@ -336,17 +314,12 @@ return (
                     />
                     {startTime && (
                       <span className="time-preview">
-                        {new Date(`2000-01-01T${startTime}`).toLocaleTimeString('en-US', { 
-                          hour: 'numeric', 
-                          minute: '2-digit',
-                          hour12: true
-                        })}
+                        {new Date(`2000-01-01T${startTime}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                       </span>
                     )}
                   </div>
                 </div>
 
-                {/* End Date */}
                 <div className="date-time-group">
                   <label>End Date</label>
                   <div className="date-time-input-wrapper">
@@ -359,18 +332,12 @@ return (
                     />
                     {endDate && (
                       <span className="date-preview">
-                        {new Date(endDate).toLocaleDateString('en-US', { 
-                          weekday: 'short', 
-                          year: 'numeric', 
-                          month: 'short', 
-                          day: 'numeric' 
-                        })}
+                        {new Date(endDate).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
                       </span>
                     )}
                   </div>
                 </div>
 
-                {/* End Time */}
                 <div className="date-time-group">
                   <label>End Time</label>
                   <div className="date-time-input-wrapper">
@@ -383,45 +350,26 @@ return (
                     />
                     {endTime && (
                       <span className="time-preview">
-                        {new Date(`2000-01-01T${endTime}`).toLocaleTimeString('en-US', { 
-                          hour: 'numeric', 
-                          minute: '2-digit',
-                          hour12: true
-                        })}
+                        {new Date(`2000-01-01T${endTime}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                       </span>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Event Duration Summary */}
               {startDate && startTime && (
                 <div className="event-duration-summary">
                   <div className="duration-item">
                     <span className="duration-label">Event Start:</span>
                     <span className="duration-value">
-                      {new Date(`${startDate}T${startTime}`).toLocaleString('en-US', {
-                        weekday: 'short',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true
-                      })}
+                      {new Date(`${startDate}T${startTime}`).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}
                     </span>
                   </div>
                   {endDate && endTime && (
                     <div className="duration-item">
                       <span className="duration-label">Event End:</span>
                       <span className="duration-value">
-                        {new Date(`${endDate}T${endTime}`).toLocaleString('en-US', {
-                          weekday: 'short',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: 'numeric',
-                          minute: '2-digit',
-                          hour12: true
-                        })}
+                        {new Date(`${endDate}T${endTime}`).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}
                       </span>
                     </div>
                   )}
@@ -520,11 +468,11 @@ return (
             overflow: 'hidden',
             border: '1px solid #334155'
           }}>
-            {/* Landscape Event Image */}
             <div style={{ width: '100%', height: '220px', backgroundColor: '#0f172a', position: 'relative' }}>
               {event.event_image ? (
                 <img
-                  src={`http://localhost:5000/uploads/events/${event.event_image}`}
+                  // Giusab aron maminaw sa VITE_API_URL
+                  src={`${import.meta.env.VITE_API_URL}/uploads/events/${event.event_image}`}
                   alt={event.title}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
@@ -540,7 +488,6 @@ return (
               </span>
             </div>
 
-            {/* Event Details */}
             <div style={{ padding: '20px' }}>
               <div style={{ marginBottom: '15px' }}>
                 <h3 style={{ margin: '0 0 5px 0', fontSize: '1.4rem', color: '#f8fafc' }}>{event.title}</h3>
@@ -558,22 +505,18 @@ return (
                   <span className="info-label">Start Date</span>
                   <span className="info-value">{formatDate(event.start_date)} at {event.start_time}</span>
                 </div>
-
                 <div className="info-block">
                   <span className="info-label">End Date</span>
                   <span className="info-value">{formatDate(event.end_date)} at {event.end_time}</span>
                 </div>
-
                 <div className="info-block">
                   <span className="info-label">Status</span>
                   <span className="info-value">{getEventStatus(event)}</span>
                 </div>
-
                 <div className="info-block">
                   <span className="info-label">Venue</span>
                   <span className="info-value">{event.venue_name || event.custom_location || 'N/A'}</span>
                 </div>
-
                 <div className="info-block">
                   <span className="info-label">Category</span>
                   <span className="info-value">{event.category_name}</span>
@@ -586,10 +529,8 @@ return (
                   {event.approval_status === "approved" && <span style={{ color: '#10b981' }}>Event Approved</span>}
                   {event.approval_status === "rejected" && <span style={{ color: '#ef4444' }}>Event Rejected</span>}
                 </div>
-                
                 <button className="create-btn" onClick={() => handleEdit(event)} disabled={loading}>Edit</button>
                 <button className="cancel-btn" onClick={() => handleDelete(event.id)} disabled={loading} style={{ backgroundColor: '#ef4444' }}>Delete</button>
-                
                 {event.publish_status === "draft" && event.approval_status !== "pending" && (
                   <button className="create-btn" onClick={() => handleSubmitForApproval(event.id)} disabled={loading} style={{ backgroundColor: '#8b5cf6' }}>
                     Submit for Approval
