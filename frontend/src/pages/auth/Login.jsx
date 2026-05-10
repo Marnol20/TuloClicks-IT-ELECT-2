@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom' // Gi-add ang Link diri
 import { ArrowLeft, Eye, EyeOff, Ticket, Bell, Shield } from 'lucide-react'
 import { useToast } from '../../components/common/ToastContext'
 import tcLogo from '../../styles/TuloClicksLogo.png'
@@ -66,7 +66,6 @@ function Login() {
     }
   }
 
-  // Handle Forgot Password Prompt
   const handleForgotPassword = async () => {
     const userEmail = window.prompt("Enter your registered email to notify admin:");
     
@@ -82,16 +81,15 @@ function Login() {
 
   return (
     <div className="login-page">
-
-      {/* ── Left panel ── */}
       <div className="login-left-panel">
         <div className="login-left-bg" />
         <div className="login-left-overlay" />
         <div className="login-left-content">
-          <div className="login-left-brand">
+          {/* Gi-wrap sa Link para clickable ug naay hover effect */}
+          <Link to="/" className="login-left-brand" style={{ textDecoration: 'none' }}>
             <img className="login-left-brand-mark" src={tcLogo} alt="TuloClicks" />
             <span className="login-left-brand-name">TuloClicks</span>
-          </div>
+          </Link>
 
           <div className="login-left-body">
             <h2 className="login-left-headline">
@@ -117,7 +115,6 @@ function Login() {
         </div>
       </div>
 
-      {/* ── Right panel (form) ── */}
       <div className="login-right-panel">
         <div className="login-form-wrap">
           <button className="login-back-btn" onClick={() => navigate('/')}>
@@ -192,7 +189,6 @@ function Login() {
           </p>
         </div>
       </div>
-
     </div>
   )
 }

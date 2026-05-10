@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom' // Gi-add ang Link diri
 import { ArrowLeft, Star, MapPin, Calendar } from 'lucide-react'
 import { useToast } from '../../components/common/ToastContext'
 import tcLogo from '../../styles/TuloClicksLogo.png'
@@ -76,13 +76,8 @@ function SignUp() {
       setLoading(true)
       setError('')
 
-      // 1. Create the account
       await api.post('/auth/signup', { name, email, phone, password })
-
-      // 2. Notify success
       addToast('Account created successfully! Please sign in.', 'success')
-
-      // 3. Redirect to Login page (Updated Fix)
       navigate('/login')
 
     } catch (err) {
@@ -96,16 +91,15 @@ function SignUp() {
 
   return (
     <div className="signup-page">
-
-      {/* ── Left panel ── */}
       <div className="signup-left-panel">
         <div className="signup-left-bg" />
         <div className="signup-left-overlay" />
         <div className="signup-left-content">
-          <div className="signup-left-brand">
+          {/* Gi-wrap sa Link para clickable ug naay hover effect */}
+          <Link to="/" className="signup-left-brand" style={{ textDecoration: 'none' }}>
             <img className="signup-left-brand-mark" src={tcLogo} alt="TuloClicks" />
             <span className="signup-left-brand-name">TuloClicks</span>
-          </div>
+          </Link>
 
           <div className="signup-left-body">
             <h2 className="signup-left-headline">
@@ -154,7 +148,6 @@ function SignUp() {
         </div>
       </div>
 
-      {/* ── Right panel (form) ── */}
       <div className="signup-right-panel">
         <div className="signup-form-wrap">
           <button className="signup-back-btn" onClick={() => navigate('/')}>
@@ -252,7 +245,6 @@ function SignUp() {
           </p>
         </div>
       </div>
-
     </div>
   )
 }

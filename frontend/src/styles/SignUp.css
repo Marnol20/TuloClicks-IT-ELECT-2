@@ -339,3 +339,29 @@
   .signup-left-panel { display: none; }
   .signup-right-panel { padding: 48px 24px; min-height: 100vh; }
 }
+
+/* Para sa Login Page */
+.login-left-brand:hover .login-left-brand-mark {
+  filter: drop-shadow(0 0 10px rgba(124, 58, 237, 0.8)); /* Purplish glow */
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.login-left-brand:hover .login-left-brand-name {
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+/* Para sa SignUp Page */
+.signup-left-brand:hover .signup-left-brand-mark {
+  filter: drop-shadow(0 0 10px rgba(124, 58, 237, 0.8));
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.signup-left-brand:hover .signup-left-brand-name {
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
