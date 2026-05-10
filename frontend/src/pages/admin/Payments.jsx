@@ -18,6 +18,7 @@ function Payments() {
     try {
       setLoading(true)
       const res = await api.get('/payments/admin/all')
+      // Siguroha nga array gyud ang isulod sa state
       setPayments(res.data || [])
     } catch {
       setPayments([])
@@ -46,9 +47,10 @@ function Payments() {
     }
   }
 
-  const pending  = payments.filter((p) => p.payment_status === 'pending').length
-  const success  = payments.filter((p) => p.payment_status === 'success').length
-  const refunded = payments.filter((p) => p.payment_status === 'refunded').length
+  // UPDATED: Gi-add ang (payments || []) fallback aron dili mo-error kon null ang data
+  const pending  = (payments || []).filter((p) => p.payment_status === 'pending').length
+  const success  = (payments || []).filter((p) => p.payment_status === 'success').length
+  const refunded = (payments || []).filter((p) => p.payment_status === 'refunded').length
 
   function statusBadge(status) {
     if (status === 'success')  return 'success'
@@ -94,10 +96,11 @@ function Payments() {
 
         {loading ? (
           <div className="table-empty">Loading payments…</div>
-        ) : payments.length === 0 ? (
+        ) : (payments || []).length === 0 ? (
           <div className="table-empty">No payments found.</div>
         ) : (
-          payments.map((payment) => (
+          // UPDATED: Gi-add ang fallback diri para sa map function
+          (payments || []).map((payment) => (
             <div
               key={payment.id}
               className="table-row"
@@ -154,7 +157,7 @@ function Payments() {
             <p className="admin-modal-title">GCash Proof of Payment</p>
             <img
               className="admin-modal-img"
-              src={`https://tuloclicks-it-elect-2-production.up.railway.app/uploads/payments/${selectedImage}`}
+              src={`${import.meta.env.VITE_API_URL}/uploads/payments/${selectedImage}`}
               alt="GCash Proof"
               onError={(e) => {
                 e.target.src = 'https://via.placeholder.com/400?text=Image+Not+Found'
