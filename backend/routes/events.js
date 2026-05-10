@@ -745,8 +745,9 @@ router.delete('/:id', authMiddleware, roleMiddleware('organizer', 'admin'), asyn
   }
 });
 
+
 /**
- * PUBLIC: get event status (check if concluded) - ✅ FIXED with NULL safety
+ * PUBLIC: get event status (check if concluded)
  */
 router.get('/:id/status', async (req, res) => {
   try {
@@ -763,54 +764,7 @@ router.get('/:id/status', async (req, res) => {
 
     const event = events[0];
     const now = new Date();
-
-    // ✅ Handle NULL end_time/end_date safely - if missing, treat event as active
-    if (!event.end_date || !event.end_time) {
-      console.warn(`⚠️ Event ${eventId} missing end_date or end_time - treating as active`);
-      return res.json({
-        id: event.id,
-        title: event.title,
-        end_date: event.end_date,
-        end_time: event.end_time,
-        is_concluded: false,
-        status: 'active'
-      });
-    }
-
-    // ✅ Validate date/time format before parsing
-    const endDateParts = event.end_date.split('-'); // [YYYY, MM, DD]
-    const endTimeParts = event.end_time.split(':'); // [HH, MM, SS]
-    
-    if (endDateParts.length < 3 || endTimeParts.length < 2) {
-      console.warn(`⚠️ Event ${eventId} has invalid date/time format - treating as active`);
-      return res.json({
-        id: event.id,
-        title: event.title,
-        end_date: event.end_date,
-        end_time: event.end_time,
-        is_concluded: false,
-        status: 'active'
-      });
-    }
-
-    // ✅ Properly parse date and time with explicit components
-    const eventEndDateTime = new Date(
-      parseInt(endDateParts[0]),           // year
-      parseInt(endDateParts[1]) - 1,       // month (0-indexed, so subtract 1)
-      parseInt(endDateParts[2]),           // day
-      parseInt(endTimeParts[0]) || 0,      // hours
-      parseInt(endTimeParts[1]) || 0,      // minutes
-      parseInt(endTimeParts[2]) || 0       // seconds
-    );
-
-    console.log('📅 Event status check:', {
-      eventId,
-      now: now.toISOString(),
-      end_date: event.end_date,
-      end_time: event.end_time,
-      eventEndDateTime: eventEndDateTime.toISOString(),
-      is_concluded: now > eventEndDateTime
-    });
+    const eventEndDateTime = new Date(`${event.end_date}T${event.end_time}`);
 
     const isEventConcluded = now > eventEndDateTime;
 
@@ -823,7 +777,7 @@ router.get('/:id/status', async (req, res) => {
       status: isEventConcluded ? 'concluded' : 'active'
     });
   } catch (error) {
-    console.error('❌ Get event status error:', error);
+    console.error('Get event status error:', error);
     return res.status(500).json({ error: 'Server error checking event status.' });
   }
 });
