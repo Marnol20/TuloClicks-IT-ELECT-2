@@ -48,13 +48,10 @@ function EventDetails() {
   const getCleanDate = (dateStr) => {
     if (!dateStr) return null;
     
-    // Create a date object (this automatically converts UTC to Local)
     const d = new Date(dateStr);
     
-    // If the date is invalid (or not an ISO string), fall back to original
     if (isNaN(d.getTime())) return dateStr.split('T')[0];
 
-    // Extract the year, month, and day based on YOUR local timezone
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
@@ -74,7 +71,6 @@ function EventDetails() {
     const datePart = getCleanDate(date);
     if (!datePart || !time) return 'Not available';
 
-    // Use the CLEANED datePart here, not the original date!
     const combinedISO = `${datePart}T${time}`;
     const d = new Date(combinedISO);
 
@@ -94,7 +90,6 @@ function EventDetails() {
     const now = new Date()
     
     try {
-      // Convert UTC date to local date accounting for timezone
       let startDatePart = event.start_date
       if (startDatePart && startDatePart.includes('T')) {
         const utcDate = new Date(startDatePart)
@@ -103,7 +98,6 @@ function EventDetails() {
         startDatePart = localDate.toISOString().split('T')[0]
       }
       
-      // Convert UTC date to local date accounting for timezone
       let endDatePart = event.end_date
       if (endDatePart && endDatePart.includes('T')) {
         const utcDate = new Date(endDatePart)
@@ -112,11 +106,9 @@ function EventDetails() {
         endDatePart = localDate.toISOString().split('T')[0]
       }
       
-      // Use local times from start_time and end_time
       const startTimeStr = event.start_time || '00:00:00'
       const endTimeStr = event.end_time || '23:59:59'
       
-      // Combine date and time
       const startDateTime = new Date(`${startDatePart}T${startTimeStr}`)
       const endDateTime = new Date(`${endDatePart}T${endTimeStr}`)
       
@@ -168,7 +160,7 @@ function EventDetails() {
         {event.event_image ? (
           <div
             className="event-hero-bg"
-            // Giusab aron maminaw sa VITE_API_URL
+            // UPDATED: Siguroha nga walay /api sa tunga sa image path
             style={{ backgroundImage: `url(${import.meta.env.VITE_API_URL}/uploads/events/${event.event_image})` }}
           />
         ) : (
@@ -290,7 +282,6 @@ function EventDetails() {
                 <div className="booking-popup-content">
                   <div className="booking-popup-icon">🎫</div>
                   
-                  {/* Bag-ong condition para i-disable ang booking kon Concluded na */}
                   {getEventStatus(event) === '✓ Concluded' ? (
                     <>
                       <h3 style={{ color: '#ef4444' }}>Booking Closed</h3>

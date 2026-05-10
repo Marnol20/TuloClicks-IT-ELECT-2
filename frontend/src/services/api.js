@@ -1,8 +1,9 @@
 import axios from 'axios'
 import { getToken, logoutUser } from './auth'
 
-// Define the base URL once to ensure consistency across the file
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://tuloclicks-it-elect-2-production.up.railway.app/api';
+// UPDATED: Gi-add ang /api diri aron maminaw sa saktong endpoint
+// Maski tangtangon nimo ang /api sa Vercel Settings, kini nga variable ang mo-handle sa DB calls.
+const BASE_URL = `${import.meta.env.VITE_API_URL}/api` || 'https://tuloclicks-it-elect-2-production.up.railway.app/api';
 
 const api = axios.create({
   baseURL: BASE_URL,
