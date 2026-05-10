@@ -95,8 +95,9 @@ function AdminDashboard() {
       <div className="admin-charts-grid">
         <div className="reports-panel">
           <h3>Recent Revenue (Success Payments)</h3>
-          <div style={{ width: '100%', height: 280 }}>
-            <ResponsiveContainer>
+          {/* UPDATED: Gi-wrap og div nga adunay fixed height para sa Recharts */}
+          <div style={{ width: '100%', height: '300px' }}>
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
                 <defs>
                   <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
@@ -119,8 +120,9 @@ function AdminDashboard() {
 
         <div className="reports-panel">
           <h3>Event Status Breakdown</h3>
-          <div style={{ width: '100%', height: 240 }}>
-            <ResponsiveContainer>
+          {/* UPDATED: Gi-wrap og div nga adunay fixed height para sa Recharts */}
+          <div style={{ width: '100%', height: '300px' }}>
+            <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={eventStatusData}

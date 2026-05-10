@@ -322,17 +322,20 @@ function Reports() {
       <section className="reports-grid">
         <div className="reports-panel chart-panel full-span">
           <h3>Revenue Trend (Monthly)</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data.revenueTrend || []}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#273244" />
-              <XAxis dataKey="month" stroke="#94a3b8" />
-              <YAxis stroke="#94a3b8" />
-              <Tooltip contentStyle={{ background: '#111827', border: 'none' }} />
-              <Legend />
-              <Line type="monotone" dataKey="revenue" stroke="#22c55e" name="Revenue" />
-              <Line type="monotone" dataKey="bookings" stroke="#38bdf8" name="Bookings" />
-            </LineChart>
-          </ResponsiveContainer>
+          {/* UPDATED: Gi-wrap og div nga naay fixed height para sa Recharts */}
+          <div style={{ width: '100%', height: '300px' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data.revenueTrend || []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#273244" />
+                <XAxis dataKey="month" stroke="#94a3b8" />
+                <YAxis stroke="#94a3b8" />
+                <Tooltip contentStyle={{ background: '#111827', border: 'none' }} />
+                <Legend />
+                <Line type="monotone" dataKey="revenue" stroke="#22c55e" name="Revenue" />
+                <Line type="monotone" dataKey="bookings" stroke="#38bdf8" name="Bookings" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </section>
 
@@ -340,53 +343,59 @@ function Reports() {
       <section className="reports-grid">
         <div className="reports-panel chart-panel">
           <h3>Event Status Breakdown</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            {(() => {
-            const eventStatusData = [
-              { name: 'Approved', value: Number(data.events?.approved_events || 0) },
-              { name: 'Pending', value: Number(data.events?.pending_events || 0) },
-              { name: 'Rejected', value: Number(data.events?.rejected_events || 0) },
-              { name: 'Cancelled', value: Number(data.events?.cancelled_events || 0) }
-            ].filter(item => item.value > 0);
+          {/* UPDATED: Gi-wrap og div nga naay fixed height */}
+          <div style={{ width: '100%', height: '300px' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              {(() => {
+              const eventStatusData = [
+                { name: 'Approved', value: Number(data.events?.approved_events || 0) },
+                { name: 'Pending', value: Number(data.events?.pending_events || 0) },
+                { name: 'Rejected', value: Number(data.events?.rejected_events || 0) },
+                { name: 'Cancelled', value: Number(data.events?.cancelled_events || 0) }
+              ].filter(item => item.value > 0);
 
-              const hasData = eventStatusData.some(item => item.value > 0);
-              
-              if (!hasData) return <div className="no-data">No event data available for this period.</div>;
+                const hasData = eventStatusData.some(item => item.value > 0);
+                
+                if (!hasData) return <div className="no-data">No event data available for this period.</div>;
 
-              return (
-                <PieChart>
-                  <Pie 
-                    data={eventStatusData} 
-                    nameKey="name" 
-                    dataKey="value" 
-                    cx="50%" 
-                    cy="50%" 
-                    outerRadius={80} 
-                    label
-                  >
-                    {eventStatusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              );
-            })()}
-          </ResponsiveContainer>
+                return (
+                  <PieChart>
+                    <Pie 
+                      data={eventStatusData} 
+                      nameKey="name" 
+                      dataKey="value" 
+                      cx="50%" 
+                      cy="50%" 
+                      outerRadius={80} 
+                      label
+                    >
+                      {eventStatusData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                );
+              })()}
+            </ResponsiveContainer>
+          </div>
         </div>
 
         <div className="reports-panel chart-panel">
           <h3>Payment Status</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data.paymentStatus || []}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#273244" />
-              <XAxis dataKey="payment_status" stroke="#94a3b8" />
-              <YAxis stroke="#94a3b8" />
-              <Tooltip contentStyle={{ background: '#111827' }} />
-              <Bar dataKey="count" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          {/* UPDATED: Gi-wrap og div nga naay fixed height */}
+          <div style={{ width: '100%', height: '300px' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.paymentStatus || []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#273244" />
+                <XAxis dataKey="payment_status" stroke="#94a3b8" />
+                <YAxis stroke="#94a3b8" />
+                <Tooltip contentStyle={{ background: '#111827' }} />
+                <Bar dataKey="count" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </section>
 
@@ -394,18 +403,21 @@ function Reports() {
       <section className="reports-grid">
         <div className="reports-panel chart-panel full-span">
           <h3>Top Categories by Revenue</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data.categoryPerformance || []}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#273244" />
-              <XAxis dataKey="category_name" stroke="#94a3b8" />
-              <YAxis stroke="#94a3b8" />
-              <Tooltip contentStyle={{ background: '#111827' }} />
-              <Legend />
-              <Bar dataKey="event_count" fill="#22c55e" name="Events" />
-              <Bar dataKey="booking_count" fill="#38bdf8" name="Bookings" />
-              <Bar dataKey="total_revenue" fill="#f59e0b" name="Revenue" />
-            </BarChart>
-          </ResponsiveContainer>
+          {/* UPDATED: Gi-wrap og div nga naay fixed height */}
+          <div style={{ width: '100%', height: '300px' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.categoryPerformance || []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#273244" />
+                <XAxis dataKey="category_name" stroke="#94a3b8" />
+                <YAxis stroke="#94a3b8" />
+                <Tooltip contentStyle={{ background: '#111827' }} />
+                <Legend />
+                <Bar dataKey="event_count" fill="#22c55e" name="Events" />
+                <Bar dataKey="booking_count" fill="#38bdf8" name="Bookings" />
+                <Bar dataKey="total_revenue" fill="#f59e0b" name="Revenue" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </section>
 
