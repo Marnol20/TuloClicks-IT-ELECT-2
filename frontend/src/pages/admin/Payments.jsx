@@ -154,7 +154,7 @@ function Payments() {
             <p className="admin-modal-title">GCash Proof of Payment</p>
             <img
               className="admin-modal-img"
-              src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/uploads/payments/${selectedImage}`}
+              src={`https://tuloclicks-it-elect-2-production.up.railway.app/uploads/payments/${selectedImage}`}
               alt="GCash Proof"
               onError={(e) => {
                 e.target.src = 'https://via.placeholder.com/400?text=Image+Not+Found'

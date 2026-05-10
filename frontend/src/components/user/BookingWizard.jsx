@@ -185,12 +185,15 @@ const BookingWizard = () => {
     setCurrentStage(4)
   }
 
+  // ✅ IMPROVED: Better concluded event check with backend verification
   const handleBookNow = async () => {
     try {
       setIsBookingProcessing(true)
-      const statusRes = await api.get(`/events/${id}/status`)
-      if (statusRes.data.is_concluded) {
-        addToast('This event has concluded. No new bookings are allowed.', 'error')
+      
+      // ✅ DOUBLE CHECK: Prevent booking if frontend says event is concluded
+      if (isEventConcluded) {
+        addToast('Cannot book concluded events. This event has already ended.', 'error')
+        setIsBookingProcessing(false)
         return
       }
 
@@ -198,6 +201,16 @@ const BookingWizard = () => {
       if (!token) {
         addToast('Please log in first', 'error')
         navigate('/login')
+        return
+      }
+
+      // ✅ Final check with backend before booking
+      const statusRes = await api.get(`/events/${id}/status`)
+      console.log('🔍 Final status check:', statusRes.data)
+      
+      if (statusRes.data.is_concluded) {
+        addToast('This event has already concluded. No new bookings are allowed.', 'error')
+        setIsBookingProcessing(false)
         return
       }
 
@@ -231,6 +244,7 @@ const BookingWizard = () => {
     } catch (error) {
       const errorMsg = error.response?.data?.error || 'Failed to create booking'
       addToast(errorMsg, 'error')
+      console.error('❌ Booking error:', errorMsg)
     } finally {
       setIsBookingProcessing(false)
     }
