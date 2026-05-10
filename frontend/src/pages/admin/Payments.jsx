@@ -154,8 +154,7 @@ function Payments() {
             <p className="admin-modal-title">GCash Proof of Payment</p>
             <img
               className="admin-modal-img"
-              // Giusab aron maminaw sa VITE_API_URL nga walay /api
-              src={`${import.meta.env.VITE_API_URL}/uploads/payments/${selectedImage}`}
+              src={`https://tuloclicks-it-elect-2-production.up.railway.app/uploads/payments/${selectedImage}`}
               alt="GCash Proof"
               onError={(e) => {
                 e.target.src = 'https://via.placeholder.com/400?text=Image+Not+Found'
