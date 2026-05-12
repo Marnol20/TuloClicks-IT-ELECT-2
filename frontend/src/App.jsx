@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect } from 'react' // Gidugang para sa Scroll logic
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 
 // Styles
 import './styles/App.css'
@@ -53,12 +54,21 @@ import Profile from './pages/user/Profile'
 import Settings from './pages/user/Settings'
 import Support from './pages/user/support' 
 
+// NEW: ScrollToTop Component para ma-fix ang scrollbar issue sa mobile ug desktop
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 
 function App() {
   return (
     <ThemeProvider>
       <ToastProvider>
         <BrowserRouter>
+          <ScrollToTop /> {/* Gidugang diri para mo-reset ang scroll matag balhin og page */}
           <Routes>
             {/* Landing Page (Public) - Kini ang mogawas sa localhost:5173/ */}
             <Route path="/" element={<LandingPage />} />

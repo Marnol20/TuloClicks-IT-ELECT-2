@@ -232,7 +232,6 @@ function BrowseEvents() {
                 <div className="event-card-img-wrap">
                   {event.event_image ? (
                     <img
-                      /* UPDATED: Gi-gamitan na og Environment Variable */
                       src={`${import.meta.env.VITE_API_URL}/uploads/events/${event.event_image}`}
                       alt={event.title}
                       className="event-card-img"

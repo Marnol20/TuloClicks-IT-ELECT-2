@@ -1404,3 +1404,8 @@
   color: var(--text);
   font-weight: 700;
 }
+
+.user-view-events-page {
+  overflow-y: auto;
+  min-height: 100vh;
+}
