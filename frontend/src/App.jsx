@@ -54,11 +54,12 @@ import Profile from './pages/user/Profile'
 import Settings from './pages/user/Settings'
 import Support from './pages/user/support' 
 
-// NEW: ScrollToTop Component para ma-fix ang scrollbar issue sa mobile ug desktop
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
     window.scrollTo(0, 0);
+    // Siguroha nga ang body dili "hidden" ang overflow matag balhin og page
+    document.body.style.overflow = 'auto'; 
   }, [pathname]);
   return null;
 }
