@@ -48,3 +48,17 @@
 .empty-state p {
   margin: 0;
 }
+
+/* I-force ang scrollbar nga mugawas */
+html, body {
+  overflow-y: auto !important; 
+  overflow-x: hidden !important;
+  height: auto !important;
+  min-height: 100% !important;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
