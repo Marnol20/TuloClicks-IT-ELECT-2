@@ -108,7 +108,7 @@ router.post('/signup', async (req, res) => {
 });
 
 /**
- * NEW: VERIFY EMAIL OTP ENDPOINT
+ * NEW: VERIFY EMAIL OTP ENDPOINT (With Fixed String Conversion Updates)
  */
 router.post('/verify-otp', async (req, res) => {
   try {
@@ -124,7 +124,8 @@ router.post('/verify-otp', async (req, res) => {
       return res.status(404).json({ error: 'Account identity reference mismatch.' });
     }
 
-    if (users[0].otp_code !== otp.trim()) {
+    // UPDATED: Forced strong string formatting type constraints to pass matrix tests flawlessly
+    if (String(users[0].otp_code) !== String(otp).trim()) {
       return res.status(400).json({ error: 'Incorrect verification code. Please try again.' });
     }
 

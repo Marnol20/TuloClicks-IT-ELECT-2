@@ -84,7 +84,11 @@ function SignUp() {
       setLoading(true)
       setError('')
 
-      await api.post('/auth/signup', { name, email, phone, password })
+      const cleanEmail = email.trim().toLowerCase();
+      await api.post('/auth/signup', { name, email: cleanEmail, phone, password })
+      
+      // SAKTO NGA UPDATE: I-commit ang live current target email inputs sa dili pa ablihan ang view frame components
+      setEmail(cleanEmail)
       addToast('Account configuration created. OTP token sent to email address.', 'success')
       setShowOtpVerification(true) // NEW: Switch window view display into validation mode
     } catch (err) {
@@ -141,7 +145,7 @@ function SignUp() {
             padding: '40px',
             maxWidth: '500px',
             width: '100%',
-            textAlignment: 'center',
+            textAlign: 'center',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
           }}>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
