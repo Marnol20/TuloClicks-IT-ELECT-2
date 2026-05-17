@@ -126,3 +126,84 @@
     bottom: 16px;
   }
 }
+
+/* --- TOAST GLOBAL CONTAINER POSITIONING --- */
+.toast-container {
+  position: fixed;
+  top: 24px;                  /* Gibalhin gikan sa bottom padung sa TOP */
+  left: 50%;
+  transform: translateX(-50%); /* Gi-center diritso sa tunga sa screen para maklaro */
+  z-index: 999999;             /* Gisiguro nga dili matabonan sa mga modal o cards */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 520px;            /* Gipadak-an ang iyang width wrapper box */
+  padding: 0 20px;
+  pointer-events: none;
+}
+
+/* --- TOAST ALERT CARD BODY --- */
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 28px;          /* Gidugangan ang padding para mas hamugaway tan-awon */
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  background-color: #1e293b;   /* Solid background para dili transparent */
+  border: 2px solid #334155;
+  animation: toastFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* --- ACCESSIBILITY TEXT & ICON OVERRIDES --- */
+.toast-message {
+  color: #ffffff !important;   /* Gi-force nga solid puti ang suwat */
+  font-size: 17px !important;  /* Gipadako ang font gikan sa 13px ngadto sa 17px para sa mga tiguwang */
+  font-weight: 700 !important; /* Gihimong BOLD para daling mabasa gikan sa layo */
+  line-height: 1.4;
+}
+
+.toast-icon svg {
+  width: 24px !important;      /* Gipadako ang icons (Check, X, Alert) ngadto sa 24px */
+  height: 24px !important;
+  stroke-width: 2.5px;         /* Gihimong mas baga ang linya sa icon */
+}
+
+/* --- SUCCESS, ERROR, & WARNING COLOR ACCENTS --- */
+.toast.success {
+  background-color: #064e3b !important; /* Ngitngit nga green background */
+  border-color: #10b981 !important;     /* Hayag nga green border */
+}
+.toast.success .toast-icon {
+  color: #10b981 !important;
+}
+
+.toast.error {
+  background-color: #7f1d1d !important;   /* Ngitngit nga pula background */
+  border-color: #ef4444 !important;       /* Hayag nga pula border */
+}
+.toast.error .toast-icon {
+  color: #ef4444 !important;
+}
+
+.toast.warning {
+  background-color: #78350f !important; /* Ngitngit nga yellow/amber background */
+  border-color: #f59e0b !important;     /* Hayag nga yellow border */
+}
+.toast.warning .toast-icon {
+  color: #f59e0b !important;
+}
+
+/* Smooth slide down animation from top screen bounds */
+@keyframes toastFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
