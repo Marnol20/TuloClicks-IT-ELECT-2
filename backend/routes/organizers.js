@@ -1,4 +1,7 @@
 const express = require('express');
+const multer = require('multer'); // NEW: Added for file attachment multi-part processing
+const path = require('path'); // NEW: Added for filename extension utilities
+const fs = require('fs'); // NEW: Added for server directory management
 const db = require('../db');
 const authMiddleware = require('../middleware/authMiddleware');
 const roleMiddleware = require('../middleware/roleMiddleware');
@@ -7,10 +10,30 @@ const createNotification = require('../utils/notify');
 
 const router = express.Router();
 
+// NEW: Disk storage engine layout mapped for organizing valid identity image uploads safely
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = 'uploads/ids/';
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `id-${Date.now()}${path.extname(file.originalname)}`);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB Upload limit restriction layout bounds
+});
+
 /**
  * USER: apply as organizer
+ * UPDATED: Added upload.single('valid_id') middleware structure to parse multi-part form parameters perfectly
  */
-router.post('/apply', authMiddleware, async (req, res) => {
+router.post('/apply', authMiddleware, upload.single('valid_id'), async (req, res) => {
   try {
     const {
       organization_name,
@@ -23,8 +46,16 @@ router.post('/apply', authMiddleware, async (req, res) => {
       instagram_link
     } = req.body;
 
+    // Fetch the parsed storage filename context metadata safely out of the upload buffer stream
+    const valid_id_image = req.file ? req.file.filename : null;
+
     if (!organization_name) {
       return res.status(400).json({ error: 'Organization name is required.' });
+    }
+
+    // CHECKPOINT validation: Ensure documentation attachment copy references are uploaded to map manual clearance tracks
+    if (!valid_id_image) {
+      return res.status(400).json({ error: 'Institutional Valid ID card photo copy attachment is mandatory.' });
     }
 
     const [existing] = await db.query(
@@ -36,6 +67,7 @@ router.post('/apply', authMiddleware, async (req, res) => {
       return res.status(409).json({ error: 'Organizer application already exists.' });
     }
 
+    // UPDATED: Appended structural storage tracking logic parameters to commit verification image filenames safely
     const [result] = await db.query(
       `
       INSERT INTO organizer_profiles
@@ -57,7 +89,7 @@ router.post('/apply', authMiddleware, async (req, res) => {
         req.user.id,
         organization_name.trim(),
         organization_type || null,
-        branding_logo || null,
+        branding_logo || valid_id_image, // Fallback sets verification ID directly to binding architecture
         branding_banner || null,
         description || null,
         website || null,
