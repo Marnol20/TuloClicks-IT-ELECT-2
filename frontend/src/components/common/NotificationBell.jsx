@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { Bell } from 'lucide-react'
+import { useNavigate } from 'react-router-dom' // NEW: Imported useNavigate for page routing links
 import api from '../../services/api'
 import '../../styles/Notifications.css'
 
 function NotificationBell() {
+  const navigate = useNavigate() // NEW: Initialized navigation instance hooks
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [open, setOpen] = useState(false)
-  // ✅ NEW: Track which notification is being marked as read
   const [markingReadId, setMarkingReadId] = useState(null)
   const wrapperRef = useRef(null)
 
@@ -47,30 +48,24 @@ function NotificationBell() {
     }
   }
 
-  // ✅ UPDATED: Better state management with optimistic updates
   async function handleMarkOneRead(id) {
     try {
       setMarkingReadId(id)
       
-      // ✅ NEW: Optimistically update local state immediately
       setNotifications(prevNotifications =>
         prevNotifications.map(notif =>
           notif.id === id ? { ...notif, is_read: 1 } : notif
         )
       )
       
-      // ✅ NEW: Decrement unread count immediately
       setUnreadCount(prev => Math.max(0, prev - 1))
       
-      // Make API call to persist the change
       await api.patch(`/notifications/${id}/read`)
       
-      // ✅ NEW: Refetch to ensure consistency with server
       await fetchNotifications()
       await fetchUnreadCount()
     } catch (error) {
       console.error('Mark one read error:', error)
-      // ✅ NEW: Revert local state on error
       await fetchNotifications()
       await fetchUnreadCount()
     } finally {
@@ -78,26 +73,43 @@ function NotificationBell() {
     }
   }
 
-  // ✅ UPDATED: Better state management for mark all read
+  // NEW METHOD: Evaluates data notification contexts to handle target window redirection pipelines instantly
+  const handleNotificationClick = async (item) => {
+    // If notification is unread, mark it as read automatically on click
+    if (!item.is_read) {
+      await handleMarkOneRead(item.id)
+    }
+
+    // Close dropdown drawer overlay panel
+    setOpen(false)
+
+    // DYNAMIC ROUTING RULES: Evaluates entity bindings to dispatch users safely
+    const type = String(item.related_type).toLowerCase()
+    
+    if (type === 'event') {
+      navigate('/organizer/events') // Redirects to Organizer events interface management page
+    } else if (type === 'organizer_profile' || type === 'organizer_application') {
+      navigate('/admin/organizers') // Redirects to Admin review applications clearance tracks
+    } else if (type === 'venue') {
+      navigate('/admin/venues') // Redirects to Admin physical venue infrastructure approval dashboard
+    } else {
+      navigate('/home') // Fallback redirection target parameter
+    }
+  }
+
   async function handleMarkAllRead() {
     try {
-      // ✅ NEW: Optimistically mark all as read
       setNotifications(prevNotifications =>
         prevNotifications.map(notif => ({ ...notif, is_read: 1 }))
       )
       
-      // ✅ NEW: Set unread count to 0 immediately
       setUnreadCount(0)
-      
-      // Make API call to persist the change
       await api.patch('/notifications/me/read-all')
       
-      // ✅ NEW: Refetch to ensure consistency
       await fetchNotifications()
       await fetchUnreadCount()
     } catch (error) {
       console.error('Mark all read error:', error)
-      // ✅ NEW: Revert local state on error
       await fetchNotifications()
       await fetchUnreadCount()
     }
@@ -125,7 +137,6 @@ function NotificationBell() {
         <div className="notification-dropdown">
           <div className="notification-dropdown-header">
             <h4>Notifications</h4>
-            {/* ✅ UPDATED: Only show "Mark all read" button if there are unread notifications */}
             {unreadCount > 0 && (
               <button 
                 type="button" 
@@ -142,33 +153,44 @@ function NotificationBell() {
               <div className="notification-empty">No notifications found.</div>
             ) : (
               notifications.map((item) => (
+                /* UPDATED CONTAINER: Added interactive cursor pointer, click listeners, and hover indicators */
                 <div
                   key={item.id}
                   className={`notification-item ${item.is_read ? 'read' : 'unread'}`}
+                  onClick={() => handleNotificationClick(item)}
                   style={{
                     opacity: markingReadId === item.id ? 0.6 : 1,
-                    transition: 'opacity 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    cursor: 'pointer',
+                    userSelect: 'none'
                   }}
                 >
                   <div className="notification-item-top">
-                    <strong>{item.title}</strong>
-                    {/* ✅ UPDATED: Only show "Mark read" button for unread notifications */}
+                    <strong style={{ color: item.is_read ? '#94a3b8' : '#f8fafc' }}>{item.title}</strong>
                     {!item.is_read && (
                       <button 
                         type="button" 
-                        onClick={() => handleMarkOneRead(item.id)}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevents click bubble triggers from firing main routing redirection handlers twice
+                          handleMarkOneRead(item.id);
+                        }}
                         disabled={markingReadId === item.id}
                         style={{
                           cursor: markingReadId === item.id ? 'not-allowed' : 'pointer',
-                          opacity: markingReadId === item.id ? 0.5 : 1
+                          opacity: markingReadId === item.id ? 0.5 : 1,
+                          backgroundColor: 'transparent',
+                          border: 'none',
+                          color: '#8b5cf6',
+                          fontSize: '11px',
+                          fontWeight: 'bold'
                         }}
                       >
                         {markingReadId === item.id ? 'Marking...' : 'Mark read'}
                       </button>
                     )}
                   </div>
-                  <p>{item.message}</p>
-                  <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>
+                  <p style={{ margin: '4px 0', fontSize: '13px', color: '#cbd5e1' }}>{item.message}</p>
+                  <span style={{ fontSize: '0.75rem', opacity: 0.6, color: '#64748b' }}>
                     {formatDate(item.created_at)}
                   </span>
                 </div>
