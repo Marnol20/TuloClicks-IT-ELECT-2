@@ -85,10 +85,12 @@ function SignUp() {
       setError('')
 
       const cleanEmail = email.trim().toLowerCase();
+      
+      // SAKTO NGA UPDATE: I-commit ug i-save daan ang email input state aron malikayan ang render state crash ug freezes
+      setEmail(cleanEmail)
+
       await api.post('/auth/signup', { name, email: cleanEmail, phone, password })
       
-      // SAKTO NGA UPDATE: I-commit ang live current target email inputs sa dili pa ablihan ang view frame components
-      setEmail(cleanEmail)
       addToast('Account configuration created. OTP token sent to email address.', 'success')
       setShowOtpVerification(true) // NEW: Switch window view display into validation mode
     } catch (err) {
