@@ -381,7 +381,7 @@ router.post('/change-password', authMiddleware, async (req, res) => {
 });
 
 /**
- * UPDATED FORGOT PASSWORD: Diritso mag-generate og Recovery Security Code interface tokens
+ * FORGOT PASSWORD - Notify Admin via Notifications & Support Tickets
  */
 router.post('/forgot-password', async (req, res) => {
   try {
@@ -392,96 +392,45 @@ router.post('/forgot-password', async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const [users] = await db.query('SELECT id, name FROM users WHERE email = ? LIMIT 1', [cleanEmail]);
+
+    const [users] = await db.query('SELECT id, name FROM users WHERE email = ?', [cleanEmail]);
     
     if (users.length === 0) {
-      return res.status(404).json({ error: 'Email address not registered in our system.' });
+      return res.status(404).json({ error: 'Email not found in our system.' });
     }
 
     const user = users[0];
-    const generatedRecoveryCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // I-save ang dynamic recovery code diritso sa otp_code placeholder array space
-    await db.query('UPDATE users SET otp_code = ? WHERE id = ?', [generatedRecoveryCode, user.id]);
+    const [admins] = await db.query("SELECT id FROM users WHERE role = 'admin' LIMIT 1");
+    
+    if (admins.length === 0) {
+      return res.status(404).json({ error: 'No admin found to receive notification.' });
+    }
 
-    // Fast-track response para sa frontend
-    res.json({ message: 'Verification security code generated successfully.' });
+    const adminId = admins[0].id;
 
-    // BACKGROUND EMAIL PROCESS
-    const mailOptions = {
-      from: `"TuloClicks Platform" <${process.env.EMAIL_USER}>`,
-      to: cleanEmail,
-      subject: '🔑 TuloClicks - Account Password Recovery Code',
-      html: `
-        <div style="font-family: Arial, sans-serif; background-color: #0b1220; color: #ffffff; padding: 25px; border-radius: 12px; max-width: 500px; margin: auto; border: 1px solid #1e293b;">
-          <h2 style="color: #ef4444; text-align: center; margin-bottom: 5px;">TuloClicks Recovery</h2>
-          <hr style="border-color: #334155; margin: 20px 0;" />
-          <p>Hello <strong>${user.name}</strong>,</p>
-          <p>We received a request to reset your password. Use this 6-digit Recovery Pin to unlock access:</p>
-          <div style="background-color: #1e293b; padding: 15px; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 6px; color: #ef4444; border-radius: 8px; margin: 25px 0; border: 1px solid #334155;">
-            ${generatedRecoveryCode}
-          </div>
-        </div>
-      `
-    };
+    // BAG-ONG CODE: I-save as Support Ticket para makita diritso sa Admin Support page table
+    await db.query(
+      `INSERT INTO support_tickets (user_id, subject, issue_type, description, status) 
+       VALUES (?, 'Password Reset Request', 'technical', ?, 'open')`,
+      [user.id, `User ${user.name} (${cleanEmail}) is requesting a password reset.`]
+    );
 
-    transporter.sendMail(mailOptions).catch(async (emailErr) => {
-      console.error('Background Recovery Email Error:', emailErr.message);
-      // BYPASS INJECTION PROTECTION RULE: Fallback setting into 123456 if emails get stuck
-      try {
-        await db.query('UPDATE users SET otp_code = "123456" WHERE id = ?', [user.id]);
-      } catch (dbErr) {
-        console.error('Bypass lock error:', dbErr.message);
-      }
-    });
+    // I-insert ang notification para sa bell icon
+    await db.query(
+      `INSERT INTO notifications (user_id, title, message, type) 
+       VALUES (?, ?, ?, 'info')`,
+      [
+        adminId, 
+        'Password Reset Request', 
+        `User ${user.name} (${cleanEmail}) is requesting a password reset.`
+      ]
+    );
 
+    return res.json({ message: 'Admin has been notified. Check the Support page.' });
   } catch (error) {
     console.error('Forgot password error:', error);
-    if (!res.headersSent) {
-      return res.status(500).json({ error: 'Server error generating recovery routing nodes.' });
-    }
-  }
-});
-
-/**
- * NEW: COMPLETE RESET PASSWORD ENDPOINT WITH SECURITY OVERRIDES
- */
-router.post('/reset-password', async (req, res) => {
-  try {
-    const { email, token, newPassword } = req.body;
-
-    if (!email || !token || !newPassword) {
-      return res.status(400).json({ error: 'All tracking inputs are mandatory.' });
-    }
-
-    if (newPassword.length < 8) {
-      return res.status(400).json({ error: 'New password must be at least 8 characters.' });
-    }
-
-    const cleanEmail = email.trim().toLowerCase();
-    const [users] = await db.query('SELECT id, otp_code FROM users WHERE email = ? LIMIT 1', [cleanEmail]);
-
-    if (users.length === 0) {
-      return res.status(404).json({ error: 'Target identity mismatch.' });
-    }
-
-    const databaseOtp = String(users[0].otp_code);
-    const userInjectedToken = String(token).trim();
-
-    // Verification check supporting both real random strings and master token 123456 override arrays
-    if (databaseOtp !== userInjectedToken && userInjectedToken !== "123456") {
-      return res.status(400).json({ error: 'Incorrect recovery pin token. Access denied.' });
-    }
-
-    const newHashedPassword = await bcrypt.hash(newPassword, 10);
-    
-    // Clear tokens out of the system once validation executes perfectly
-    await db.query('UPDATE users SET password = ?, otp_code = NULL WHERE id = ?', [newHashedPassword, users[0].id]);
-
-    return res.json({ message: 'Password reset completed successfully. You can now login.' });
-  } catch (error) {
-    console.error('Reset password controller exception:', error);
-    return res.status(500).json({ error: 'Internal system fault committing password arrays.' });
+    return res.status(500).json({ error: 'Server error notifying admin.' });
   }
 });
 
