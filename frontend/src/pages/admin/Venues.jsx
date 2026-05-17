@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, CheckCircle, XCircle } from 'lucide-react' // Added CheckCircle & XCircle
 import { useToast } from '../../components/common/ToastContext'
 import '../../styles/Venues.css'
 import '../../styles/AdminPages.css'
@@ -12,6 +12,7 @@ function Venues() {
   const [error, setError] = useState('')
   const [editingId, setEditingId] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [actionLoading, setActionLoading] = useState(false) // Added action loading state
 
   const [name, setName] = useState('')
   const [address, setAddress] = useState('')
@@ -72,6 +73,22 @@ function Venues() {
     }
   }
 
+  // NEW: Handler to approve or reject proposed venue profiles instantly
+  async function handleStatusChange(id, status) {
+    if (!window.confirm(`Are you sure you want to mark this venue as ${status}?`)) return
+    setActionLoading(true)
+    try {
+      const endpoint = status === 'approved' ? 'approve' : 'reject'
+      await api.patch(`/venues/${id}/${endpoint}`)
+      addToast(`Venue status marked as ${status}`, 'success')
+      fetchVenues()
+    } catch (err) {
+      addToast(err.response?.data?.error || `Failed to update venue status`, 'error')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
   async function handleDelete(id) {
     if (!window.confirm('Are you sure you want to delete this venue?')) return
     setLoading(true)
@@ -111,19 +128,32 @@ function Venues() {
     setError('')
   }
 
+  // Dynamic counter variables calculating verification statuses cleanly
+  const pendingCount  = venues.filter((v) => v.status === 'pending' || !v.status).length
+  const approvedCount = venues.filter((v) => v.status === 'approved').length
+  const rejectedCount = venues.filter((v) => v.status === 'rejected').length
+
   return (
     <main className="admin-page">
       <div className="admin-hero">
         <div className="admin-hero-bg" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1920&q=80')" }} />
         <div className="admin-hero-overlay" style={{ background: 'linear-gradient(160deg,rgba(245,158,11,0.38) 0%,rgba(6,10,22,0.5) 60%),linear-gradient(0deg,rgba(6,10,22,0.92) 0%,transparent 60%)' }} />
         <div>
-          <h2>Venues</h2>
-          <p>Manage event venues and locations used by organizers across the platform.</p>
+          <h2>Venues Verification</h2>
+          <p>Review and verify event venues proposed by organizers to maintain geospatial legitimacy.</p>
         </div>
         <div className="admin-hero-stats">
           <div className="admin-hero-stat yellow">
-            <span className="admin-hero-stat-val">{venues.length}</span>
-            <span className="admin-hero-stat-label">Total Venues</span>
+            <span className="admin-hero-stat-val">{pendingCount}</span>
+            <span className="admin-hero-stat-label">Pending</span>
+          </div>
+          <div className="admin-hero-stat green">
+            <span className="admin-hero-stat-val">{approvedCount}</span>
+            <span className="admin-hero-stat-label">Approved</span>
+          </div>
+          <div className="admin-hero-stat red">
+            <span className="admin-hero-stat-val">{rejectedCount}</span>
+            <span className="admin-hero-stat-label">Rejected</span>
           </div>
           <div>
             <button className="admin-add-btn" onClick={() => setShowForm(true)}>
@@ -178,10 +208,18 @@ function Venues() {
           <div style={{ textAlign: 'center', padding: '48px', color: 'rgba(255,255,255,0.4)' }}>No venues found.</div>
         ) : (
           venues.map((venue) => (
-            <div key={venue.id} className="venue-card">
-              <div className="venue-card-top">
-                <div>
-                  <h3>{venue.name}</h3>
+            <div key={venue.id} className="venue-card" style={{ opacity: actionLoading ? 0.7 : 1 }}>
+              <div className="venue-card-top" style={{ display: 'flex', justifyContent: 'between', alignItems: 'start' }}>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ display: 'inline-block', marginRight: '10px' }}>{venue.name}</h3>
+                  
+                  {/* NEW STATUS BADGES: Rendered to show active layout validation parameters */}
+                  <span className={`table-badge ${
+                    venue.status === 'approved' ? 'success' : venue.status === 'rejected' ? 'danger' : 'warning'
+                  }`} style={{ textTransform: 'capitalize', fontSize: '11px', padding: '2px 8px' }}>
+                    {venue.status || 'pending'}
+                  </span>
+                  
                   <p className="venue-address">{venue.address}</p>
                 </div>
               </div>
@@ -199,11 +237,26 @@ function Venues() {
                   <span className="info-value contact-blue">{venue.contact_phone || 'N/A'}</span>
                 </div>
               </div>
-              <div className="row-actions" style={{ marginTop: '14px' }}>
-                <button className="table-action-btn" onClick={() => handleEdit(venue)} disabled={loading}>
+              
+              <div className="row-actions" style={{ marginTop: '14px', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                {/* NEW VERIFICATION CONTROLLER ACTIONS BUTTONS */}
+                {venue.status !== 'approved' && (
+                  <button className="table-action-btn success" onClick={() => handleStatusChange(venue.id, 'approved')} disabled={actionLoading}>
+                    <CheckCircle size={13} /> Approve
+                  </button>
+                )}
+                {venue.status !== 'rejected' && venue.status !== 'approved' && (
+                  <button className="table-action-btn danger" onClick={() => handleStatusChange(venue.id, 'rejected')} disabled={actionLoading}>
+                    <XCircle size={13} /> Reject
+                  </button>
+                )}
+                
+                <span style={{ borderLeft: '1px solid #334155', margin: '0 4px', height: '16px' }} />
+                
+                <button className="table-action-btn" onClick={() => handleEdit(venue)} disabled={loading || actionLoading}>
                   <Pencil size={13} /> Edit
                 </button>
-                <button className="table-action-btn danger" onClick={() => handleDelete(venue.id)} disabled={loading}>
+                <button className="table-action-btn danger" onClick={() => handleDelete(venue.id)} disabled={loading || actionLoading}>
                   <Trash2 size={13} /> Delete
                 </button>
               </div>
