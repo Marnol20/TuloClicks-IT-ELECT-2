@@ -440,3 +440,18 @@
   }
 } 
 
+/* Custom scrollbar para sa Venue ug Category Search dropdowns */
+.custom-dropdown-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-dropdown-scroll::-webkit-scrollbar-track {
+  background: #0f172a;
+  border-radius: 4px;
+}
+.custom-dropdown-scroll::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+.custom-dropdown-scroll::-webkit-scrollbar-thumb:hover {
+  background: #8b5cf6;
+}

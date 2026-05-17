@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useToast } from '../../components/common/ToastContext'
-import { Plus, Building } from 'lucide-react'
+import { Plus, Building, Search, ChevronDown } from 'lucide-react' // Added Search & ChevronDown for custom dropdowns
 import '../../styles/Events.css'
 import api from '../../services/api'
 
@@ -34,10 +34,29 @@ function OrganizerEvents() {
   const [vCapacity, setVCapacity] = useState('')
   const [vPhone, setVPhone] = useState('')
 
+  // 🔍 NEW: Custom Dropdown & Search States to support scroll limits
+  const [venueSearch, setVenueSearch] = useState('')
+  const [categorySearch, setCategorySearch] = useState('')
+  const [showVenueDropdown, setShowVenueDropdown] = useState(false)
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
+
+  const venueRef = useRef(null)
+  const categoryRef = useRef(null)
+
   useEffect(() => {
     fetchData('/events/organizer/my-events', setEvents)
     fetchData('/categories', setCategories)
     fetchData('/venues/approved', setVenues)
+  }, [])
+
+  // Close custom dropdown panels when clicking anywhere outside the elements area
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (venueRef.current && !venueRef.current.contains(e.target)) setShowVenueDropdown(false)
+      if (categoryRef.current && !categoryRef.current.contains(e.target)) setShowCategoryDropdown(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   async function fetchData(endpoint, setState) {
@@ -242,6 +261,8 @@ function OrganizerEvents() {
     setCustomLocation('')
     setEventImage(null)
     setPreviewUrl('')
+    setVenueSearch('')
+    setCategorySearch('')
   }
 
   function formatDate(date) {
@@ -283,6 +304,19 @@ function OrganizerEvents() {
       return '❓ Unknown'
     }
   }
+
+  // 🔍 Interactive element search matching logs filtering outputs dynamically
+  const filteredVenues = venues.filter(v => 
+    String(v.name || '').toLowerCase().includes(venueSearch.toLowerCase()) ||
+    String(v.city || '').toLowerCase().includes(venueSearch.toLowerCase())
+  )
+
+  const filteredCategories = categories.filter(c => 
+    String(c.name || '').toLowerCase().includes(categorySearch.toLowerCase())
+  )
+
+  const selectedVenueName = venues.find(v => String(v.id) === String(venueId))?.name || 'Select Venue'
+  const selectedCategoryName = categories.find(c => String(c.id) === String(categoryId))?.name || 'Select Category'
 
   return (
     <main className="events-page">
@@ -331,7 +365,6 @@ function OrganizerEvents() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          {/* UPDATED INLINE CSS: Enforced white color mapping text to maximize layout visibility structures */}
           <button 
             type="button" 
             className="new-event-btn" 
@@ -372,21 +405,56 @@ function OrganizerEvents() {
               />
             </div>
 
-            <div className="form-group">
+            {/* 🔍 SEARCHABLE CATEGORY SELECTION LIST WITH COMPACT SCROLL LIMITS */}
+            <div className="form-group" ref={categoryRef} style={{ position: 'relative' }}>
               <label>Category *</label>
-              <select
-                className="form-input"
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                disabled={loading}
+              <div 
+                className="form-input" 
+                onClick={() => !loading && setShowCategoryDropdown(!showCategoryDropdown)}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', userSelect: 'none', backgroundColor: '#0f172a', color: '#f8fafc' }}
               >
-                <option value="">Select Category</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
+                <span style={{ fontSize: '15px', fontWeight: '500' }}>{selectedCategoryName}</span>
+                <ChevronDown size={16} style={{ opacity: 0.7, transform: showCategoryDropdown ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+              </div>
+
+              {showCategoryDropdown && (
+                <div style={{ position: 'absolute', top: '100%', left: 0, width: '100%', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', marginTop: '6px', zIndex: 1000, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.5)', padding: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '6px', padding: '0 10px', marginBottom: '8px' }}>
+                    <Search size={14} style={{ opacity: 0.5, marginRight: '8px', color: '#ffffff' }} />
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      placeholder="Search category..." 
+                      value={categorySearch} 
+                      onChange={(e) => setCategorySearch(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      style={{ border: 'none', padding: '8px 0', backgroundColor: 'transparent', color: '#ffffff', width: '100%', outline: 'none', fontSize: '14px' }} 
+                    />
+                  </div>
+                  {/* COMPACT AUTO OVERFLOW OVERLAY TRACK SCROLLBAR */}
+                  <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '2px', paddingRight: '4px' }} className="custom-dropdown-scroll">
+                    <div 
+                      onClick={() => { setCategoryId(''); setShowCategoryDropdown(false); setCategorySearch(''); }}
+                      style={{ padding: '10px', borderRadius: '6px', cursor: 'pointer', color: '#94a3b8', fontSize: '14px', backgroundColor: !categoryId ? 'rgba(139,92,246,0.15)' : 'transparent' }}
+                    >
+                      Select Category
+                    </div>
+                    {filteredCategories.length === 0 ? (
+                      <div style={{ padding: '10px', color: 'rgba(255,255,255,0.4)', fontSize: '13px', textAlign: 'center' }}>No categories found</div>
+                    ) : (
+                      filteredCategories.map((category) => (
+                        <div 
+                          key={category.id} 
+                          onClick={() => { setCategoryId(category.id); setShowCategoryDropdown(false); setCategorySearch(''); }}
+                          style={{ padding: '10px', borderRadius: '6px', cursor: 'pointer', color: '#f8fafc', fontSize: '15px', fontWeight: '600', backgroundColor: String(categoryId) === String(category.id) ? '#8b5cf6' : 'transparent', transition: 'background-color 0.1s' }}
+                        >
+                          {category.name}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="form-section">
@@ -485,21 +553,56 @@ function OrganizerEvents() {
               )}
             </div>
 
-            <div className="form-group">
+            {/* 🔍 SEARCHABLE VENUE SELECTION LIST WITH COMPACT SCROLL LIMITS */}
+            <div className="form-group" ref={venueRef} style={{ position: 'relative' }}>
               <label>Venue {(locationType === 'physical' || locationType === 'hybrid') && '*'}</label>
-              <select
-                className="form-input"
-                value={venueId}
-                onChange={(e) => setVenueId(e.target.value)}
-                disabled={loading}
+              <div 
+                className="form-input" 
+                onClick={() => !loading && setShowVenueDropdown(!showVenueDropdown)}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', userSelect: 'none', backgroundColor: '#0f172a', color: '#f8fafc' }}
               >
-                <option value="">Select Venue</option>
-                {venues.map((venue) => (
-                  <option key={venue.id} value={venue.id}>
-                    {venue.name}
-                  </option>
-                ))}
-              </select>
+                <span style={{ fontSize: '15px', fontWeight: '500' }}>{selectedVenueName}</span>
+                <ChevronDown size={16} style={{ opacity: 0.7, transform: showVenueDropdown ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+              </div>
+
+              {showVenueDropdown && (
+                <div style={{ position: 'absolute', top: '100%', left: 0, width: '100%', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', marginTop: '6px', zIndex: 1000, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.5)', padding: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '6px', padding: '0 10px', marginBottom: '8px' }}>
+                    <Search size={14} style={{ opacity: 0.5, marginRight: '8px', color: '#ffffff' }} />
+                    <input 
+                      type="text" 
+                      className="form-input" 
+                      placeholder="Search venue name or city..." 
+                      value={venueSearch} 
+                      onChange={(e) => setVenueSearch(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      style={{ border: 'none', padding: '8px 0', backgroundColor: 'transparent', color: '#ffffff', width: '100%', outline: 'none', fontSize: '14px' }} 
+                    />
+                  </div>
+                  {/* COMPACT AUTO OVERFLOW OVERLAY TRACK SCROLLBAR */}
+                  <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '2px', paddingRight: '4px' }} className="custom-dropdown-scroll">
+                    <div 
+                      onClick={() => { setVenueId(''); setShowVenueDropdown(false); setVenueSearch(''); }}
+                      style={{ padding: '10px', borderRadius: '6px', cursor: 'pointer', color: '#94a3b8', fontSize: '14px', backgroundColor: !venueId ? 'rgba(139,92,246,0.15)' : 'transparent' }}
+                    >
+                      Select Venue
+                    </div>
+                    {filteredVenues.length === 0 ? (
+                      <div style={{ padding: '10px', color: 'rgba(255,255,255,0.4)', fontSize: '13px', textAlign: 'center' }}>No approved venues matching records</div>
+                    ) : (
+                      filteredVenues.map((venue) => (
+                        <div 
+                          key={venue.id} 
+                          onClick={() => { setVenueId(venue.id); setShowVenueDropdown(false); setVenueSearch(''); }}
+                          style={{ padding: '10px', borderRadius: '6px', cursor: 'pointer', color: '#f8fafc', fontSize: '15px', fontWeight: '600', backgroundColor: String(venueId) === String(venue.id) ? '#8b5cf6' : 'transparent', transition: 'background-color 0.1s' }}
+                        >
+                          {venue.name}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="form-group">
