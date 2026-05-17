@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useToast } from '../../components/common/ToastContext'
-import { Plus, Building, Search, ChevronDown } from 'lucide-react' // Added Search & ChevronDown for custom dropdowns
+import { Plus, Building, Search, ChevronDown } from 'lucide-react'
 import '../../styles/Events.css'
 import api from '../../services/api'
 
@@ -34,7 +34,6 @@ function OrganizerEvents() {
   const [vCapacity, setVCapacity] = useState('')
   const [vPhone, setVPhone] = useState('')
 
-  // 🔍 NEW: Custom Dropdown & Search States to support scroll limits
   const [venueSearch, setVenueSearch] = useState('')
   const [categorySearch, setCategorySearch] = useState('')
   const [showVenueDropdown, setShowVenueDropdown] = useState(false)
@@ -49,7 +48,6 @@ function OrganizerEvents() {
     fetchData('/venues/approved', setVenues)
   }, [])
 
-  // Close custom dropdown panels when clicking anywhere outside the elements area
   useEffect(() => {
     function handleClickOutside(e) {
       if (venueRef.current && !venueRef.current.contains(e.target)) setShowVenueDropdown(false)
@@ -305,7 +303,6 @@ function OrganizerEvents() {
     }
   }
 
-  // 🔍 Interactive element search matching logs filtering outputs dynamically
   const filteredVenues = venues.filter(v => 
     String(v.name || '').toLowerCase().includes(venueSearch.toLowerCase()) ||
     String(v.city || '').toLowerCase().includes(venueSearch.toLowerCase())
@@ -405,7 +402,7 @@ function OrganizerEvents() {
               />
             </div>
 
-            {/* 🔍 SEARCHABLE CATEGORY SELECTION LIST WITH COMPACT SCROLL LIMITS */}
+            {/* CATEGORY SELECT ELEMENT CONTAINER */}
             <div className="form-group" ref={categoryRef} style={{ position: 'relative' }}>
               <label>Category *</label>
               <div 
@@ -431,7 +428,6 @@ function OrganizerEvents() {
                       style={{ border: 'none', padding: '8px 0', backgroundColor: 'transparent', color: '#ffffff', width: '100%', outline: 'none', fontSize: '14px' }} 
                     />
                   </div>
-                  {/* COMPACT AUTO OVERFLOW OVERLAY TRACK SCROLLBAR */}
                   <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '2px', paddingRight: '4px' }} className="custom-dropdown-scroll">
                     <div 
                       onClick={() => { setCategoryId(''); setShowCategoryDropdown(false); setCategorySearch(''); }}
@@ -553,7 +549,7 @@ function OrganizerEvents() {
               )}
             </div>
 
-            {/* 🔍 SEARCHABLE VENUE SELECTION LIST WITH COMPACT SCROLL LIMITS */}
+            {/* 🛠️ FIXED: VENUE SELECT DROPDOWN WRAPPER STRUCTURE (Forces dropdown overlay directly on top) */}
             <div className="form-group" ref={venueRef} style={{ position: 'relative' }}>
               <label>Venue {(locationType === 'physical' || locationType === 'hybrid') && '*'}</label>
               <div 
@@ -566,6 +562,7 @@ function OrganizerEvents() {
               </div>
 
               {showVenueDropdown && (
+                /* Adjusted dropdown positioning attributes to overlay natively above relative parameters context fields */
                 <div style={{ position: 'absolute', top: '100%', left: 0, width: '100%', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', marginTop: '6px', zIndex: 1000, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.5)', padding: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '6px', padding: '0 10px', marginBottom: '8px' }}>
                     <Search size={14} style={{ opacity: 0.5, marginRight: '8px', color: '#ffffff' }} />
@@ -579,7 +576,6 @@ function OrganizerEvents() {
                       style={{ border: 'none', padding: '8px 0', backgroundColor: 'transparent', color: '#ffffff', width: '100%', outline: 'none', fontSize: '14px' }} 
                     />
                   </div>
-                  {/* COMPACT AUTO OVERFLOW OVERLAY TRACK SCROLLBAR */}
                   <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '2px', paddingRight: '4px' }} className="custom-dropdown-scroll">
                     <div 
                       onClick={() => { setVenueId(''); setShowVenueDropdown(false); setVenueSearch(''); }}
