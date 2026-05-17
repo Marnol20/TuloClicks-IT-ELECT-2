@@ -286,9 +286,8 @@ function OrganizerEvents() {
 
   return (
     <main className="events-page">
-      {/* ORGANIZER PROPOSAL MODAL WINDOW OVERLAY CONTAINER */}
       {showVenueProposalModal && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(6, 10, 22, 0.9)', backdropFilter: 'blur(6px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifycontent: 'center', padding: '20px' }}>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(6, 10, 22, 0.9)', backdropFilter: 'blur(6px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
           <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '30px', maxWidth: '500px', width: '100%', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', margin: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
               <Building size={22} color="#8b5cf6" />
@@ -324,7 +323,6 @@ function OrganizerEvents() {
         </div>
       )}
 
-      {/* FIXED TOP BUTTONS CONTAINER: Perfectly groups action controls at the top layout bar */}
       <div className="events-top">
         <div className="events-title">
           <div>
@@ -333,9 +331,25 @@ function OrganizerEvents() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          {/* FIXED LINK LOCATION: Moved proposal link to the main navigation header */}
-          <button type="button" className="new-event-btn" style={{ backgroundColor: '#1e293b', color: '#a78bfa', border: '1px solid #4c1d95' }} onClick={() => setShowVenueProposalModal(true)}>
-            <Plus size={14} /> Propose New Venue
+          {/* UPDATED INLINE CSS: Enforced white color mapping text to maximize layout visibility structures */}
+          <button 
+            type="button" 
+            className="new-event-btn" 
+            style={{ 
+              backgroundColor: '#8b5cf6', 
+              color: '#ffffff', 
+              border: 'none', 
+              padding: '10px 18px', 
+              borderRadius: '8px', 
+              fontWeight: 'bold', 
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
+            }} 
+            onClick={() => setShowVenueProposalModal(true)}
+          >
+            <Plus size={14} style={{ color: '#ffffff' }} /> <span style={{ color: '#ffffff' }}>Propose New Venue</span>
           </button>
           <button className="new-event-btn" onClick={() => setShowForm(true)}>
             New Event
@@ -471,7 +485,6 @@ function OrganizerEvents() {
               )}
             </div>
 
-            {/* CLEAN DROPDOWN CONTAINER Layout */}
             <div className="form-group">
               <label>Venue {(locationType === 'physical' || locationType === 'hybrid') && '*'}</label>
               <select

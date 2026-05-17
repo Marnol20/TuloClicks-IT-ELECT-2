@@ -119,7 +119,6 @@ function Venues() {
                 </div>
               </div>
               
-              {/* FIXED ADMIN UI ACTIONS: Perfectly aligns action controls using explicit grid wrapper styles */}
               <div className="row-actions" style={{ marginTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #334155', paddingTop: '16px' }}>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   {(venue.status === 'pending' || !venue.status) && (
@@ -145,8 +144,26 @@ function Venues() {
                 </div>
                 
                 <div>
-                  <button className="table-action-btn danger" onClick={() => handleDelete(venue.id)} disabled={actionLoading} style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', alignSelf: 'flex-end' }}>
-                    <Trash2 size={13} /> Delete Record
+                  {/* UPDATED INLINE CSS: Explicit text white rendering override configurations to fix visibility layout gaps */}
+                  <button 
+                    className="table-action-btn danger" 
+                    onClick={() => handleDelete(venue.id)} 
+                    disabled={actionLoading} 
+                    style={{ 
+                      backgroundColor: '#ef4444', 
+                      color: '#ffffff', 
+                      padding: '8px 16px', 
+                      borderRadius: '6px', 
+                      cursor: 'pointer', 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '6px', 
+                      fontWeight: 'bold', 
+                      border: 'none',
+                      opacity: actionLoading ? 0.5 : 1
+                    }}
+                  >
+                    <Trash2 size={13} style={{ color: '#ffffff' }} /> <span style={{ color: '#ffffff' }}>Delete Record</span>
                   </button>
                 </div>
               </div>
