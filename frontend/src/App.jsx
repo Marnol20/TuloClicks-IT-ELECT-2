@@ -58,7 +58,6 @@ function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
     window.scrollTo(0, 0);
-    // Siguroha nga ang body dili "hidden" ang overflow matag balhin og page
     document.body.style.overflow = 'auto'; 
   }, [pathname]);
   return null;

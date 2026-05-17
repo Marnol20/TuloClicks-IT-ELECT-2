@@ -1,11 +1,21 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer'); // NEW: Added for email services
 const db = require('../db');
 const authMiddleware = require('../middleware/authMiddleware');
 const logActivity = require('../utils/logger');
 
 const router = express.Router();
+
+// NEW: Transporter integration using Gmail SMTP configurations
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
 
 /**
  * SIGNUP ENDPOINT
@@ -41,28 +51,89 @@ router.post('/signup', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // NEW: Generate a random 6-digit numeric string configuration for verification
+    const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // UPDATED: Added generatedOtp string into account insertion logic
     const [result] = await db.query(
-      `INSERT INTO users (name, email, password, role, status, phone, email_verified)
-       VALUES (?, ?, ?, 'user', 'active', ?, 0)`,
-      [cleanName, cleanEmail, hashedPassword, cleanPhone]
+      `INSERT INTO users (name, email, password, role, status, phone, email_verified, otp_code)
+       VALUES (?, ?, ?, 'user', 'active', ?, 0, ?)`,
+      [cleanName, cleanEmail, hashedPassword, cleanPhone, generatedOtp]
     );
+
+    // NEW: Nodemailer transaction processing to send structural email content
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: cleanEmail,
+      subject: '🚀 TuloClicks - Confirm Email Verification OTP',
+      html: `
+        <div style="font-family: Arial, sans-serif; background-color: #0b1220; color: #ffffff; padding: 25px; border-radius: 12px; max-width: 500px; margin: auto; border: 1px solid #1e293b;">
+          <h2 style="color: #8b5cf6; text-align: center; margin-bottom: 5px;">TuloClicks Platform</h2>
+          <p style="text-align: center; color: #94a3b8; font-size: 14px; margin-top: 0;">Event Booking & Management System</p>
+          <hr style="border-color: #334155; margin: 20px 0;" />
+          <p>Hello <strong>${cleanName}</strong>,</p>
+          <p>Thank you for signing up at TuloClicks! To complete your registration registration, please use the 6-digit Verification OTP below:</p>
+          <div style="background-color: #1e293b; padding: 15px; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 6px; color: #22c55e; border-radius: 8px; margin: 25px 0; border: 1px solid #334155;">
+            ${generatedOtp}
+          </div>
+          <p style="font-size: 12px; color: #64748b; text-align: center;">This code is confidential. If you did not request this account setup, please disregard this automated notification.</p>
+        </div>
+      `
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (emailErr) {
+      console.error('Nodemailer system handling failure:', emailErr);
+    }
 
     await logActivity({
       user_id: result.insertId,
       action: 'SIGNUP',
       entity_type: 'user',
       entity_id: result.insertId,
-      description: `New user registered: ${cleanEmail}`,
+      description: `New user registered: ${cleanEmail} (OTP dispatched)`,
       req
     });
 
     return res.status(201).json({
-      message: 'Account created successfully.',
-      userId: result.insertId
+      message: 'Account created successfully. Verification OTP code sent to your email.',
+      userId: result.insertId,
+      requiresVerification: true // Frontend hook flag trigger
     });
   } catch (error) {
     console.error('Signup error:', error);
     return res.status(500).json({ error: 'Server error during signup.' });
+  }
+});
+
+/**
+ * NEW: VERIFY EMAIL OTP ENDPOINT
+ */
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ error: 'Email and 6-digit code are mandatory inputs.' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const [users] = await db.query('SELECT id, otp_code FROM users WHERE email = ? LIMIT 1', [cleanEmail]);
+
+    if (users.length === 0) {
+      return res.status(404).json({ error: 'Account identity reference mismatch.' });
+    }
+
+    if (users[0].otp_code !== otp.trim()) {
+      return res.status(400).json({ error: 'Incorrect verification code. Please try again.' });
+    }
+
+    await db.query('UPDATE users SET email_verified = 1, otp_code = NULL WHERE id = ?', [users[0].id]);
+
+    return res.json({ message: 'Email address successfully verified. You can now log in.' });
+  } catch (error) {
+    console.error('OTP validation handling exception:', error);
+    return res.status(500).json({ error: 'Internal system fault checking OTP record.' });
   }
 });
 
@@ -97,6 +168,14 @@ router.post('/login', async (req, res) => {
 
     if (user.status !== 'active') {
       return res.status(403).json({ error: 'Account is disabled. Please contact admin.' });
+    }
+
+    // NEW: Block login access authorization tokens if email_verified configuration is false
+    if (user.email_verified === 0) {
+      return res.status(403).json({ 
+        error: 'Your email address is unverified. Please complete OTP validation.',
+        requiresVerification: true 
+      });
     }
 
     const accessToken = jwt.sign(

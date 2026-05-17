@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, CheckCircle, Calendar, BarChart2, Users, Megaphone } from 'lucide-react'
+import { ArrowLeft, CheckCircle, Calendar, BarChart2, Users, Megaphone, Upload, ImageIcon } from 'lucide-react' // Added Upload & ImageIcon
 import { useToast } from '../../components/common/ToastContext'
 import tcLogo from '../../styles/TuloClicksLogo.png'
 import '../../styles/ApplyOrganizer.css'
@@ -32,23 +32,50 @@ function ApplyOrganizer() {
   const [error, setError] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
+  // NEW: Added structural file state values for structural manual identification verification
+  const [validIdFile, setValidIdFile] = useState(null)
+  const [idPreviewUrl, setIdPreviewUrl] = useState('')
+
+  // NEW: Local context file verification array trigger function
+  function handleIdFileChange(e) {
+    const file = e.target.files[0]
+    if (file) {
+      setValidIdFile(file)
+      setIdPreviewUrl(URL.createObjectURL(file))
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     if (!organizationName.trim()) {
       addToast('Organization name is required', 'warning')
       return
     }
+
+    // NEW: Validation checkpoint mechanism to mandate identity attachment
+    if (!validIdFile) {
+      addToast('You must upload a valid institutional ID card for authentication clearance review.', 'warning')
+      return
+    }
+
     try {
       setLoading(true)
       setError('')
-      await api.post('/organizers/apply', {
-        organization_name: organizationName,
-        organization_type: organizationType,
-        description,
-        website,
-        facebook_link: facebookLink,
-        instagram_link: instagramLink,
+
+      // NEW: Multipart form wrapper payload transformation for file transfer
+      const formData = new FormData()
+      formData.append('organization_name', organizationName)
+      formData.append('organization_type', organizationType)
+      formData.append('description', description)
+      formData.append('website', website)
+      formData.append('facebook_link', facebookLink)
+      formData.append('instagram_link', instagramLink)
+      formData.append('valid_id', validIdFile) // Core ID field payload
+
+      await api.post('/organizers/apply', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       })
+
       setSubmitted(true)
       addToast('Application submitted successfully!', 'success')
     } catch (err) {
@@ -144,6 +171,35 @@ function ApplyOrganizer() {
                       <option key={t} value={t}>{t || 'Select a type…'}</option>
                     ))}
                   </select>
+                </div>
+
+                {/* NEW: Identity Verification Component for manual QA inspection */}
+                <div className="ao-field">
+                  <label>Upload Valid Institutional ID (Required) <span className="ao-required">*</span></label>
+                  <div style={{
+                    border: '1px dashed #334155',
+                    padding: '20px',
+                    borderRadius: '8px',
+                    backgroundColor: '#0b1220',
+                    textAlign: 'center',
+                    cursor: 'pointer'
+                  }}>
+                    {!idPreviewUrl ? (
+                      <label style={{ cursor: 'pointer', display: 'block' }}>
+                        <Upload size={28} style={{ color: '#8b5cf6', marginBottom: '8px' }} />
+                        <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>Click to select clear photo of your ID Card</p>
+                        <input type="file" accept="image/*" onChange={handleIdFileChange} style={{ display: 'none' }} required />
+                      </label>
+                    ) : (
+                      <div>
+                        <img src={idPreviewUrl} alt="ID Preview" style={{ maxWidth: '100%', maxHeight: '140px', borderRadius: '6px', marginBottom: '10px' }} />
+                        <p style={{ fontSize: '11px', color: '#22c55e', margin: 0 }}>✓ Photo ready for submission</p>
+                        <span style={{ fontSize: '11px', color: '#ef4444', cursor: 'pointer', textDecoration: 'underline', marginLeft: '5px' }} onClick={() => { setValidIdFile(null); setIdPreviewUrl(''); }}>
+                          Change Photo
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="ao-field">

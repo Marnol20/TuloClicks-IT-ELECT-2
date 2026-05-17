@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom' // Gi-add ang Link diri
-import { ArrowLeft, Star, MapPin, Calendar } from 'lucide-react'
+import { useNavigate, Link } from 'react-router-dom'
+import { ArrowLeft, Star, MapPin, Calendar, AlertTriangle } from 'lucide-react'
 import { useToast } from '../../components/common/ToastContext'
 import tcLogo from '../../styles/TuloClicksLogo.png'
 import '../../styles/SignUp.css'
@@ -18,6 +18,11 @@ function SignUp() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [passwordStrength, setPasswordStrength] = useState(0)
+
+  // NEW: State arrays configured for blocking error visibility overlays
+  const [showBlockingModal, setShowBlockingModal] = useState(false)
+  const [showOtpVerification, setShowOtpVerification] = useState(false)
+  const [otpCode, setOtpCode] = useState('')
 
   function calculatePasswordStrength(pass) {
     let strength = 0
@@ -49,26 +54,29 @@ function SignUp() {
 
   async function handleSubmit(e) {
     e.preventDefault()
-
     const phoneRegex = /^09\d{9}$/
 
     if (!name || !email || !password || !confirmPassword || !phone) {
       setError('Please fill in all required fields')
+      setShowBlockingModal(true)
       return
     }
 
     if (!phoneRegex.test(phone)) {
       setError('Phone number must be 11 digits starting with 09 (e.g. 09123456789)')
+      setShowBlockingModal(true)
       return
     }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match')
+      setShowBlockingModal(true)
       return
     }
 
     if (passwordStrength < 4) {
       setError('Password must be Strong (uppercase, lowercase, numbers, and special characters)')
+      setShowBlockingModal(true)
       return
     }
 
@@ -77,13 +85,35 @@ function SignUp() {
       setError('')
 
       await api.post('/auth/signup', { name, email, phone, password })
-      addToast('Account created successfully! Please sign in.', 'success')
-      navigate('/login')
-
+      addToast('Account configuration created. OTP token sent to email address.', 'success')
+      setShowOtpVerification(true) // NEW: Switch window view display into validation mode
     } catch (err) {
       const errorMsg = err.response?.data?.error || 'Signup failed'
       setError(errorMsg)
+      setShowBlockingModal(true)
       addToast(errorMsg, 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // NEW: Input handling submission validator logic for new user OTP codes
+  async function handleVerifyOtp(e) {
+    e.preventDefault()
+    if (!otpCode) return
+
+    try {
+      setLoading(true)
+      await api.post('/auth/verify-otp', {
+        email: email.trim().toLowerCase(),
+        otp: otpCode
+      })
+      addToast('Email verified successfully! You can now log in.', 'success')
+      navigate('/login')
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Verification failed.'
+      setError(msg)
+      setShowBlockingModal(true)
     } finally {
       setLoading(false)
     }
@@ -91,11 +121,101 @@ function SignUp() {
 
   return (
     <div className="signup-page">
+      {/* NEW: Dako Screen Error Warning Blocking Notification Panel Overlay */}
+      {showBlockingModal && error && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          backdropFilter: 'blur(6px)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: '#111827',
+            border: '2px solid #ef4444',
+            borderRadius: '16px',
+            padding: '40px',
+            maxWidth: '500px',
+            width: '100%',
+            textAlignment: 'center',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+              <AlertTriangle size={55} color="#ef4444" />
+            </div>
+            <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffffff', margin: '0 0 12px 0' }}>
+              Registration Restriction
+            </h3>
+            <p style={{ fontSize: '15px', color: '#d1d5db', lineHeight: '1.6', margin: '0 0 30px 0', textAlign: 'center' }}>
+              {error}
+            </p>
+            <button 
+              style={{
+                backgroundColor: '#ef4444',
+                color: '#ffffff',
+                fontWeight: 'bold',
+                padding: '12px 32px',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                width: '100%'
+              }}
+              onClick={() => setShowBlockingModal(false)}
+            >
+              Acknowledge & Correct Fields
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* NEW: Active OTP Layout Rendering Module Box Display Setup */}
+      {showOtpVerification && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: '#0b1220',
+          zIndex: 9998,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div className="signup-form-wrap" style={{ maxWidth: '420px', width: '100%', border: '1px solid #334155', padding: '30px', borderRadius: '12px', backgroundColor: '#1e293b' }}>
+            <div className="signup-form-header" style={{ textAlign: 'center', marginBottom: '25px' }}>
+              <h2>Enter Security OTP</h2>
+              <p style={{ color: '#94a3b8', fontSize: '14px' }}>Please input the verification code sent to <strong>{email}</strong></p>
+            </div>
+            <form onSubmit={handleVerifyOtp} className="signup-form">
+              <div className="form-group">
+                <label>Verification Pin Code</label>
+                <input 
+                  className="form-input"
+                  type="text"
+                  maxLength={6}
+                  placeholder="0 0 0 0 0 0"
+                  style={{ textAlign: 'center', fontSize: '22px', letterSpacing: '6px', fontWeight: 'bold' }}
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                  required
+                />
+              </div>
+              <button type="submit" className="signup-submit-btn" style={{ marginTop: '15px' }} disabled={loading}>
+                {loading ? 'Validating Token...' : 'Complete Profile Activation'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       <div className="signup-left-panel">
         <div className="signup-left-bg" />
         <div className="signup-left-overlay" />
         <div className="signup-left-content">
-          {/* Gi-wrap sa Link para clickable ug naay hover effect */}
           <Link to="/" className="signup-left-brand" style={{ textDecoration: 'none' }}>
             <img className="signup-left-brand-mark" src={tcLogo} alt="TuloClicks" />
             <span className="signup-left-brand-name">TuloClicks</span>
@@ -197,7 +317,7 @@ function SignUp() {
             <div className="form-group">
               <label>Password</label>
               <input
-                className="form-input"
+                className="signup-form-wrap form-input"
                 type="password"
                 placeholder="Enter your password"
                 value={password}
@@ -232,7 +352,7 @@ function SignUp() {
               />
             </div>
 
-            {error && <p className="signup-error">{error}</p>}
+            {error && <p className="signup-error" style={{ display: 'none' }}>{error}</p>}
 
             <button type="submit" className="signup-submit-btn" disabled={loading}>
               {loading ? 'Creating Account...' : 'Sign Up'}

@@ -60,6 +60,17 @@ function OrganizerEvents() {
       return
     }
 
+    // NEW: Mandatory Venue validation filters for Geospatial integrity compliance checks
+    if (locationType === 'physical' && !venueId && !customLocation) {
+      addToast('Physical events strictly require a verified Venue selection or a Custom Location text description input.', 'warning')
+      return
+    }
+
+    if (locationType === 'hybrid' && !venueId && !customLocation) {
+      addToast('Hybrid formats require a physical venue binding or location description to coordinate physical attendee routing setup.', 'warning')
+      return
+    }
+
     setLoading(true)
     try {
       if (eventImage) {
@@ -471,7 +482,6 @@ function OrganizerEvents() {
             <div style={{ width: '100%', height: '220px', backgroundColor: '#0f172a', position: 'relative' }}>
               {event.event_image ? (
                 <img
-                  // Giusab aron maminaw sa VITE_API_URL
                   src={`${import.meta.env.VITE_API_URL}/uploads/events/${event.event_image}`}
                   alt={event.title}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}

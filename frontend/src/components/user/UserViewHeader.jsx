@@ -54,6 +54,21 @@ function UserViewHeader() {
     navigate('/home')
   }
 
+  // NEW: Interactive notification interception click router algorithm setup
+  function handleNotificationNavigation(notificationItem) {
+    const { type, related_id, related_type } = notificationItem;
+    
+    if (type === 'payment_verified' || related_type === 'booking') {
+      navigate(`/home/tickets/${related_id}`); // Direct to real ticket receipt layout
+    } else if (type === 'event_approval' || related_type === 'event') {
+      navigate(`/home/events/${related_id}`); // Route to specific event page layout
+    } else if (type === 'organizer_request') {
+      navigate('/admin/organizers'); // Route admin profile validations directly
+    } else {
+      navigate('/home/tickets'); // Default system fallback dashboard routing
+    }
+  }
+
   return (
     <header className="user-view-header">
       <div className="user-view-brand" onClick={handleLogoClick}>
@@ -77,7 +92,8 @@ function UserViewHeader() {
       </nav>
 
       <div className="user-view-actions">
-        {user && <NotificationBell />}
+        {/* UPDATED: Injected routing callback parameter triggers into the bell system */}
+        {user && <NotificationBell onNotificationClick={handleNotificationNavigation} />}
 
         {user?.role === 'user' && (
           <button

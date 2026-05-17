@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom' // Gi-add ang Link diri
-import { ArrowLeft, Eye, EyeOff, Ticket, Bell, Shield } from 'lucide-react'
+import { useNavigate, Link } from 'react-router-dom'
+import { ArrowLeft, Eye, EyeOff, Ticket, Bell, Shield, AlertTriangle } from 'lucide-react'
 import { useToast } from '../../components/common/ToastContext'
 import tcLogo from '../../styles/TuloClicksLogo.png'
 import '../../styles/Login.css'
@@ -17,6 +17,12 @@ function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // NEW: State arrays configured for full blocking overlays and verification controls
+  const [showBlockingModal, setShowBlockingModal] = useState(false)
+  const [showOtpVerification, setShowOtpVerification] = useState(false)
+  const [otpCode, setOtpCode] = useState('')
+  const [verificationEmail, setVerificationEmail] = useState('')
+
   useEffect(() => {
     const savedEmail = localStorage.getItem('rememberedEmail')
     if (savedEmail) {
@@ -29,6 +35,7 @@ function Login() {
     e.preventDefault()
     if (!email || !password) {
       setError('Please fill in all fields')
+      setShowBlockingModal(true) // NEW: Trigger modal display on form input error
       return
     }
 
@@ -60,7 +67,39 @@ function Login() {
     } catch (err) {
       const errorMsg = err.response?.data?.error || 'Login failed. Please check your credentials.'
       setError(errorMsg)
+      
+      // NEW: Intercept explicit verification blocks to switch forms cleanly
+      if (err.response?.data?.requiresVerification) {
+        setVerificationEmail(email.trim().toLowerCase())
+        setShowOtpVerification(true)
+      } else {
+        setShowBlockingModal(true) // NEW: Trigger structural screen-wide alert overlay
+      }
       addToast(errorMsg, 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // NEW: Controller processing function for active OTP code submissions
+  async function handleVerifyOtp(e) {
+    e.preventDefault()
+    if (!otpCode) return
+
+    try {
+      setLoading(true)
+      await api.post('/auth/verify-otp', {
+        email: verificationEmail,
+        otp: otpCode
+      })
+      addToast('Email verified successfully! You can now sign in.', 'success')
+      setShowOtpVerification(false)
+      setShowBlockingModal(false)
+      setError('')
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Verification failed.'
+      setError(msg)
+      setShowBlockingModal(true)
     } finally {
       setLoading(false)
     }
@@ -74,18 +113,113 @@ function Login() {
         const res = await api.post('/auth/forgot-password', { email: userEmail });
         addToast(res.data.message, 'success');
       } catch (err) {
-        addToast(err.response?.data?.error || 'Failed to notify admin', 'error');
+        const errorMsg = err.response?.data?.error || 'Failed to notify admin'
+        setError(errorMsg)
+        setShowBlockingModal(true)
       }
     }
   }
 
   return (
     <div className="login-page">
+      {/* NEW: Dako nga Blocking Error Notification Screen Overlay Container */}
+      {showBlockingModal && error && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          backdropFilter: 'blur(6px)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: '#111827',
+            border: '2px solid #ef4444',
+            borderRadius: '16px',
+            padding: '40px',
+            maxWidth: '500px',
+            width: '100%',
+            textAlign: 'center',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+              <AlertTriangle size={55} color="#ef4444" />
+            </div>
+            <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffffff', margin: '0 0 12px 0' }}>
+              System Alert Encountered
+            </h3>
+            <p style={{ fontSize: '15px', color: '#d1d5db', lineHeight: '1.6', margin: '0 0 30px 0' }}>
+              {error}
+            </p>
+            <button 
+              style={{
+                backgroundColor: '#ef4444',
+                color: '#ffffff',
+                fontWeight: 'bold',
+                padding: '12px 32px',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                width: '100%'
+              }}
+              onClick={() => setShowBlockingModal(false)}
+            >
+              Acknowledge & Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* NEW: Explicit Screen Overlay rendering layout for OTP entry form strings */}
+      {showOtpVerification && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: '#0b1220',
+          zIndex: 9998,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div className="login-form-wrap" style={{ maxWidth: '420px', width: '100%', border: '1px solid #334155', padding: '30px', borderRadius: '12px', backgroundColor: '#1e293b' }}>
+            <div className="login-form-header" style={{ textAlign: 'center', marginBottom: '25px' }}>
+              <h2>Verify Email Address</h2>
+              <p className="login-subtitle">A real 6-digit OTP code has been dispatched to <strong>{verificationEmail}</strong></p>
+            </div>
+            <form onSubmit={handleVerifyOtp} className="login-form">
+              <div className="form-group">
+                <label>Enter 6-Digit OTP</label>
+                <input 
+                  className="form-input"
+                  type="text"
+                  maxLength={6}
+                  placeholder="X X X X X X"
+                  style={{ textAlign: 'center', fontSize: '22px', letterSpacing: '6px', fontWeight: 'bold' }}
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                  required
+                />
+              </div>
+              <button type="submit" className="login-submit-btn" style={{ marginTop: '15px' }} disabled={loading}>
+                {loading ? 'Verifying...' : 'Validate Verification Token'}
+              </button>
+              <button type="button" className="login-back-btn" style={{ marginTop: '10px', width: '100%', justifyContent: 'center' }} onClick={() => setShowOtpVerification(false)}>
+                Cancel
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       <div className="login-left-panel">
         <div className="login-left-bg" />
         <div className="login-left-overlay" />
         <div className="login-left-content">
-          {/* Gi-wrap sa Link para clickable ug naay hover effect */}
           <Link to="/" className="login-left-brand" style={{ textDecoration: 'none' }}>
             <img className="login-left-brand-mark" src={tcLogo} alt="TuloClicks" />
             <span className="login-left-brand-name">TuloClicks</span>
@@ -176,7 +310,7 @@ function Login() {
               </span>
             </div>
 
-            {error && <p className="login-error">{error}</p>}
+            {error && <p className="login-error" style={{ display: 'none' }}>{error}</p>}
 
             <button type="submit" className="login-submit-btn" disabled={loading}>
               {loading ? 'Authenticating...' : 'Sign In'}
