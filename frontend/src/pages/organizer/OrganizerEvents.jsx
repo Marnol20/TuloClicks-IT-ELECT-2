@@ -27,7 +27,6 @@ function OrganizerEvents() {
   const [eventImage, setEventImage] = useState(null)
   const [previewUrl, setPreviewUrl] = useState('')
 
-  // NEW DYNAMIC MODAL LAYER STATES: Organizer proposal parameters setup
   const [showVenueProposalModal, setShowVenueProposalModal] = useState(false)
   const [vName, setVName] = useState('')
   const [vAddress, setVAddress] = useState('')
@@ -38,7 +37,7 @@ function OrganizerEvents() {
   useEffect(() => {
     fetchData('/events/organizer/my-events', setEvents)
     fetchData('/categories', setCategories)
-    fetchData('/venues/approved', setVenues) // Filters to only show active approved selection items
+    fetchData('/venues/approved', setVenues)
   }, [])
 
   async function fetchData(endpoint, setState) {
@@ -63,7 +62,6 @@ function OrganizerEvents() {
     }
   }
 
-  // Handler submitting new location nodes straight into server queues
   async function handleProposeVenueSubmit(e) {
     e.preventDefault()
     if (!vName || !vAddress || !vCity || !vCapacity || !vPhone) {
@@ -88,7 +86,7 @@ function OrganizerEvents() {
       
       setVName(''); setVAddress(''); setVCity(''); setVCapacity(''); setVPhone('');
       setShowVenueProposalModal(false)
-      fetchData('/venues/approved', setVenues) // Sync mapping dropdown options parameters
+      fetchData('/venues/approved', setVenues)
     } catch (err) {
       addToast(err.response?.data?.error || 'Failed to submit proposal', 'error')
     } finally {
@@ -288,10 +286,10 @@ function OrganizerEvents() {
 
   return (
     <main className="events-page">
-      {/* ORGANIZER PROPOSAL MODAL COMPONENT WRAPPER */}
+      {/* ORGANIZER PROPOSAL MODAL WINDOW OVERLAY CONTAINER */}
       {showVenueProposalModal && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(6, 10, 22, 0.9)', backdropFilter: 'blur(6px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '30px', maxWidth: '500px', width: '100%', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(6, 10, 22, 0.9)', backdropFilter: 'blur(6px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifycontent: 'center', padding: '20px' }}>
+          <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '30px', maxWidth: '500px', width: '100%', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', margin: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
               <Building size={22} color="#8b5cf6" />
               <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#ffffff', margin: 0 }}>Propose New Physical Venue</h3>
@@ -318,7 +316,7 @@ function OrganizerEvents() {
                 <input className="form-input" type="text" placeholder="09XXXXXXXXX" maxLength={11} value={vPhone} onChange={(e) => setVPhone(e.target.value.replace(/\D/g, ''))} required />
               </div>
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                <button type="submit" className="create-btn" style={{ flex: 1 }} disabled={loading}>Submit Proposal</button>
+                <button type="submit" className="create-btn" style={{ flex: 1 }}>Submit Proposal</button>
                 <button type="button" className="cancel-btn" style={{ flex: 1 }} onClick={() => setShowVenueProposalModal(false)}>Cancel</button>
               </div>
             </form>
@@ -326,6 +324,7 @@ function OrganizerEvents() {
         </div>
       )}
 
+      {/* FIXED TOP BUTTONS CONTAINER: Perfectly groups action controls at the top layout bar */}
       <div className="events-top">
         <div className="events-title">
           <div>
@@ -333,9 +332,15 @@ function OrganizerEvents() {
             <p>Create and manage your organizer events</p>
           </div>
         </div>
-        <button className="new-event-btn" onClick={() => setShowForm(true)}>
-          New Event
-        </button>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          {/* FIXED LINK LOCATION: Moved proposal link to the main navigation header */}
+          <button type="button" className="new-event-btn" style={{ backgroundColor: '#1e293b', color: '#a78bfa', border: '1px solid #4c1d95' }} onClick={() => setShowVenueProposalModal(true)}>
+            <Plus size={14} /> Propose New Venue
+          </button>
+          <button className="new-event-btn" onClick={() => setShowForm(true)}>
+            New Event
+          </button>
+        </div>
       </div>
 
       {showForm && (
@@ -466,14 +471,9 @@ function OrganizerEvents() {
               )}
             </div>
 
-            {/* INTERACTIVE LINK OVERLAY CONTEXT MAPPING */}
+            {/* CLEAN DROPDOWN CONTAINER Layout */}
             <div className="form-group">
-              <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>Venue {(locationType === 'physical' || locationType === 'hybrid') && '*'}</span>
-                <span style={{ color: '#8b5cf6', fontSize: '11px', textDecoration: 'underline', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px', fontWeight: 'bold' }} onClick={() => setShowVenueProposalModal(true)}>
-                  <Plus size={10} /> Propose New Venue
-                </span>
-              </label>
+              <label>Venue {(locationType === 'physical' || locationType === 'hybrid') && '*'}</label>
               <select
                 className="form-input"
                 value={venueId}
