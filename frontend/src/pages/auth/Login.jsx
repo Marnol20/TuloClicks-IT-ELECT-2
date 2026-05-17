@@ -17,11 +17,18 @@ function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // NEW: State arrays configured for full blocking overlays and verification controls
+  // STATE BUNDLES: For security filters and tracking overlay view wizard modes
   const [showBlockingModal, setShowBlockingModal] = useState(false)
   const [showOtpVerification, setShowOtpVerification] = useState(false)
   const [otpCode, setOtpCode] = useState('')
   const [verificationEmail, setVerificationEmail] = useState('')
+
+  // NEW FORGOT PASSWORD STATES: Full interactive UI state configuration arrays
+  const [showForgotPasswordWizard, setShowForgotPasswordWizard] = useState(false)
+  const [recoveryEmail, setRecoveryEmail] = useState('')
+  const [recoveryPin, setRecoveryPin] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmNewPassword, setConfirmNewPassword] = useState('')
 
   useEffect(() => {
     const savedEmail = localStorage.getItem('rememberedEmail')
@@ -105,18 +112,69 @@ function Login() {
     }
   }
 
+  // UPDATED: Triggers initialization and displays the interactive wizard overlay views directly
   const handleForgotPassword = async () => {
-    const userEmail = window.prompt("Enter your registered email to notify admin:");
-    
-    if (userEmail) {
-      try {
-        const res = await api.post('/auth/forgot-password', { email: userEmail });
-        addToast(res.data.message, 'success');
-      } catch (err) {
-        const errorMsg = err.response?.data?.error || 'Failed to notify admin'
-        setError(errorMsg)
-        setShowBlockingModal(true)
-      }
+    const userEmail = window.prompt("Enter your registered email address to receive a recovery pin:");
+    if (!userEmail) return;
+
+    try {
+      setLoading(true)
+      setError('')
+      const cleanEmail = userEmail.trim().toLowerCase();
+      
+      await api.post('/auth/forgot-password', { email: cleanEmail });
+      
+      setRecoveryEmail(cleanEmail)
+      addToast('Recovery code context successfully initialized.', 'success')
+      setShowForgotPasswordWizard(true) // Switch frontend visibility layer to active code recovery card fields
+    } catch (err) {
+      const errorMsg = err.response?.data?.error || 'Target account lookup failed.'
+      setError(errorMsg)
+      setShowBlockingModal(true)
+      addToast(errorMsg, 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // NEW: Submission handler task route completing structural credentials updates safely
+  const handleResetPasswordSubmit = async (e) => {
+    e.preventDefault()
+    if (!recoveryPin || !newPassword || !confirmNewPassword) return;
+
+    if (newPassword !== confirmNewPassword) {
+      setError('New passwords do not match.')
+      setShowBlockingModal(true)
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setError('Password must be at least 8 characters long.')
+      setShowBlockingModal(true)
+      return;
+    }
+
+    try {
+      setLoading(true)
+      await api.post('/auth/reset-password', {
+        email: recoveryEmail,
+        token: recoveryPin,
+        newPassword
+      })
+
+      addToast('Password successfully updated! Proceeding to account authentication context.', 'success')
+      setShowForgotPasswordWizard(false)
+      setRecoveryEmail('')
+      setRecoveryPin('')
+      setNewPassword('')
+      setConfirmNewPassword('')
+      setError('')
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Password reset transactional update rejected.'
+      setError(msg)
+      setShowBlockingModal(true)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -211,6 +269,70 @@ function Login() {
               </button>
               <button type="button" className="login-back-btn" style={{ marginTop: '10px', width: '100%', justifyContent: 'center' }} onClick={() => setShowOtpVerification(false)}>
                 Cancel
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* NEW: Interactive Forgot Password Wizard Layout View Module Card Overlay Display */}
+      {showForgotPasswordWizard && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: '#0b1220',
+          zIndex: 9997,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div className="login-form-wrap" style={{ maxWidth: '450px', width: '100%', border: '1px solid #334155', padding: '35px', borderRadius: '16px', backgroundColor: '#1e293b' }}>
+            <div className="login-form-header" style={{ textAlign: 'center', marginBottom: '25px' }}>
+              <h2>Account Password Reset</h2>
+              <p className="login-subtitle">Securing validation tokens for account identity: <br /><strong>{recoveryEmail}</strong></p>
+            </div>
+            <form onSubmit={handleResetPasswordSubmit} className="login-form">
+              <div className="form-group">
+                <label>Recovery Security Pin Code</label>
+                <input 
+                  className="form-input"
+                  type="text"
+                  maxLength={6}
+                  placeholder="0 0 0 0 0 0"
+                  style={{ textAlign: 'center', fontSize: '20px', letterSpacing: '5px', fontWeight: 'bold', color: '#ef4444' }}
+                  value={recoveryPin}
+                  onChange={(e) => setRecoveryPin(e.target.value.replace(/\D/g, ''))}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>New Account Password</label>
+                <input 
+                  className="form-input"
+                  type="password"
+                  placeholder="Minimum 8 characters long"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Confirm New Password</label>
+                <input 
+                  className="form-input"
+                  type="password"
+                  placeholder="Re-enter password configuration"
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <button type="submit" className="login-submit-btn" style={{ marginTop: '20px', backgroundColor: '#8b5cf6' }} disabled={loading}>
+                {loading ? 'Committing Changes...' : 'Authorize Password Reset'}
+              </button>
+              <button type="button" className="login-back-btn" style={{ marginTop: '10px', width: '100%', justifyContent: 'center' }} onClick={() => setShowForgotPasswordWizard(false)}>
+                Cancel Recovery Window
               </button>
             </form>
           </div>
