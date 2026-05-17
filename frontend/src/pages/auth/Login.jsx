@@ -155,6 +155,7 @@ function Login() {
               {error}
             </p>
             <button 
+              type="button"
               style={{
                 backgroundColor: '#ef4444',
                 color: '#ffffff',
@@ -251,7 +252,7 @@ function Login() {
 
       <div className="login-right-panel">
         <div className="login-form-wrap">
-          <button className="login-back-btn" onClick={() => navigate('/')}>
+          <button type="button" className="login-back-btn" onClick={() => navigate('/')}>
             <ArrowLeft size={16} /> Back to Home
           </button>
 
