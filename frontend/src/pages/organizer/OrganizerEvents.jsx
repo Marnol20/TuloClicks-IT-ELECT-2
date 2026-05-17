@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useToast } from '../../components/common/ToastContext'
-import { Plus, Building } from 'lucide-react' // Added Plus & Building
+import { Plus, Building } from 'lucide-react'
 import '../../styles/Events.css'
 import api from '../../services/api'
 
@@ -27,7 +27,7 @@ function OrganizerEvents() {
   const [eventImage, setEventImage] = useState(null)
   const [previewUrl, setPreviewUrl] = useState('')
 
-  // NEW PROPOSAL STATES: Controlled elements for the venue submission overlay modal structures
+  // NEW DYNAMIC MODAL LAYER STATES: Organizer proposal parameters setup
   const [showVenueProposalModal, setShowVenueProposalModal] = useState(false)
   const [vName, setVName] = useState('')
   const [vAddress, setVAddress] = useState('')
@@ -38,7 +38,7 @@ function OrganizerEvents() {
   useEffect(() => {
     fetchData('/events/organizer/my-events', setEvents)
     fetchData('/categories', setCategories)
-    fetchData('/venues/approved', setVenues) // UPDATED: Automatically listens to the approved array endpoints filter
+    fetchData('/venues/approved', setVenues) // Filters to only show active approved selection items
   }, [])
 
   async function fetchData(endpoint, setState) {
@@ -63,11 +63,11 @@ function OrganizerEvents() {
     }
   }
 
-  // NEW METHOD: Dispatches proposal input object structure straight to your backend server tables
+  // Handler submitting new location nodes straight into server queues
   async function handleProposeVenueSubmit(e) {
     e.preventDefault()
     if (!vName || !vAddress || !vCity || !vCapacity || !vPhone) {
-      addToast('Please complete all fields.', 'warning')
+      addToast('Please complete all venue fields.', 'warning')
       return
     }
     if (vPhone.length !== 11) {
@@ -86,12 +86,11 @@ function OrganizerEvents() {
       })
       addToast('Venue proposal submitted successfully! Pending admin verification routing clearance.', 'success')
       
-      // Clear tracking field strings
       setVName(''); setVAddress(''); setVCity(''); setVCapacity(''); setVPhone('');
       setShowVenueProposalModal(false)
-      fetchData('/venues/approved', setVenues) // Sync options lists parameters
+      fetchData('/venues/approved', setVenues) // Sync mapping dropdown options parameters
     } catch (err) {
-      addToast(err.response?.data?.error || 'Failed to submit proposed venue record', 'error')
+      addToast(err.response?.data?.error || 'Failed to submit proposal', 'error')
     } finally {
       setLoading(false)
     }
@@ -103,7 +102,6 @@ function OrganizerEvents() {
       return
     }
 
-    // NEW: Mandatory Venue validation filters for Geospatial integrity compliance checks
     if (locationType === 'physical' && !venueId && !customLocation) {
       addToast('Physical events strictly require a verified Venue selection or a Custom Location text description input.', 'warning')
       return
@@ -290,7 +288,7 @@ function OrganizerEvents() {
 
   return (
     <main className="events-page">
-      {/* NEW PROPOSAL MODAL WINDOW OVERLAY CONTAINER */}
+      {/* ORGANIZER PROPOSAL MODAL COMPONENT WRAPPER */}
       {showVenueProposalModal && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(6, 10, 22, 0.9)', backdropFilter: 'blur(6px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
           <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '16px', padding: '30px', maxWidth: '500px', width: '100%', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
@@ -468,7 +466,7 @@ function OrganizerEvents() {
               )}
             </div>
 
-            {/* ACTION TRIGGERS OVERLAY: Integrated text interaction node element directly */}
+            {/* INTERACTIVE LINK OVERLAY CONTEXT MAPPING */}
             <div className="form-group">
               <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span>Venue {(locationType === 'physical' || locationType === 'hybrid') && '*'}</span>

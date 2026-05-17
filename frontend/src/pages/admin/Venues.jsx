@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CheckCircle, XCircle, Trash2 } from 'lucide-react' // Cleaned unused Plus and Pencil
+import { CheckCircle, XCircle, Trash2 } from 'lucide-react'
 import { useToast } from '../../components/common/ToastContext'
 import '../../styles/Venues.css'
 import '../../styles/AdminPages.css'
@@ -9,7 +9,7 @@ function Venues() {
   const { addToast } = useToast()
   const [venues, setVenues] = useState([])
   const [loading, setLoading] = useState(true)
-  const [actionLoading, setActionLoading] = useState(false) // Retained action loading state
+  const [actionLoading, setActionLoading] = useState(false)
 
   useEffect(() => { fetchVenues() }, [])
 
@@ -25,7 +25,7 @@ function Venues() {
     }
   }
 
-  // NEW: Handler to approve or reject proposed venue profiles instantly
+  // PATCH status handler linking verification states seamlessly directly on target elements
   async function handleStatusChange(id, status) {
     if (!window.confirm(`Are you sure you want to mark this venue as ${status}?`)) return
     setActionLoading(true)
@@ -55,7 +55,7 @@ function Venues() {
     }
   }
 
-  // Dynamic counter variables calculating verification statuses cleanly
+  // Real-time metric computations mapping out live database registers
   const pendingCount  = venues.filter((v) => v.status === 'pending' || !v.status).length
   const approvedCount = venues.filter((v) => v.status === 'approved').length
   const rejectedCount = venues.filter((v) => v.status === 'rejected').length
@@ -97,7 +97,6 @@ function Venues() {
                 <div style={{ flex: 1 }}>
                   <h3 style={{ display: 'inline-block', marginRight: '10px', color: '#f8fafc', margin: '0 0 8px 0' }}>{venue.name}</h3>
                   
-                  {/* STATUS BADGES */}
                   <span className={`table-badge ${
                     venue.status === 'approved' ? 'success' : venue.status === 'rejected' ? 'danger' : 'warning'
                   }`} style={{ textTransform: 'capitalize', fontSize: '11px', padding: '3px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
@@ -117,13 +116,12 @@ function Venues() {
                   <span className="info-value" style={{ color: '#e2e8f0', display: 'block', fontWeight: 'bold' }}>{venue.capacity}</span>
                 </div>
                 <div className="info-block">
-                  <span className="info-label" style={{ color: '#64748b', fontSize: '12px' }}>Contact</span>
+                  <span className="info-label" style={{ color: '#64748b', fontSize: '12px' }}>Contact Phone</span>
                   <span className="info-value contact-blue" style={{ display: 'block', fontWeight: 'bold' }}>{venue.contact_phone || 'N/A'}</span>
                 </div>
               </div>
               
               <div className="row-actions" style={{ marginTop: '20px', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', borderTop: '1px solid #334155', paddingTop: '16px' }}>
-                {/* VERIFICATION ACTIONS FOR PENDING STATUS */}
                 {(venue.status === 'pending' || !venue.status) && (
                   <>
                     <button className="table-action-btn success" onClick={() => handleStatusChange(venue.id, 'approved')} disabled={actionLoading} style={{ cursor: 'pointer' }}>
