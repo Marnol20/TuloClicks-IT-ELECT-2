@@ -35,7 +35,7 @@ function NotificationBell() {
       setNotifications(res.data || [])
     } catch (error) {
       console.error('Fetch notifications error:', error)
-      setOpen(false)
+      setNotifications([])
     }
   }
 
@@ -80,9 +80,9 @@ function NotificationBell() {
     }
   }
 
-  // 🛠️ DYNAMIC ROUTING ENGINE: Evaluates titles and messages keywords to jump straight to exact views
+  // 🛠️ FIXED MULTI-ROLE INTERCEPT SYSTEM: Safely encapsulates Admin navigation parameters to prevent layout layout-jumping bugs
   const handleNotificationClick = async (item) => {
-    // 1. If notification container is unread, mark it as read automatically
+    // 1. Mark as read on click execution loops
     if (!item.is_read) {
       await handleMarkOneRead(item.id)
     }
@@ -90,59 +90,75 @@ function NotificationBell() {
     // 2. Clear dropdown toggle overlay panels
     setOpen(false)
 
-    // 3. Fallback tracking logic parsing title keywords or type attributes from backend parameters
+    // 3. Extract the active logged-in user context role safely from local session caches
+    const userSession = JSON.parse(localStorage.getItem('user') || '{}')
+    const currentRole = String(userSession.role || '').toLowerCase() // e.g. 'admin', 'organizer', 'user'
+
+    // 4. Extract text formatting attributes to execute search keywords patterns matches
     const checkTitle = String(item.title || '').toLowerCase()
     const checkMessage = String(item.message || '').toLowerCase()
     const checkType = String(item.type || item.related_type || '').toLowerCase()
 
-    // ─── CRITICAL INTERCEPT: Redirects password adjustments and reset items directly to Support screen ───
-    if (checkTitle.includes('password') || checkMessage.includes('password') || checkType.includes('support')) {
-      navigate('/admin/support') // Forces instant jumping straight to Support tickets view module
+    // ────────────────────────────────────────────────────────
+    // 👑 CRITICAL FIXED OVERRIDE: IF LOGGED-IN USER IS ADMIN, FORCIBLY KEEP WITHIN ADMIN WORKSPACE
+    // ────────────────────────────────────────────────────────
+    if (currentRole === 'admin') {
+      if (checkTitle.includes('password') || checkMessage.includes('password') || checkType.includes('support')) {
+        navigate('/admin/support')
+      } else if (checkType.includes('organizer_application') || checkType.includes('organizers') || checkMessage.includes('organizer')) {
+        navigate('/admin/organizers') // Stays within the Admin Panel applications module layout safely
+      } else if (checkType.includes('category') || checkType.includes('categories')) {
+        navigate('/admin/categories')
+      } else if (checkType.includes('venue') || checkType.includes('venues')) {
+        navigate('/admin/venues')
+      } else if (checkType.includes('payment') || checkType.includes('payments')) {
+        navigate('/admin/payments')
+      } else if (checkType.includes('report') || checkType.includes('reports')) {
+        navigate('/admin/reports')
+      } else if (checkType.includes('activity')) {
+        navigate('/admin/activity-logs')
+      } else if (checkType.includes('event')) {
+        navigate('/admin/events')
+      } else {
+        navigate('/admin/dashboard') // Standard safety fallback fallback for general admin items
+      }
       return
     }
 
-    // ─── ADMIN NAVIGATION FLOW LINK ROLES ───
-    if (checkType === 'admin_dashboard') {
-      navigate('/admin/dashboard')
-    } else if (checkType === 'organizer_application' || checkType === 'organizer_profile' || checkType === 'organizers') {
-      navigate('/admin/organizers')
-    } else if (checkType === 'admin_event' || checkType === 'admin_events') {
-      navigate('/admin/events')
-    } else if (checkType === 'category' || checkType === 'categories') {
-      navigate('/admin/categories')
-    } else if (checkType === 'venue' || checkType === 'venues') {
-      navigate('/admin/venues')
-    } else if (checkType === 'payment' || checkType === 'payments') {
-      navigate('/admin/payments')
-    } else if (checkType === 'report' || checkType === 'reports') {
-      navigate('/admin/reports')
-    } else if (checkType === 'activity_log' || checkType === 'activity_logs') {
-      navigate('/admin/activity-logs')
+    // ────────────────────────────────────────────────────────
+    // 👥 OTHER CLIENT WORKSPACE REDIRECTION ROLES (Organizer & Normal Users)
+    // ────────────────────────────────────────────────────────
 
-    // ─── ORGANIZER NAVIGATION FLOW LINK ROLES ───
-    } else if (checkType === 'organizer_dashboard') {
-      navigate('/organizer/dashboard')
-    } else if (checkType === 'organizer_event' || checkType === 'organizer_events' || checkType === 'event') {
-      navigate('/organizer/events')
-    } else if (checkType === 'speaker' || checkType === 'speakers') {
-      navigate('/organizer/speakers')
-    } else if (checkType === 'ticket' || checkType === 'tickets') {
-      navigate('/organizer/tickets')
-
-    // ─── REGULAR USER NAVIGATION FLOW LINK ROLES ───
-    } else if (checkType === 'user_dashboard') {
-      navigate('/dashboard')
-    } else if (checkType === 'public_event' || checkType === 'public_events') {
-      navigate('/events')
-    } else if (checkType === 'my_ticket' || checkType === 'my_tickets') {
-      navigate('/my-tickets')
-    } else if (checkType === 'support') {
-      navigate('/support')
-
-    // ─── FALLBACK WORKFLOW LOGIC REDIRECTION LINK ───
-    } else {
-      navigate('/home')
+    // === B. ORGANIZER VIEW NAVIGATION LINKS ===
+    if (currentRole === 'organizer') {
+      if (checkType.includes('speaker')) {
+        navigate('/organizer/speakers')
+      } else if (checkType.includes('ticket')) {
+        navigate('/organizer/tickets')
+      } else if (checkType.includes('event')) {
+        navigate('/organizer/events')
+      } else {
+        navigate('/organizer/dashboard')
+      }
+      return
     }
+
+    // === C. REGULAR USER VIEW NAVIGATION LINKS ===
+    if (currentRole === 'user' || currentRole === 'customer' || currentRole === 'attendee') {
+      if (checkType.includes('ticket') || checkTitle.includes('ticket') || checkMessage.includes('ticket')) {
+        navigate('/my-tickets') // Standard client tickets tab routing logic maps
+      } else if (checkType.includes('support')) {
+        navigate('/support')
+      } else if (checkType.includes('event')) {
+        navigate('/events')
+      } else {
+        navigate('/dashboard')
+      }
+      return
+    }
+
+    // === D. FINAL CONTEXT FALLBACK ===
+    navigate('/home')
   }
 
   // ✅ Better state management for mark all read
@@ -208,7 +224,6 @@ function NotificationBell() {
               <div className="notification-empty">No notifications found.</div>
             ) : (
               notifications.map((item) => (
-                /* ✅ FIXED CARD TRIGGER LINK: Perfectly maps row selections into core routing handlers */
                 <div
                   key={item.id}
                   className={`notification-item ${item.is_read ? 'read' : 'unread'}`}
@@ -226,7 +241,7 @@ function NotificationBell() {
                       <button 
                         type="button" 
                         onClick={(e) => {
-                          e.stopPropagation(); // ✅ Prevents routing handlers event bubbling triggers on text select actions
+                          e.stopPropagation(); // Stops event bubbles conflicts
                           handleMarkOneRead(item.id);
                         }}
                         disabled={markingReadId === item.id}
