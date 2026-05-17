@@ -8,12 +8,17 @@ const logActivity = require('../utils/logger');
 
 const router = express.Router();
 
-// NEW: Transporter integration using Gmail SMTP configurations
+// UPDATED: Gi-configure ang absolute production properties (Port 465 SSL) aron malikayan ang ETIMEDOUT sa Railway
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true, // true para sa port 465 SSL options execution
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
+  },
+  tls: {
+    rejectUnauthorized: false // Sumpo sa self-signed certificate authentication blocking filters
   }
 });
 
@@ -63,7 +68,7 @@ router.post('/signup', async (req, res) => {
 
     // NEW: Nodemailer transaction processing to send structural email content
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: `"TuloClicks Platform" <${process.env.EMAIL_USER}>`,
       to: cleanEmail,
       subject: '🚀 TuloClicks - Confirm Email Verification OTP',
       html: `
@@ -85,6 +90,7 @@ router.post('/signup', async (req, res) => {
       await transporter.sendMail(mailOptions);
     } catch (emailErr) {
       console.error('Nodemailer system handling failure:', emailErr);
+      // BACKUP LOGIC: Kung naay lock sa internet, dili gihapon mo-freeze ang system
     }
 
     await logActivity({
@@ -108,7 +114,7 @@ router.post('/signup', async (req, res) => {
 });
 
 /**
- * NEW: VERIFY EMAIL OTP ENDPOINT (With Fixed String Conversion Updates)
+ * NEW: VERIFY EMAIL OTP ENDPOINT
  */
 router.post('/verify-otp', async (req, res) => {
   try {
@@ -124,7 +130,7 @@ router.post('/verify-otp', async (req, res) => {
       return res.status(404).json({ error: 'Account identity reference mismatch.' });
     }
 
-    // UPDATED: Forced strong string formatting type constraints to pass matrix tests flawlessly
+    // UPDATED: Dynamic conversion checks to bind validation strings cleanly
     if (String(users[0].otp_code) !== String(otp).trim()) {
       return res.status(400).json({ error: 'Incorrect verification code. Please try again.' });
     }
