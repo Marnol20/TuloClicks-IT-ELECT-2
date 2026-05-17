@@ -440,18 +440,58 @@
   }
 } 
 
-/* Custom scrollbar para sa Venue ug Category Search dropdowns */
+/* --- CUSTOM SEARCHABLE DROPDOWN CORE WRAPPER --- */
+.form-group {
+  position: relative; /* Gisiguro nga mag-agad ang dropdown sa iyang field box wrapper */
+}
+
+/* --- THE FLOATING DROPDOWN CONTAINER PANEL --- */
+/* Kini nga block mao ang nag-gunit sa card popup list box */
+.form-group div[style*="position: 'absolute'"], 
+.form-group div[style*="position: absolute"] {
+  position: absolute !important;
+  top: 100% !important;        /* Gipilit diritso sa ilawom sa select input box */
+  left: 0 !important;
+  width: 100% !important;
+  background-color: #1e293b !important; /* Solid dark background matching your input theme */
+  border: 1px solid #334155 !important;
+  border-radius: 8px !important;
+  margin-top: 4px !important;   /* Giwagtang ang dako nga haw-ang o gap aron dili na moubos */
+  padding: 10px !important;
+  z-index: 9999 !important;     /* Gisiguro nga molataw sa ibabaw sa bisan unsang laing form fields */
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* --- SEARCH BAR INNER CONTAINER HOUSING --- */
+/* Gisiguro niini nga ang search text box sikit diritso sa taas sa popup layout grid */
+.form-group div[style*="display: 'flex'"],
+.form-group div[style*="display: flex"] {
+  margin-bottom: 8px !important; /* Standard padding wrapper spacing gikan sa list links sa ubos */
+}
+
+/* --- THE ACCESSIBILITY VERTICAL SCROLL TRACK ZONE --- */
+/* Kini ang naglimite sa gitas-on sa popup list box ug nag-add og scrollbar */
+.custom-dropdown-scroll {
+  max-height: 200px !important;  /* Gitakda nga eksaktong 200px parehas sa category setup */
+  overflow-y: auto !important;   /* Auto loading scroll layouts tracks instantly */
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  padding-right: 4px !important;
+}
+
+/* --- CUSTOM ACCESS SCROLLBAR LOOK & FEEL ACCENTS --- */
 .custom-dropdown-scroll::-webkit-scrollbar {
-  width: 6px;
+  width: 6px !important;
 }
 .custom-dropdown-scroll::-webkit-scrollbar-track {
-  background: #0f172a;
-  border-radius: 4px;
+  background: #0f172a !important; /* Ngitngit nga tracking line background channels */
+  border-radius: 4px !important;
 }
 .custom-dropdown-scroll::-webkit-scrollbar-thumb {
-  background: #475569;
-  border-radius: 4px;
+  background: #475569 !important; /* Solid slate gray handle frame structures */
+  border-radius: 4px !important;
 }
 .custom-dropdown-scroll::-webkit-scrollbar-thumb:hover {
-  background: #8b5cf6;
+  background: #8b5cf6 !important; /* Misiga nga purple color focus thumb toggle cues on mouse pointer hover */
 }
