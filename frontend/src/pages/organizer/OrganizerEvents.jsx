@@ -180,7 +180,6 @@ function OrganizerEvents() {
     setLocationType(event.location_type || 'physical')
     setCustomLocation(event.custom_location || '')
 
-    // Giusab aron maminaw sa VITE_API_URL
     if (event.event_image) {
       setPreviewUrl(`${import.meta.env.VITE_API_URL}/uploads/events/${event.event_image}`)
     }
@@ -389,7 +388,22 @@ function OrganizerEvents() {
             </div>
 
             <div className="form-group">
-              <label>Venue</label>
+              <label>Location Type</label>
+              <select
+                className="form-input"
+                value={locationType}
+                onChange={(e) => setLocationType(e.target.value)}
+                disabled={loading}
+              >
+                <option value="physical">Physical</option>
+                <option value="online">Online</option>
+                <option value="hybrid">Hybrid</option>
+              </select>
+            </div>
+
+            {/* UPDATED: Displays explicit indicator code markers to notify organizers of mandatory tracking variables */}
+            <div className="form-group">
+              <label>Venue {(locationType === 'physical' || locationType === 'hybrid') && '*'}</label>
               <select
                 className="form-input"
                 value={venueId}
@@ -402,20 +416,6 @@ function OrganizerEvents() {
                     {venue.name}
                   </option>
                 ))}
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label>Location Type</label>
-              <select
-                className="form-input"
-                value={locationType}
-                onChange={(e) => setLocationType(e.target.value)}
-                disabled={loading}
-              >
-                <option value="physical">Physical</option>
-                <option value="online">Online</option>
-                <option value="hybrid">Hybrid</option>
               </select>
             </div>
 

@@ -208,7 +208,7 @@ router.get('/:id', async (req, res) => {
 });
 
 /**
- * ORGANIZER: create event
+ * ORGANIZER: create event with Section 3 Venue Mandate rules
  */
 router.post('/', authMiddleware, roleMiddleware('organizer', 'admin'), upload.single('event_image'), async (req, res) => {
   try {
@@ -234,13 +234,14 @@ router.post('/', authMiddleware, roleMiddleware('organizer', 'admin'), upload.si
       });
     }
 
-    if (location_type === 'physical' && !venue_id && !custom_location) {
+    // UPDATED SECTION 3: Physical and Hybrid formats strictly enforce a verified venue_id link
+    if ((location_type === 'physical' || location_type === 'hybrid') && !venue_id) {
       return res.status(400).json({
-        error: 'Venue or custom location is required for physical events.'
+        error: 'Geospatial Integrity Mandate Enforced: Physical or Hybrid event formats strictly require a pre-configured verified Venue selection.'
       });
     }
 
-    if (location_type === 'physical' && venue_id) {
+    if (venue_id) {
       const venueId = Number(venue_id);
       
       const actualEndDate = end_date || start_date;
@@ -250,7 +251,6 @@ router.post('/', authMiddleware, roleMiddleware('organizer', 'admin'), upload.si
       const requestedEnd = `${actualEndDate} ${actualEndTime}`;
 
       // Query for conflicting events in the same venue
-      // Include events with approval_status 'pending' or 'approved' (not rejected)
       const [conflictingEvents] = await db.query(
         `
         SELECT 
@@ -364,7 +364,7 @@ router.post('/', authMiddleware, roleMiddleware('organizer', 'admin'), upload.si
 });
 
 /**
- * ORGANIZER: update own event
+ * ORGANIZER: update own event with Section 3 updates
  */
 router.put('/:id', authMiddleware, roleMiddleware('organizer', 'admin'), upload.single('event_image'), async (req, res) => {
   try {
@@ -393,6 +393,13 @@ router.put('/:id', authMiddleware, roleMiddleware('organizer', 'admin'), upload.
       online_link,
       publish_status
     } = req.body;
+
+    // UPDATED SECTION 3: Verify venue rules during payload modifications
+    if ((location_type === 'physical' || location_type === 'hybrid') && !venue_id) {
+      return res.status(400).json({
+        error: 'Geospatial Integrity Mandate Enforced: Physical or Hybrid event formats strictly require a pre-configured verified Venue selection.'
+      });
+    }
 
     const updates = [];
     const values = [];
@@ -744,7 +751,6 @@ router.delete('/:id', authMiddleware, roleMiddleware('organizer', 'admin'), asyn
     return res.status(500).json({ error: 'Server error deleting event.' });
   }
 });
-
 
 /**
  * PUBLIC: get event status (check if concluded)

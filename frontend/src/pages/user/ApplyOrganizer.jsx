@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, CheckCircle, Calendar, BarChart2, Users, Megaphone, Upload, ImageIcon } from 'lucide-react' // Added Upload & ImageIcon
+import { ArrowLeft, CheckCircle, Calendar, BarChart2, Users, Megaphone, Upload, ImageIcon } from 'lucide-react'
 import { useToast } from '../../components/common/ToastContext'
 import tcLogo from '../../styles/TuloClicksLogo.png'
 import '../../styles/ApplyOrganizer.css'
@@ -32,7 +32,7 @@ function ApplyOrganizer() {
   const [error, setError] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
-  // NEW: Added structural file state values for structural manual identification verification
+  // NEW: Added structural file state values for manual identification verification reviews
   const [validIdFile, setValidIdFile] = useState(null)
   const [idPreviewUrl, setIdPreviewUrl] = useState('')
 
@@ -52,7 +52,7 @@ function ApplyOrganizer() {
       return
     }
 
-    // NEW: Validation checkpoint mechanism to mandate identity attachment
+    // NEW: Validation checkpoint mechanism to mandate identity attachment verification review
     if (!validIdFile) {
       addToast('You must upload a valid institutional ID card for authentication clearance review.', 'warning')
       return
@@ -62,7 +62,7 @@ function ApplyOrganizer() {
       setLoading(true)
       setError('')
 
-      // NEW: Multipart form wrapper payload transformation for file transfer
+      // NEW: Multipart form wrapper payload transformation for backend image processing
       const formData = new FormData()
       formData.append('organization_name', organizationName)
       formData.append('organization_type', organizationType)
@@ -70,7 +70,7 @@ function ApplyOrganizer() {
       formData.append('website', website)
       formData.append('facebook_link', facebookLink)
       formData.append('instagram_link', instagramLink)
-      formData.append('valid_id', validIdFile) // Core ID field payload
+      formData.append('valid_id', validIdFile) // Core structural ID payload
 
       await api.post('/organizers/apply', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -134,7 +134,7 @@ function ApplyOrganizer() {
       {/* ── Right panel ── */}
       <div className="ao-right">
         <div className="ao-form-wrap">
-          <button className="ao-back-btn" onClick={() => navigate('/home')}>
+          <button type="button" className="ao-back-btn" onClick={() => navigate('/home')}>
             <ArrowLeft size={16} /> Back to Home
           </button>
 
@@ -173,7 +173,7 @@ function ApplyOrganizer() {
                   </select>
                 </div>
 
-                {/* NEW: Identity Verification Component for manual QA inspection */}
+                {/* Identity Verification Component Layer */}
                 <div className="ao-field">
                   <label>Upload Valid Institutional ID (Required) <span className="ao-required">*</span></label>
                   <div style={{
@@ -188,7 +188,7 @@ function ApplyOrganizer() {
                       <label style={{ cursor: 'pointer', display: 'block' }}>
                         <Upload size={28} style={{ color: '#8b5cf6', marginBottom: '8px' }} />
                         <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>Click to select clear photo of your ID Card</p>
-                        <input type="file" accept="image/*" onChange={handleIdFileChange} style={{ display: 'none' }} required />
+                        <input type="file" accept="image/*" onChange={handleIdFileChange} style={{ display: 'none' }} />
                       </label>
                     ) : (
                       <div>
@@ -277,7 +277,7 @@ function ApplyOrganizer() {
                   </div>
                 ))}
               </div>
-              <button className="ao-submit-btn" onClick={() => navigate('/home')}>
+              <button type="button" className="ao-submit-btn" onClick={() => navigate('/home')}>
                 Back to Home
               </button>
             </div>
