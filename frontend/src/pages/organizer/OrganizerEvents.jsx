@@ -402,7 +402,7 @@ function OrganizerEvents() {
               />
             </div>
 
-            {/* CATEGORY SELECT ELEMENT CONTAINER */}
+            {/* CATEGORY DROPDOWN BOX */}
             <div className="form-group" ref={categoryRef} style={{ position: 'relative' }}>
               <label>Category *</label>
               <div 
@@ -415,7 +415,7 @@ function OrganizerEvents() {
               </div>
 
               {showCategoryDropdown && (
-                <div style={{ position: 'absolute', top: '100%', left: 0, width: '100%', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', marginTop: '6px', zIndex: 1000, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.5)', padding: '10px' }}>
+                <div style={{ position: 'absolute', top: '100%', left: 0, width: '100%', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', marginTop: '4px', zIndex: 9999, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.5)', padding: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '6px', padding: '0 10px', marginBottom: '8px' }}>
                     <Search size={14} style={{ opacity: 0.5, marginRight: '8px', color: '#ffffff' }} />
                     <input 
@@ -549,7 +549,7 @@ function OrganizerEvents() {
               )}
             </div>
 
-            {/* 🛠️ FIXED: VENUE SELECT DROPDOWN WRAPPER STRUCTURE (Forces dropdown overlay directly on top) */}
+            {/* 🛠️ FIXED STRUCTURE: EXPLICITLY POSITIONED DROPDOWN BOX LABELS */}
             <div className="form-group" ref={venueRef} style={{ position: 'relative' }}>
               <label>Venue {(locationType === 'physical' || locationType === 'hybrid') && '*'}</label>
               <div 
@@ -562,8 +562,8 @@ function OrganizerEvents() {
               </div>
 
               {showVenueDropdown && (
-                /* Adjusted dropdown positioning attributes to overlay natively above relative parameters context fields */
-                <div style={{ position: 'absolute', top: '100%', left: 0, width: '100%', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', marginTop: '6px', zIndex: 1000, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.5)', padding: '10px' }}>
+                /* Stripped out static layout heights, hardcoded margin offsets, and locked down top: '100%' position alignment */
+                <div style={{ position: 'absolute', top: '100%', left: 0, width: '100%', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', marginTop: '4px', zIndex: 9999, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.5)', padding: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '6px', padding: '0 10px', marginBottom: '8px' }}>
                     <Search size={14} style={{ opacity: 0.5, marginRight: '8px', color: '#ffffff' }} />
                     <input 
